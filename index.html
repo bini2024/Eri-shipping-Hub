@@ -1,321 +1,332 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eri Shipping Hub | Package Delivery Platform</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #2A5C82;
-            --secondary-color: #5CB85C;
-            --accent-color: #FFC107;
-        }
-        
-        body {
-            background-color: #f8f9fa;
-            min-height: 100vh;
-        }
-        
-        .nav-brand {
-            font-weight: 700;
-            color: var(--primary-color) !important;
-        }
-        
-        .card-header {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        
-        .courier-card {
-            transition: transform 0.2s, box-shadow 0.2s;
-            border-left: 4px solid var(--secondary-color);
-        }
-        
-        .courier-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        }
-        
-        .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.25rem rgba(42, 92, 130, 0.25);
-        }
-        
-        .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-        
-        .btn-primary:hover {
-            background-color: #234866;
-            border-color: #1e3d57;
-        }
-
-        #country {
-    padding: 8px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-}
-
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eri Shipping Hub | Package Delivery Platform</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #2A5C82;
+      --secondary-color: #5CB85C;
+      --accent-color: #FFC107;
+    }
+    body {
+      background-color: #f8f9fa;
+      min-height: 100vh;
+    }
+    .nav-brand {
+      font-weight: 700;
+      color: var(--primary-color) !important;
+    }
+    .card-header {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    .courier-card {
+      transition: transform 0.2s, box-shadow 0.2s;
+      border-left: 4px solid var(--secondary-color);
+    }
+    .courier-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    .form-control:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.25rem rgba(42, 92, 130, 0.25);
+    }
+    .btn-primary {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+    .btn-primary:hover {
+      background-color: #234866;
+      border-color: #1e3d57;
+    }
+    #country {
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+  </style>
 </head>
 <body class="bg-light">
-    <header class="py-4 mb-4">
-        <div class="container">
-            <h1 class="text-center mb-3">
-                <i class="fas fa-shipping-fast"></i>
-                <span class="nav-brand">Eri Shipping Hub</span>
-            </h1>
-            <p class="text-center text-muted">Connecting senders with trusted couriers</p>
-        </div>
-    </header>
-
-    <main class="container">
-        <div class="row g-4">
-            <!-- Sender Section -->
-            <div class="col-lg-6">
-                <div class="card shadow-sm">
-                    <div class="card-header">
-                        <h3 class="mb-0">ምስዳድ<i class="fas fa-box-open me-2"></i></h3>
-                    </div>
-                    <div class="card-body">
-                        <form id="packageForm" class="needs-validation" novalidate>
-                            <div class="mb-3">
-                                <label class="form-label">ካብ</label>
-                                <select id="fromCountry" class="form-select" required>
-                                    <option value="">Select country...</option>
-                                    <option value="Eritrea">Eritrea</option>
-                                    <option value="Ethiopia">Ethiopia</option>
-                                    <option value="Uganda">Uganda</option>
-                                    <option value="Dubai">Dubai</option>
-                                    <option value="Canada">Canada</option>
-                                    <option value="USA">USA</option>
-                                    <option value="Kenya">Kenya</option>
-                                    <option value="Germany">Germany</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">ናብ</label>
-                                <select id="toCountry" class="form-select" required>
-                                    <option value="">Select country...</option>
-                                    <option value="Eritrea">Eritrea</option>
-                                    <option value="Ethiopia">Ethiopia</option>
-                                    <option value="Uganda">Uganda</option>
-                                    <option value="Dubai">Dubai</option>
-                                    <option value="Canada">Canada</option>
-                                    <option value="USA">USA</option>
-                                    <option value="Kenya">Kenya</option>
-                                    <option value="Germany">Germany</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">
-                                <i class="fas fa-search me-2"></i>ተጉዓዛይ ድለ
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                <div id="courierResults" class="mt-4"></div>
-            </div>
-
-           <!-- Courier Registration -->
-            <div class="col-lg-6">
-                <div class="card shadow-sm">
-                    <div class="card-header">
-                        <h3 class="mb-0"><i class="fas fa-user-tie me-2"></i>ምዝገባ ተጓዓዛይ</h3>
-                    </div>
-                    <div class="card-body">
-                        <form id="courierForm" class="needs-validation" novalidate>
-                            <div class="mb-3">
-                                <label class="form-label">ስም</label>
-                                <input type="text" id="courierName" class="form-control" placeholder="Biniam Kibrom" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">ቴሌ.</label>
-                                <input type="tel" id="courierContact" class="form-control" placeholder="+1234567890" required>
-                            </div>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">ካብ</label>
-                                    <select id="courierFrom" class="form-select" required>
-                                        <option value="">Select country...</option>
-                                        <option value="Eritrea">Eritrea</option>
-                                        <option value="Ethiopia">Ethiopia</option>
-                                        <option value="Uganda">Uganda</option>
-                                        <option value="Dubai">Dubai</option>
-                                    <option value="Canada">Canada</option>
-                                    <option value="USA">USA</option>
-                                    <option value="Kenya">Kenya</option>
-                                    <option value="Germany">Germany</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">ናብ</label>
-                                    <select id="courierTo" class="form-select" required>
-                                        <option value="">Select country...</option>
-                                        <option value="Eritrea">Eritrea</option>
-                                        <option value="Ethiopia">Ethiopia</option>
-                                        <option value="Uganda">Uganda</option>
-                                        <option value="Dubai">Dubai</option>
-                                    <option value="Canada">Canada</option>
-                                    <option value="USA">USA</option>
-                                    <option value="Kenya">Kenya</option>
-                                    <option value="Germany">Germany</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="mb-3 mt-3">
-                                <label class="form-label">ዕለት መገሻ</label>
-                                <input type="date" id="courierDate" class="form-control" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">
-                                <i class="fas fa-user-check me-2"></i>Register as Courier
-                            </button>  
-                        </form>
-                    </div>
-                </div> 
-            </div> 
-            
-        </div>
-    </main>
-
-    <!-- Bootstrap Modal for Messages -->
-    <div class="modal fade" id="messageModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body"></div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
+  <header class="py-4 mb-4">
+    <div class="container">
+      <h1 class="text-center mb-3">
+        <i class="fas fa-shipping-fast"></i>
+        <span class="nav-brand">Eri Shipping Hub</span>
+      </h1>
+      <p class="text-center text-muted">Connecting senders with trusted couriers</p>
     </div>
+  </header>
 
-    <!-- Bootstrap JS and Popper.js -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+  <main class="container">
+    <div class="row g-4">
+      <!-- Sender Section -->
+      <div class="col-lg-6">
+        <div class="card shadow-sm">
+          <div class="card-header">
+            <h3 class="mb-0">ምስዳድ <i class="fas fa-box-open me-2"></i></h3>
+          </div>
+          <div class="card-body">
+            <form id="packageForm" class="needs-validation" novalidate>
+              <div class="mb-3">
+                <label class="form-label">ካብ</label>
+                <select id="fromCountry" class="form-select" required>
+                  <option value="">Select country...</option>
+                  <option value="Eritrea">Eritrea</option>
+                  <option value="Ethiopia">Ethiopia</option>
+                  <option value="Uganda">Uganda</option>
+                  <option value="Dubai">Dubai</option>
+                  <option value="Canada">Canada</option>
+                  <option value="USA">USA</option>
+                  <option value="Kenya">Kenya</option>
+                  <option value="Germany">Germany</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">ናብ</label>
+                <select id="toCountry" class="form-select" required>
+                  <option value="">Select country...</option>
+                  <option value="Eritrea">Eritrea</option>
+                  <option value="Ethiopia">Ethiopia</option>
+                  <option value="Uganda">Uganda</option>
+                  <option value="Dubai">Dubai</option>
+                  <option value="Canada">Canada</option>
+                  <option value="USA">USA</option>
+                  <option value="Kenya">Kenya</option>
+                  <option value="Germany">Germany</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-search me-2"></i>ተጉዓዛይ ድለ
+              </button>
+            </form>
+          </div>
+        </div>
+        <div id="courierResults" class="mt-4"></div>
+      </div>
 
-        // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+      <!-- Courier Registration -->
+      <div class="col-lg-6">
+        <div class="card shadow-sm">
+          <div class="card-header">
+            <h3 class="mb-0"><i class="fas fa-user-tie me-2"></i>ምዝገባ ተጓዓዛይ</h3>
+          </div>
+          <div class="card-body">
+            <form id="courierForm" class="needs-validation" novalidate>
+              <div class="mb-3">
+                <label class="form-label">ስም</label>
+                <input type="text" id="courierName" class="form-control" placeholder="Biniam Kibrom" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">ቴሌ.</label>
+                <input type="tel" id="courierContact" class="form-control" placeholder="+1234567890" required>
+              </div>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">ካብ</label>
+                  <select id="courierFrom" class="form-select" required>
+                    <option value="">Select country...</option>
+                    <option value="Eritrea">Eritrea</option>
+                    <option value="Ethiopia">Ethiopia</option>
+                    <option value="Uganda">Uganda</option>
+                    <option value="Dubai">Dubai</option>
+                    <option value="Canada">Canada</option>
+                    <option value="USA">USA</option>
+                    <option value="Kenya">Kenya</option>
+                    <option value="Germany">Germany</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">ናብ</label>
+                  <select id="courierTo" class="form-select" required>
+                    <option value="">Select country...</option>
+                    <option value="Eritrea">Eritrea</option>
+                    <option value="Ethiopia">Ethiopia</option>
+                    <option value="Uganda">Uganda</option>
+                    <option value="Dubai">Dubai</option>
+                    <option value="Canada">Canada</option>
+                    <option value="USA">USA</option>
+                    <option value="Kenya">Kenya</option>
+                    <option value="Germany">Germany</option>
+                  </select>
+                </div>
+              </div>
+              <div class="mb-3 mt-3">
+                <label class="form-label">ዕለት መገሻ</label>
+                <input type="date" id="courierDate" class="form-control" required>
+              </div>
+              <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-user-check me-2"></i>Register as Courier
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ",
-  authDomain: "erishipping-e4532.firebaseapp.com",
-  projectId: "erishipping-e4532",
-  storageBucket: "erishipping-e4532.firebasestorage.app",
-  messagingSenderId: "388550131049",
-  appId: "1:388550131049:web:e9ac1784ab8e5fabc811f8"
-};
+  <!-- Bootstrap Modal for Messages -->
+  <div class="modal fade" id="messageModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+  <!-- Bootstrap JS and Popper.js -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
-        // Initialize couriers from localStorage
-        let couriers = JSON.parse(localStorage.getItem("couriers")) || [
-            { name: "Biniam", contact: "123-456-7890", from: "Eritrea", to: "Ethiopia", date: "2025-03-07" },
-            { name: "Amanuel", contact: "987-654-3210", from: "Ethiopia", to: "Uganda", date: "2025-03-10" },
-            { name: "Daniel", contact: "555-123-4567", from: "Eritrea", to: "Uganda", date: "2025-03-08" }
-        ];
+    // Your Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ",
+      authDomain: "erishipping-e4532.firebaseapp.com",
+      projectId: "erishipping-e4532",
+      storageBucket: "erishipping-e4532.firebasestorage.app",
+      messagingSenderId: "388550131049",
+      appId: "1:388550131049:web:e9ac1784ab8e5fabc811f8"
+    };
 
-        function showModal(title, message) {
-            const modal = new bootstrap.Modal(document.getElementById('messageModal'));
-            document.querySelector('#messageModal .modal-title').textContent = title;
-            document.querySelector('#messageModal .modal-body').textContent = message;
-            modal.show();
-        }
+    // Initialize Firebase and Firestore
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const courierCollection = collection(db, "couriers");
 
-        function renderCouriers(availableCouriers) {
-            const resultsDiv = document.getElementById("courierResults");
-            resultsDiv.innerHTML = availableCouriers.length > 0 
-                ? `<h4 class="mb-3">Available Couriers (${availableCouriers.length})</h4>`
-                : `<div class="alert alert-info">No couriers found for this route. Please check back later.</div>`;
+    // Courier Registration Form Submission (Firebase)
+    document.getElementById("courierForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("courierName").value;
+      const contact = document.getElementById("courierContact").value;
+      const from = document.getElementById("courierFrom").value;
+      const to = document.getElementById("courierTo").value;
+      const date = document.getElementById("courierDate").value;
 
-            availableCouriers.forEach(courier => {
-                const card = document.createElement('div');
-                card.className = 'card courier-card mb-3';
-                card.innerHTML = `
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="card-title mb-0">
-                                <i class="fas fa-user-tie me-2"></i>${courier.name}
-                            </h5>
-                            <small class="text-muted">${courier.date}</small>
-                        </div>
-                        <p class="card-text">
-                            <i class="fas fa-route me-2"></i>
-                            ${courier.from} → ${courier.to}
-                        </p>
-                        <a href="tel:${courier.contact}" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-phone me-2"></i>Contact: ${courier.contact}
-                        </a>
-                    </div>
-                `;
-                resultsDiv.appendChild(card);
-            });
-        }
-
-        // Sender Form Submission
-        document.getElementById('packageForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const from = document.getElementById("fromCountry").value;
-            const to = document.getElementById("toCountry").value;
-            
-            if (from && to) {
-                const availableCouriers = couriers.filter(c => c.from === from && c.to === to);
-                renderCouriers(availableCouriers);
-            }
+      try {
+        await addDoc(courierCollection, {
+          name: name,
+          contact: contact,
+          from: from,
+          to: to,
+          date: date,
+          timestamp: new Date()
         });
+        document.getElementById("courierForm").reset();
+        showModal('Success', 'Thank you for registering as a courier!');
+      } catch (error) {
+        console.error("Error adding courier:", error);
+      }
+    });
 
-        // Courier Registration
-        document.getElementById('courierForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const newCourier = {
-                name: document.getElementById('courierName').value,
-                contact: document.getElementById('courierContact').value,
-                from: document.getElementById('courierFrom').value,
-                to: document.getElementById('courierTo').value,
-                date: document.getElementById('courierDate').value
-            };
+    // Real-Time Updates for Couriers (Display all couriers)
+    onSnapshot(courierCollection, (snapshot) => {
+      const resultsDiv = document.getElementById("courierResults");
+      resultsDiv.innerHTML = "";
+      if (snapshot.size > 0) {
+        resultsDiv.innerHTML = `<h4 class="mb-3">Available Couriers (${snapshot.size})</h4>`;
+      } else {
+        resultsDiv.innerHTML = `<div class="alert alert-info">No couriers found for this route. Please check back later.</div>`;
+      }
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const card = document.createElement('div');
+        card.className = 'card courier-card mb-3';
+        card.innerHTML = `
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h5 class="card-title mb-0"><i class="fas fa-user-tie me-2"></i>${data.name}</h5>
+              <small class="text-muted">${data.date}</small>
+            </div>
+            <p class="card-text"><i class="fas fa-route me-2"></i>${data.from} → ${data.to}</p>
+            <a href="tel:${data.contact}" class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-phone me-2"></i>Contact: ${data.contact}
+            </a>
+          </div>
+        `;
+        resultsDiv.appendChild(card);
+      });
+    });
 
-            couriers.push(newCourier);
-            localStorage.setItem("couriers", JSON.stringify(couriers));
-            
-            this.reset();
-            showModal('Success', 'Thank you for registering as a courier!');
-            
-            // Auto-update results if matching route
-            const from = document.getElementById("fromCountry").value;
-            const to = document.getElementById("toCountry").value;
-            if (from && to && newCourier.from === from && newCourier.to === to) {
-                renderCouriers([...couriers.filter(c => c.from === from && c.to === to)]);
-            }
+    // Sender Form Submission (Filter couriers based on selected countries)
+    document.getElementById("packageForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const fromCountry = document.getElementById("fromCountry").value;
+      const toCountry = document.getElementById("toCountry").value;
+      const resultsDiv = document.getElementById("courierResults");
+      resultsDiv.innerHTML = "";
+      
+      // Query Firestore and filter couriers matching the selected route
+      onSnapshot(courierCollection, (snapshot) => {
+        let matchingCouriers = [];
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          if(data.from === fromCountry && data.to === toCountry) {
+            matchingCouriers.push(data);
+          }
         });
+        if(matchingCouriers.length > 0) {
+          resultsDiv.innerHTML = `<h4 class="mb-3">Available Couriers (${matchingCouriers.length})</h4>`;
+          matchingCouriers.forEach((data) => {
+            const card = document.createElement('div');
+            card.className = 'card courier-card mb-3';
+            card.innerHTML = `
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h5 class="card-title mb-0"><i class="fas fa-user-tie me-2"></i>${data.name}</h5>
+                  <small class="text-muted">${data.date}</small>
+                </div>
+                <p class="card-text"><i class="fas fa-route me-2"></i>${data.from} → ${data.to}</p>
+                <a href="tel:${data.contact}" class="btn btn-sm btn-outline-primary">
+                  <i class="fas fa-phone me-2"></i>Contact: ${data.contact}
+                </a>
+              </div>
+            `;
+            resultsDiv.appendChild(card);
+          });
+        } else {
+          resultsDiv.innerHTML = `<div class="alert alert-info">No couriers found for this route. Please check back later.</div>`;
+        }
+      });
+    });
 
-        // Form Validation
-        (() => {
-            'use strict'
-            const forms = document.querySelectorAll('.needs-validation')
-            forms.forEach(form => {
-                form.addEventListener('submit', event => {
-                    if (!form.checkValidity()) {
-                        event.preventDefault()
-                        event.stopPropagation()
-                    }
-                    form.classList.add('was-validated')
-                }, false)
-            })
-        })()
-    </script>
+    // Function to show modal messages
+    function showModal(title, message) {
+      const modal = new bootstrap.Modal(document.getElementById('messageModal'));
+      document.querySelector('#messageModal .modal-title').textContent = title;
+      document.querySelector('#messageModal .modal-body').textContent = message;
+      modal.show();
+    }
+
+    // Form Validation
+    (() => {
+      'use strict';
+      const forms = document.querySelectorAll('.needs-validation');
+      forms.forEach(form => {
+        form.addEventListener('submit', event => {
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+        }, false);
+      });
+    })();
+  </script>
 </body>
 </html>
