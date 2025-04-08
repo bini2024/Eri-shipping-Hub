@@ -438,19 +438,47 @@ dateInput.addEventListener('input', () => {
       });
     })();
   </script>
-  <footer class="text-center text-white mt-5" style="background-color: #343a40; padding: 20px;">
+  <footer class="text-center text-white mt-5" style="background-color: #343a40; padding: 30px 15px;">
   <div class="container">
-    <p class="mb-2">📞 Contact us: 
-      <a href="tel:+251937529633" class="text-warning text-decoration-none">+251937529633</a> | 
-      <a href="tel:+1-647-462-4710" class="text-warning text-decoration-none">+1-647-462-4710</a>
-      <a href="Erishipping0@gmail.com" class="text-warning text-decoration-none">Erishipping0@gmail.com</a>
-       <a href="https://t.me/Erishipping" target="_blank" class="text-warning text-decoration-none">
-        <i class="fab fa-telegram-plane me-1"></i>Telegram
-      </a>
-    </p>
-    <p class="mb-0">&copy; <span id="year"></span> Eri Shipping Hub. All rights reserved.</p>
+    <h5 class="mb-4 text-warning">📦 Contact Eri Shipping Hub</h5>
+
+    <div class="row justify-content-center text-start">
+      <div class="col-md-4 mb-3">
+        <p class="mb-1">
+          <strong>📞 Phone (Ethiopia):</strong><br>
+          <a href="tel:+251937529633" class="text-warning text-decoration-none">+251 937 529 633</a>
+        </p>
+        <p class="mb-1">
+          <strong>📞 Phone (Canada):</strong><br>
+          <a href="tel:+1-647-462-4710" class="text-warning text-decoration-none">+1 647 462 4710</a>
+        </p>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <p class="mb-1">
+          <strong>✉️ Email:</strong><br>
+          <a href="mailto:Erishipping0@gmail.com" class="text-warning text-decoration-none">Erishipping0@gmail.com</a>
+        </p>
+        <p class="mb-0">
+          <strong>📨 Telegram:</strong><br>
+          <a href="https://t.me/Erishipping" target="_blank" class="text-warning text-decoration-none">
+            <i class="fab fa-telegram-plane me-1"></i> @Erishipping
+          </a>
+        </p>
+      </div>
+    </div>
+
+    <hr class="bg-light" style="opacity: 0.2;">
+
+    <p class="mb-0">&copy; <span id="year"></span> <strong>Eri Shipping Hub</strong>. All rights reserved.</p>
   </div>
 </footer>
+
+<!-- Year script -->
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
 
 </body>
 </html>
