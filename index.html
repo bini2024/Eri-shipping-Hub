@@ -63,6 +63,11 @@
   resize: vertical; /* Allow vertical resizing of the text area */
   min-height: 80px; /* Ensure it’s large enough for comments */
 }
+    .text-muted {
+  color: #6c757d;  /* Gray color */
+  font-size: smaller;  /* Make the text slightly smaller */
+}
+
 
     #country {
       padding: 8px;
@@ -328,7 +333,7 @@
             <a href="tel:${data.contact}" class="btn btn-sm btn-outline-primary">
               <i class="fas fa-phone me-2"></i>Contact: ${data.contact}
             </a>
-            <small class="text-muted">${data.comments}</small>
+            <small class="text-muted" style="background-color: yellow; border-radius: 5px;">${data.comments}</small>
           </div>
         `;
         resultsDiv.appendChild(card);
