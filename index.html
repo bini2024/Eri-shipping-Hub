@@ -241,26 +241,30 @@
     const db = getFirestore(app);
     const courierCollection = collection(db, "couriers");
 
-    // Add this code RIGHT AFTER your form element definitions but BEFORE form submission handlers
-// ----------------------------------------------------------------------------------------
-// Date validation logic
+// Add this code AFTER getting the date input element
+// --------------------------------------------------
 const dateInput = document.getElementById('courierDate');
 
-// Set minimum date to today in UTC (matches Firestore rules)
-const today = new Date();
-const utcDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
-dateInput.min = utcDate.toISOString().split('T')[0];
+// Set min date to today's UTC date (matches Firestore rules)
+const setMinDate = () => {
+  const now = new Date();
+  const utcDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  dateInput.min = utcDate.toISOString().split('T')[0];
+};
+setMinDate();
 
-// Real-time validation
-dateInput.addEventListener('change', () => {
-  const selectedDate = new Date(dateInput.value + 'T00:00:00Z');
-  const nowUTC = new Date().toISOString().split('T')[0];
+// Real-time validation with UTC comparison
+dateInput.addEventListener('input', () => {
+  const selectedUTCDate = new Date(dateInput.value + 'T00:00:00Z');
+  const todayUTCDate = new Date().toISOString().split('T')[0];
   
-  if (dateInput.value < nowUTC) {
-    alert('⚠️ Please select today or a future date');
-    dateInput.value = nowUTC;
+  if (dateInput.value < todayUTCDate) {
+    showModal('Invalid Date', 'Please select today or a future date in UTC time');
+    dateInput.value = todayUTCDate;
+    setMinDate(); // Reset the calendar picker
   }
 });
+// --------------------------------------------------
 // ----------------------------------------------------------------------------------------
 
     // Courier Registration Form Submission (Firebase)
