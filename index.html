@@ -46,6 +46,24 @@
       background-color: #234866;
       border-color: #1e3d57;
     }
+    #courierForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+#courierForm input,
+#courierForm select,
+#courierForm textarea {
+  flex: 1;
+  min-width: 150px;
+}
+
+#courierForm textarea {
+  resize: vertical; /* Allow vertical resizing of the text area */
+  min-height: 80px; /* Ensure it’s large enough for comments */
+}
+
     #country {
       padding: 8px;
       border-radius: 5px;
@@ -163,6 +181,7 @@
                 <label class="form-label">ዕለት መገሻ</label>
                 <input type="date" id="courierDate" class="form-control" required>
               </div>
+              <textarea id="courierComments" placeholder="Special instructions or amount details" rows="4"></textarea>
               <button type="submit" class="btn btn-primary w-100">
                 <i class="fas fa-user-check me-2"></i>Register as Courier
               </button>
@@ -234,7 +253,8 @@
       } catch (error) {
         console.error("Error adding courier:", error);
       }
-    }); */ document.getElementById("courierForm").addEventListener("submit", async (e) => {
+    }); */
+    document.getElementById("courierForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   // Get the form element
