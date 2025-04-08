@@ -378,7 +378,7 @@
                 <a href="tel:${data.contact}" class="btn btn-sm btn-outline-primary">
                   <i class="fas fa-phone me-2"></i>Contact: ${data.contact}
                 </a>
-                <small class="text-muted" style="background-color: yellow;">${data.comments}</small>
+                <small class="text-muted" style="background-color: yellow;">${data.comments  || 'No comments provided'}</small>
               </div>
             `;
             resultsDiv.appendChild(card);
