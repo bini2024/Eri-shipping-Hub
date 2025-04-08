@@ -15,7 +15,13 @@
       --accent-color: #FFC107;
     }
     body {
-      background-color: #f8f9fa;
+      background-image: url('D:\Eri-shipping-Hub'); /* Path to your logo image */
+  background-size: cover; /* Ensures the image covers the entire page */
+  background-position: center center; /* Keeps the image centered */
+  background-attachment: fixed; /* Keeps the background fixed during scrolling */
+  height: 100vh; /* Makes sure the background covers the full viewport height */
+  margin: 0; 
+     /* background-color: #f8f9fa; */
       min-height: 100vh;
     }
     .nav-brand {
@@ -66,6 +72,7 @@
     .text-muted {
   color: #6c757d;  /* Gray color */
   font-size: smaller;  /* Make the text slightly smaller */
+  background-color: yellow;
 }
 
 
@@ -333,7 +340,7 @@
             <a href="tel:${data.contact}" class="btn btn-sm btn-outline-primary">
               <i class="fas fa-phone me-2"></i>Contact: ${data.contact}
             </a>
-            <small class="text-muted" style="background-color: yellow; border-radius: 5px;">${data.comments}</small>
+            <small class="text-muted" >${data.comments}</small>
           </div>
         `;
         resultsDiv.appendChild(card);
