@@ -112,6 +112,8 @@
       </div>
 
       <!-- Courier Registration -->
+      <p id="error-message" class="text-red-500 font-semibold mb-4"></p>
+
       <div class="col-lg-6">
         <div class="card shadow-sm">
           <div class="card-header">
@@ -210,7 +212,7 @@
     const courierCollection = collection(db, "couriers");
 
     // Courier Registration Form Submission (Firebase)
-    document.getElementById("courierForm").addEventListener("submit", async (e) => {
+  /*  document.getElementById("courierForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const name = document.getElementById("courierName").value;
       const contact = document.getElementById("courierContact").value;
@@ -232,7 +234,46 @@
       } catch (error) {
         console.error("Error adding courier:", error);
       }
+    }); */ document.getElementById("courierForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const name = document.getElementById("courierName").value.trim();
+  const contact = document.getElementById("courierContact").value.trim();
+  const from = document.getElementById("courierFrom").value;
+  const to = document.getElementById("courierTo").value;
+  const date = document.getElementById("courierDate").value;
+
+  // ✅ Basic validation
+  if (!name || !contact || !from || !to || !date) {
+    showModal('Error', 'Please fill in all the fields.');
+    return;
+  }
+
+  // ✅ Optional phone number format check
+  const phoneRegex = /^\+?[0-9]{7,15}$/;
+  if (!phoneRegex.test(contact)) {
+    showModal('Invalid Phone Number', 'Please enter a valid phone number (e.g. +1234567890).');
+    return;
+  }
+
+  try {
+    await addDoc(courierCollection, {
+      name,
+      contact,
+      from,
+      to,
+      date,
+      timestamp: new Date()
     });
+
+    document.getElementById("courierForm").reset();
+    showModal('Success', 'Thank you for registering as a courier!');
+  } catch (error) {
+    console.error("Error adding courier:", error);
+    showModal('Error', 'Something went wrong while submitting. Please try again.');
+  }
+});
+ 
 
     // Real-Time Updates for Couriers (Display all couriers)
     onSnapshot(courierCollection, (snapshot) => {
