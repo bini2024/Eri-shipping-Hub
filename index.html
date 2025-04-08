@@ -237,25 +237,30 @@
     }); */ document.getElementById("courierForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
+  // Get the form element
+  const form = document.getElementById("courierForm");
+
+  // Get input values
   const name = document.getElementById("courierName").value.trim();
   const contact = document.getElementById("courierContact").value.trim();
-  const from = document.getElementById("courierFrom").value;
-  const to = document.getElementById("courierTo").value;
-  const date = document.getElementById("courierDate").value;
+  const from = document.getElementById("courierFrom").value.trim();
+  const to = document.getElementById("courierTo").value.trim();
+  const date = document.getElementById("courierDate").value.trim();
 
-  // ✅ Basic validation
+  // Check if any field is empty
   if (!name || !contact || !from || !to || !date) {
-    showModal('Error', 'Please fill in all the fields.');
+    showModal('⚠️ Missing Fields', 'Please fill in all the fields before submitting.');
     return;
   }
 
-  // ✅ Optional phone number format check
+  // Optional: Check for valid phone number format
   const phoneRegex = /^\+?[0-9]{7,15}$/;
   if (!phoneRegex.test(contact)) {
-    showModal('Invalid Phone Number', 'Please enter a valid phone number (e.g. +1234567890).');
+    showModal('📞 Invalid Phone Number', 'Enter a valid phone number (e.g. +123456789).');
     return;
   }
 
+  // Submit to Firebase
   try {
     await addDoc(courierCollection, {
       name,
@@ -266,13 +271,16 @@
       timestamp: new Date()
     });
 
-    document.getElementById("courierForm").reset();
-    showModal('Success', 'Thank you for registering as a courier!');
+    form.reset(); // Clear form
+    showModal('✅ Success', 'Thank you for registering as a courier!');
   } catch (error) {
-    console.error("Error adding courier:", error);
-    showModal('Error', 'Something went wrong while submitting. Please try again.');
+    console.error("Error submitting courier:", error);
+    showModal('❌ Error', 'Something went wrong. Please try again.');
   }
 });
+
+
+
  
 
     // Real-Time Updates for Couriers (Display all couriers)
