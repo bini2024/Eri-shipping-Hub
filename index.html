@@ -292,18 +292,6 @@
     return;
   }
   
-  // Get the selected date and today's date
-  const selectedDate = document.getElementById('date').value;
-  const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
-
-  // Validate if the selected date is in the past
-  if (selectedDate < today) {
-    alert("please check the date.");
-    return;  // Stop further execution if the date is invalid
-  } 
-  
-  // Proceed with form submission logic (e.g., Firebase)
-  // Your Firebase submission code will go here
 });
 
 
