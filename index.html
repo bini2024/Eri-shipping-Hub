@@ -291,8 +291,6 @@
     showModal('📞 Invalid Phone Number', 'Enter a valid phone number (e.g. +123456789).');
     return;
   }
-      document.getElementById('courierForm').addEventListener('submit', function(event) {
-  event.preventDefault();  // Prevent default form submission
   
   // Get the selected date and today's date
   const selectedDate = document.getElementById('date').value;
@@ -300,19 +298,10 @@
 
   // Validate if the selected date is in the past
   if (selectedDate < today) {
-    alert("Please choose today or a future date.");
+    alert("please check the date.");
     return;  // Stop further execution if the date is invalid
-  }
-
-  // Collect form data
-  const courierData = {
-    name: document.getElementById('name').value,
-    from: document.getElementById('from').value,
-    to: document.getElementById('to').value,
-    date: selectedDate,
-    comments: document.getElementById('comments').value || "No comments provided"
-  };
-
+  } 
+  
   // Proceed with form submission logic (e.g., Firebase)
   // Your Firebase submission code will go here
 });
