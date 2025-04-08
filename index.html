@@ -266,6 +266,7 @@
   const from = document.getElementById("courierFrom").value.trim();
   const to = document.getElementById("courierTo").value.trim();
   const date = document.getElementById("courierDate").value.trim();
+  const comments = document.getElementById('courierComments').value;  // Get comment box value
 
   // Check if any field is empty
   if (!name || !contact || !from || !to || !date) {
@@ -288,6 +289,7 @@
       from,
       to,
       date,
+      comments,
       timestamp: new Date()
     });
 
