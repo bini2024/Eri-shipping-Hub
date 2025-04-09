@@ -342,19 +342,15 @@ dateInput.addEventListener('input', () => {
       timestamp: new Date()
     });
 
-    form.reset(); // Clear form
-    showModal('✅ Success', 'Thank you for registering as a courier!');
-  } catch (error) {
-    console.error("Error submitting courier:", error);
-    showModal('❌ Error', 'Something went wrong. Please try again.');
-  }
-});
-
-
-
+      form.reset(); // Clear form
+     showModal('✅ Success', 'Thank you for registering as a courier!');
+   } catch (error) {
+     console.error("Error submitting courier:", error);
+     showModal('❌ Error', 'Something went wrong. Please try again.');
+   }
+ });
  
-
-    // Real-Time Updates for Couriers (Display all couriers)
+  // Real-Time Updates for Couriers (Display all couriers)
     onSnapshot(courierCollection, (snapshot) => {
       const resultsDiv = document.getElementById("courierResults");
       resultsDiv.innerHTML = "";
