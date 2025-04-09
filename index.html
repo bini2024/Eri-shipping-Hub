@@ -344,10 +344,7 @@ dateInput.addEventListener('input', () => {
 
       form.reset(); // Clear form
      // Remove the error (invalid) class from all input fields
-  const inputs = document.querySelectorAll('#courierForm input, #courierForm textarea');
-  inputs.forEach(input => {
-    input.classList.remove('is-invalid'); // This removes the red error border
-  });
+
      showModal('✅ Success', 'Thank you for registering as a courier!');
    } catch (error) {
      console.error("Error submitting courier:", error);
