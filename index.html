@@ -342,21 +342,14 @@ dateInput.addEventListener('input', () => {
       timestamp: new Date()
     });
 
-  form.reset(); // Clear form
+    form.reset(); // Clear form
+    showModal('✅ Success', 'Thank you for registering as a courier!');
+  } catch (error) {
+    console.error("Error submitting courier:", error);
+    showModal('❌ Error', 'Something went wrong. Please try again.');
+  }
+});
 
-  const inputs = document.querySelectorAll('#courierForm input, #courierForm textarea');
-  inputs.forEach(input => {
-    input.classList.remove('is-invalid');
-    input.classList.remove('is-valid');
-  });
-
-  showModal('✅ Success', 'Thank you for registering as a courier!');
-} catch (error) {
-  console.error("Error submitting courier:", error);
-  showModal('❌ Error', 'Something went wrong. Please try again.');
-}
-
-    
 
 
  
