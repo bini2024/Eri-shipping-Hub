@@ -345,6 +345,19 @@ dateInput.addEventListener('input', () => {
       form.reset(); // Clear form
      // Remove the error (invalid) class from all input fields
       form.classList.remove('was-validated');
+    // Select all form controls (inputs, selects, textareas)
+  const inputs = form.querySelectorAll('.form-control, .form-select, textarea');
+  inputs.forEach(input => {
+    input.classList.remove('is-invalid');
+    input.classList.remove('is-valid');
+
+    // Also remove these classes on focus to ensure pristine state
+    input.addEventListener('focus', () => {
+      input.classList.remove('is-invalid');
+      input.classList.remove('is-valid');
+    });
+  });
+    
      showModal('✅ Success', 'Thank you for registering as a courier!');
    } catch (error) {
      console.error("Error submitting courier:", error);
