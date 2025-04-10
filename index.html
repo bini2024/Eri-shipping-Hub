@@ -344,7 +344,7 @@ dateInput.addEventListener('input', () => {
 
       form.reset(); // Clear form
      // Remove the error (invalid) class from all input fields
-
+      form.classList.remove('was-validated');
      showModal('✅ Success', 'Thank you for registering as a courier!');
    } catch (error) {
      console.error("Error submitting courier:", error);
