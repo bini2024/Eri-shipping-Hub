@@ -340,7 +340,7 @@ dateInput.addEventListener('input', () => {
  });
  
   // Real-Time Updates for Couriers (Display all couriers)
-    onSnapshot(courierCollection, (snapshot) => {
+  /*  onSnapshot(courierCollection, (snapshot) => {
       const resultsDiv = document.getElementById("courierResults");
       resultsDiv.innerHTML = "";
       if (snapshot.size > 0) {
@@ -368,7 +368,48 @@ card.setAttribute("data-date", data.date); // This stores the date for filtering
         `;
         resultsDiv.appendChild(card);
       });
-    }); 
+    }); */
+    onSnapshot(courierCollection, (snapshot) => {
+  const resultsDiv = document.getElementById("courierResults");
+  resultsDiv.innerHTML = "";
+
+  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  let count = 0;
+
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+
+    if (!data.date || data.date < today) {
+      return; // Skip expired couriers
+    }
+
+    count++;
+
+    const card = document.createElement('div');
+    card.className = 'card courier-card mb-3';
+    card.setAttribute("data-date", data.date);
+
+    card.innerHTML = `
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="card-title mb-0"><i class="fas fa-user-tie me-2"></i>${data.name}</h5>
+          <small class="text-muted">${data.date}</small>
+        </div>
+        <p class="card-text"><i class="fas fa-route me-2"></i>${data.from} → ${data.to}</p>
+        <a href="tel:${data.contact}" class="btn btn-sm btn-outline-primary">
+          <i class="fas fa-phone me-2"></i>Contact: ${data.contact}
+        </a>
+        <small class="text-muted" style="background-color: yellow;">${data.comments || 'No comments provided'}</small>
+      </div>
+    `;
+    resultsDiv.appendChild(card);
+  });
+
+  if (count === 0) {
+    resultsDiv.innerHTML = `<div class="alert alert-info">No upcoming couriers available.</div>`;
+  }
+});
+
 
     // Sender Form Submission (Filter couriers based on selected countries)
     document.getElementById("packageForm").addEventListener("submit", function(e) {
