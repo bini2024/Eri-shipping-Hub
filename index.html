@@ -375,7 +375,11 @@ dateInput.addEventListener('input', () => {
         resultsDiv.innerHTML = `<div class="alert alert-info">No couriers found for this route. Please check back later.</div>`;
       }
       snapshot.forEach((doc) => {
-        const data = doc.data();
+      const data = doc.data();
+        const card = document.createElement('div');
+card.className = 'card courier-card mb-3';
+card.setAttribute("data-date", data.date); // This stores the date for filtering
+        
         const card = document.createElement('div');
         card.className = 'card courier-card mb-3';
         card.innerHTML = `
@@ -394,6 +398,19 @@ dateInput.addEventListener('input', () => {
         resultsDiv.appendChild(card);
       });
     });
+
+    setInterval(() => {
+    const today = new Date().toISOString().split("T")[0];
+    const cards = document.querySelectorAll("#courierResults .courier-card");
+
+    cards.forEach(card => {
+      const courierDate = card.getAttribute("data-date");
+      if (courierDate < today) {
+        card.style.display = "none";
+      }
+    });
+  }, 30000);
+});
 
     // Sender Form Submission (Filter couriers based on selected countries)
     document.getElementById("packageForm").addEventListener("submit", function(e) {
