@@ -264,33 +264,7 @@ dateInput.addEventListener('input', () => {
     setMinDate(); // Reset the calendar picker
   }
 });
-// --------------------------------------------------
-// ----------------------------------------------------------------------------------------
 
-    // Courier Registration Form Submission (Firebase)
-  /*  document.getElementById("courierForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const name = document.getElementById("courierName").value;
-      const contact = document.getElementById("courierContact").value;
-      const from = document.getElementById("courierFrom").value;
-      const to = document.getElementById("courierTo").value;
-      const date = document.getElementById("courierDate").value;
-
-      try {
-        await addDoc(courierCollection, {
-          name: name,
-          contact: contact,
-          from: from,
-          to: to,
-          date: date,
-          timestamp: new Date()
-        });
-        document.getElementById("courierForm").reset();
-        showModal('Success', 'Thank you for registering as a courier!');
-      } catch (error) {
-        console.error("Error adding courier:", error);
-      }
-    }); */
     document.getElementById("courierForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
