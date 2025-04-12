@@ -396,18 +396,7 @@ card.setAttribute("data-date", data.date); // This stores the date for filtering
       });
     });
 
-    setInterval(() => {
-    const today = new Date().toISOString().split("T")[0];
-    const cards = document.querySelectorAll("#courierResults .courier-card");
-
-    cards.forEach(card => {
-      const courierDate = card.getAttribute("data-date");
-      if (courierDate < today) {
-        card.style.display = "none";
-      }
-    });
-  }, 30000);
-});
+    
 
     // Sender Form Submission (Filter couriers based on selected countries)
     document.getElementById("packageForm").addEventListener("submit", function(e) {
