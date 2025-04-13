@@ -1,34 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Admin Login - Eri Shipping Hub</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <title>Admin Panel - Eri Shipping Hub</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 <body class="bg-light">
   <div class="container mt-5">
-    <div class="card mx-auto" style="max-width: 400px;">
-      <div class="card-body">
-        <h4 class="card-title text-center mb-4">Admin Login</h4>
-        <form id="loginForm">
-          <div class="mb-3">
-            <label for="email" class="form-label">Email address</label>
-            <input type="email" id="email" class="form-control" required />
-          </div>
-          <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" id="password" class="form-control" required />
-          </div>
-          <button type="submit" class="btn btn-primary w-100">Login</button>
-        </form>
-        <div id="loginMessage" class="mt-3 text-center text-danger"></div>
-      </div>
+    <h3 class="text-center mb-4">Admin Panel</h3>
+    <div id="adminCouriers"></div>
+    <div class="text-end">
+      <button onclick="logout()" class="btn btn-sm btn-danger mt-3">Logout</button>
     </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+    import { getFirestore, collection, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ",
@@ -40,23 +28,46 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const courierCollection = collection(db, "couriers");
 
-    document.getElementById("loginForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+    // Only allow access if admin is logged in
+    if (localStorage.getItem("isAdmin") !== "true") {
+      window.location.href = "login.html";
+    }
 
-      signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          // Save login flag
-          localStorage.setItem("isAdmin", "true");
-          window.location.href = "index.html"; // Go to main site
-        })
-        .catch((error) => {
-          document.getElementById("loginMessage").textContent = "Login failed. Please check your email/password.";
-        });
+    // Show all couriers
+    onSnapshot(courierCollection, (snapshot) => {
+      const div = document.getElementById("adminCouriers");
+      div.innerHTML = "";
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const card = document.createElement("div");
+        card.className = "card mb-3";
+        card.innerHTML = `
+          <div class="card-body">
+            <h5>${data.name}</h5>
+            <p>${data.from} → ${data.to}</p>
+            <p>Date: ${data.date}</p>
+            <p>Contact: <a href="tel:${data.contact}">${data.contact}</a></p>
+            <p>Comment: ${data.comments || "No comments"}</p>
+            <button onclick="deleteCourier('${docSnap.id}')" class="btn btn-sm btn-danger">Delete</button>
+          </div>
+        `;
+        div.appendChild(card);
+      });
     });
+
+    async function deleteCourier(id) {
+      if (confirm("Delete this courier?")) {
+        await deleteDoc(doc(courierCollection, id));
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("isAdmin");
+      window.location.href = "login.html";
+    }
   </script>
 </body>
 </html>
