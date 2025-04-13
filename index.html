@@ -511,7 +511,6 @@ if (isAdmin) {
         }, false);
       });
     })();
-
     import { deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
 async function deleteCourier(id) {
@@ -519,11 +518,14 @@ async function deleteCourier(id) {
     await deleteDoc(doc(courierCollection, id));
   }
 }
+window.deleteCourier = deleteCourier; // Expose to global scope
 
-  function logout() {
+function logout() {
   localStorage.removeItem("isAdmin");
   window.location.href = "login.html";
 }
+window.logout = logout; // Expose to global scope
+
   
 
   </script>
