@@ -92,6 +92,12 @@
       <p class="text-center text-muted">Connecting senders with trusted couriers</p>
     </div>
   </header>
+  
+  <!-- Show only if admin is logged in -->
+<div id="logoutSection" class="text-end me-3 mt-3" style="display: none;">
+  <button class="btn btn-sm btn-outline-danger" onclick="logout()">Logout</button>
+</div>
+
 
   <main class="container">
     <div class="row g-4">
@@ -390,6 +396,15 @@ card.setAttribute("data-date", data.date); // This stores the date for filtering
 
   const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
   let count = 0;
+     const isAdmin = localStorage.getItem("isAdmin") === "true";
+if (isAdmin) {
+  // show delete/verify buttons
+}
+    if (isAdmin) {
+  document.getElementById("logoutSection").style.display = "block";
+}
+  
+ 
 
   snapshot.forEach((doc) => {
     const data = doc.data();
@@ -491,6 +506,21 @@ card.setAttribute("data-date", data.date); // This stores the date for filtering
         }, false);
       });
     })();
+
+    import { deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+
+async function deleteCourier(id) {
+  if (confirm("Are you sure you want to delete this courier?")) {
+    await deleteDoc(doc(courierCollection, id));
+  }
+}
+
+  function logout() {
+  localStorage.removeItem("isAdmin");
+  window.location.href = "login.html";
+}
+  
+
   </script>
   <footer class="text-center text-white mt-5" style="background-color: #343a40; padding: 30px 15px;">
   <div class="container">
