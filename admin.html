@@ -58,7 +58,7 @@
       });
     });
 
-    async function deleteCourier(id) {
+ /*   async function deleteCourier(id) {
       if (confirm("Delete this courier?")) {
         await deleteDoc(doc(courierCollection, id));
       }
@@ -67,7 +67,29 @@
     function logout() {
       localStorage.removeItem("isAdmin");
       window.location.href = "login.html";
+    } */
+    
+  // Delete function
+  async function deleteCourier(id) {
+    console.log("Delete function called with id:", id);
+    if (confirm("Are you sure you want to delete this courier?")) {
+      try {
+        await deleteDoc(doc(courierCollection, id));
+        alert("Courier deleted successfully!");
+      } catch (error) {
+        console.error("Error while deleting courier:", error);
+        alert("Error while deleting courier: " + error.message);
+      }
     }
+  }
+  window.deleteCourier = deleteCourier;  // expose to global
+
+  // Logout function
+  function logout() {
+    localStorage.removeItem("isAdmin");
+    window.location.href = "login.html";
+  }
+  window.logout = logout; // expose to global
   </script>
 </body>
 </html>
