@@ -511,7 +511,7 @@ if (isAdmin) {
         }, false);
       });
     })();
-    import { deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+  /*  import { deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
 async function deleteCourier(id) {
   if (confirm("Are you sure you want to delete this courier?")) {
@@ -526,7 +526,26 @@ function logout() {
 }
 window.logout = logout; // Expose to global scope
 
-  
+ */
+    import { deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+
+async function deleteCourier(id) {
+  console.log("Delete function called with id:", id); // Debug: Log the id passed
+
+  if (confirm("Are you sure you want to delete this courier?")) {
+    try {
+      await deleteDoc(doc(courierCollection, id));
+      alert("Courier deleted successfully!");
+    } catch (error) {
+      console.error("Error while deleting courier:", error);
+      alert("Error while deleting courier: " + error.message);
+    }
+  }
+}
+
+// Expose the function so that inline onclick handlers can access it
+window.deleteCourier = deleteCourier;
+
 
   </script>
   <footer class="text-center text-white mt-5" style="background-color: #343a40; padding: 30px 15px;">
