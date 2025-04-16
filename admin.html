@@ -28,6 +28,16 @@
       appId: "1:388550131049:web:e9ac1784ab8e5fabc811f8"
     };
 
+    const auth = getAuth(app);
+
+// Check if user is signed in
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    // Not signed in, redirect
+    window.location.href = "login.html";
+  }
+});
+
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const courierCollection = collection(db, "couriers");
