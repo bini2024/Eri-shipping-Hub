@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Panel - Eri Shipping Hub</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 <body class="bg-light">
   <div class="container mt-5">
     <h3 class="text-center mb-4">Admin Panel</h3>
-    <div id="adminCouriers"></div>
+    <div id="adminCouriers" class="row gy-3"></div>
     <div class="text-end">
       <button onclick="logout()" class="btn btn-sm btn-danger mt-3">Logout</button>
     </div>
@@ -31,65 +32,61 @@
     const db = getFirestore(app);
     const courierCollection = collection(db, "couriers");
 
-    // Only allow access if admin is logged in
     if (localStorage.getItem("isAdmin") !== "true") {
       window.location.href = "login.html";
     }
 
-    // Show all couriers
     onSnapshot(courierCollection, (snapshot) => {
       const div = document.getElementById("adminCouriers");
       div.innerHTML = "";
+
+      if (snapshot.empty) {
+        div.innerHTML = "<p class='text-center text-muted'>No couriers found.</p>";
+        return;
+      }
+
       snapshot.forEach((docSnap) => {
         const data = docSnap.data();
         const card = document.createElement("div");
-        card.className = "card mb-3";
+        card.className = "col-md-4";
         card.innerHTML = `
-          <div class="card-body">
-            <h5>${data.name}</h5>
-            <p>${data.from} → ${data.to}</p>
-            <p>Date: ${data.date}</p>
-            <p>Contact: <a href="tel:${data.contact}">${data.contact}</a></p>
-            <p>Comment: ${data.comments || "No comments"}</p>
-            <button onclick="deleteCourier('${docSnap.id}')" class="btn btn-sm btn-danger">Delete</button>
+          <div class="card shadow-sm border-0">
+            <div class="card-body">
+              <h5 class="card-title">${data.name || "Courier"}</h5>
+              <p class="card-text mb-1"><strong>From:</strong> ${data.from}</p>
+              <p class="card-text mb-1"><strong>To:</strong> ${data.to}</p>
+              <p class="card-text mb-1"><strong>Date:</strong> ${data.date || "N/A"}</p>
+              <p class="card-text mb-1"><strong>Contact:</strong> <a href="tel:${data.contact}">${data.contact}</a></p>
+              <p class="card-text mb-1"><strong>Comment:</strong> ${data.comments || "No comments"}</p>
+              <button onclick="deleteCourier('${docSnap.id}')" class="btn btn-sm btn-outline-danger mt-2">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </div>
           </div>
         `;
         div.appendChild(card);
       });
     });
 
- /*   async function deleteCourier(id) {
-      if (confirm("Delete this courier?")) {
-        await deleteDoc(doc(courierCollection, id));
+    async function deleteCourier(id) {
+      console.log("Delete function called with id:", id);
+      if (confirm("Are you sure you want to delete this courier?")) {
+        try {
+          await deleteDoc(doc(courierCollection, id));
+          alert("Courier deleted successfully!");
+        } catch (error) {
+          console.error("Error while deleting courier:", error);
+          alert("Error while deleting courier: " + error.message);
+        }
       }
     }
+    window.deleteCourier = deleteCourier;
 
     function logout() {
       localStorage.removeItem("isAdmin");
       window.location.href = "login.html";
-    } */
-    
-  // Delete function
-  async function deleteCourier(id) {
-    console.log("Delete function called with id:", id);
-    if (confirm("Are you sure you want to delete this courier?")) {
-      try {
-        await deleteDoc(doc(courierCollection, id));
-        alert("Courier deleted successfully!");
-      } catch (error) {
-        console.error("Error while deleting courier:", error);
-        alert("Error while deleting courier: " + error.message);
-      }
     }
-  }
-  window.deleteCourier = deleteCourier;  // expose to global
-
-  // Logout function
-  function logout() {
-    localStorage.removeItem("isAdmin");
-    window.location.href = "login.html";
-  }
-  window.logout = logout; // expose to global
+    window.logout = logout;
   </script>
 </body>
 </html>
