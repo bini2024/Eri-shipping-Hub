@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Load Board - Eri Shipping Hub</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body class="bg-light">
+  <div class="container py-4">
+    <h3 class="text-center mb-4">📦 Load Board - Available Packages</h3>
+
+    <!-- Sender Form -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Post a New Load</h5>
+        <form id="loadForm">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <input type="text" id="from" class="form-control" placeholder="From" required />
+            </div>
+            <div class="col-md-4">
+              <input type="text" id="to" class="form-control" placeholder="To" required />
+            </div>
+            <div class="col-md-4">
+              <input type="text" id="weight" class="form-control" placeholder="Weight (kg)" required />
+            </div>
+            <div class="col-md-6">
+              <input type="date" id="deadline" class="form-control" required />
+            </div>
+            <div class="col-md-6">
+              <input type="tel" id="phone" class="form-control" placeholder="Contact Phone" required />
+            </div>
+            <div class="col-12">
+              <textarea id="comment" class="form-control" placeholder="Any special instructions (optional)"></textarea>
+            </div>
+          </div>
+          <button class="btn btn-primary mt-3" type="submit">Post Load</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Load List -->
+    <div id="loadList" class="row gy-3"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ",
+      authDomain: "erishipping-e4532.firebaseapp.com",
+      projectId: "erishipping-e4532",
+      storageBucket: "erishipping-e4532.appspot.com",
+      messagingSenderId: "388550131049",
+      appId: "1:388550131049:web:e9ac1784ab8e5fabc811f8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const loadRef = collection(db, "loads");
+
+    const form = document.getElementById("loadForm");
+    const loadList = document.getElementById("loadList");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const loadData = {
+        from: form.from.value,
+        to: form.to.value,
+        weight: form.weight.value,
+        deadline: form.deadline.value,
+        phone: form.phone.value,
+        comment: form.comment.value,
+        createdAt: serverTimestamp()
+      };
+      await addDoc(loadRef, loadData);
+      form.reset();
+      alert("Load posted successfully!");
+    });
+
+    onSnapshot(loadRef, (snapshot) => {
+      loadList.innerHTML = "";
+      snapshot.forEach(doc => {
+        const load = doc.data();
+        const div = document.createElement("div");
+        div.className = "col-md-4";
+        div.innerHTML = `
+          <div class="card border-0 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">${load.from} → ${load.to}</h5>
+              <p><strong>Weight:</strong> ${load.weight} kg</p>
+              <p><strong>Deadline:</strong> ${load.deadline}</p>
+              <p><strong>Contact:</strong> <a href="tel:${load.phone}">${load.phone}</a></p>
+              <p><strong>Note:</strong> ${load.comment || "N/A"}</p>
+            </div>
+          </div>
+        `;
+        loadList.appendChild(div);
+      });
+    });
+  </script>
+</body>
+</html>
