@@ -11,9 +11,9 @@
     <h3 class="text-center mb-4">📦 Load Board - Available Packages</h3>
 
     <!-- Sender Form -->
-    <div class="card mb-4">
+    <section class="card mb-5">
       <div class="card-body">
-        <h5 class="card-title">Post a New Load</h5>
+        <h4 class="card-title mb-3">📤 Post a New Load</h4>
         <form id="loadForm">
           <div class="row g-3">
             <div class="col-md-4">
@@ -38,10 +38,13 @@
           <button class="btn btn-primary mt-3" type="submit">Post Load</button>
         </form>
       </div>
-    </div>
+    </section>
 
     <!-- Load List -->
-    <div id="loadList" class="row gy-3"></div>
+    <section>
+      <h4 class="mb-3">📋 Loads Looking for Couriers</h4>
+      <div id="loadList" class="row gy-3"></div>
+    </section>
   </div>
 
   <script type="module">
@@ -66,16 +69,62 @@
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+
+      // Validate inputs
+      const from = form.from.value.trim();
+      const to = form.to.value.trim();
+      const weight = form.weight.value.trim();
+      const deadline = form.deadline.value;
+      const phone = form.phone.value.trim();
+      const comment = form.comment.value.trim();
+
+      const today = new Date();
+      const selectedDate = new Date(deadline);
+
+      if (!from || !to || !weight || !deadline || !phone) {
+        alert("All fields are required.");
+        return;
+      }
+
+      if (selectedDate <= today) {
+        alert("Please enter a future deadline date.");
+        return;
+      }
+
+      if (!/^\+?[0-9\s-]{7,15}$/.test(phone)) {
+        alert("Please enter a valid phone number.");
+        return;
+      }
+
+      if (parseFloat(weight) > 1000 || isNaN(weight)) {
+        alert("Please enter a valid weight (less than 1000 kg).");
+        return;
+      }
+
+      if (/http|www|@|%/.test(comment)) {
+        alert("Comments must not contain links or strange characters.");
+        return;
+      }
+
+      // Limit to 1 post every 2 hours per browser
+      const lastPostTime = localStorage.getItem("lastLoadPostTime");
+      if (lastPostTime && (Date.now() - parseInt(lastPostTime) < 2 * 60 * 60 * 1000)) {
+        alert("Please wait at least 2 hours before posting again.");
+        return;
+      }
+
       const loadData = {
-        from: form.from.value,
-        to: form.to.value,
-        weight: form.weight.value,
-        deadline: form.deadline.value,
-        phone: form.phone.value,
-        comment: form.comment.value,
+        from,
+        to,
+        weight,
+        deadline,
+        phone,
+        comment,
         createdAt: serverTimestamp()
       };
+
       await addDoc(loadRef, loadData);
+      localStorage.setItem("lastLoadPostTime", Date.now());
       form.reset();
       alert("Load posted successfully!");
     });
