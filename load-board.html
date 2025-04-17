@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Load Board - Eri Shipping Hub</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
 </head>
 <body class="bg-light">
   <div class="container py-4">
@@ -17,10 +20,54 @@
         <form id="loadForm">
           <div class="row g-3">
             <div class="col-md-4">
-              <input type="text" id="from" class="form-control" placeholder="From" required />
+              <select id="from" class="form-select" required>
+  <option value="" disabled selected>Select From Country</option>
+  <option value="Ethiopia">Ethiopia</option>
+  <option value="Eritrea">Eritrea</option>
+  <option value="Uganda">Uganda</option>
+  <option value="Canada">Canada</option>
+  <option value="Turkey">Turkey</option>
+  <option value="Dubai">Dubai</option>
+  <option value="Kenya">Kenya</option>
+  <option value="Angola">Angola</option>
+  <option value="Switzerland">Switzerland</option>
+  <option value="Netherlands">Netherlands</option>
+  <option value="Belgium">Belgium</option>
+  <option value="Sweden">Sweden</option>
+  <option value="Germany">Germany</option>
+  <option value="USA">USA</option>
+  <option value="England">England</option>
+  <option value="Denmark">Denmark</option>
+  <option value="France">France</option>
+  <option value="Italy">Italy</option>
+  <option value="South Africa">South Africa</option>
+  <option value="Egypt">Egypt</option>
+</select>
             </div>
             <div class="col-md-4">
-              <input type="text" id="to" class="form-control" placeholder="To" required />
+              <select id="to" class="form-select" required>
+  <option value="" disabled selected>Select Destination Country</option>
+  <option value="Ethiopia">Ethiopia</option>
+  <option value="Eritrea">Eritrea</option>
+  <option value="Uganda">Uganda</option>
+  <option value="Canada">Canada</option>
+  <option value="Turkey">Turkey</option>
+  <option value="Dubai">Dubai</option>
+  <option value="Kenya">Kenya</option>
+  <option value="Angola">Angola</option>
+  <option value="Switzerland">Switzerland</option>
+  <option value="Netherlands">Netherlands</option>
+  <option value="Belgium">Belgium</option>
+  <option value="Sweden">Sweden</option>
+  <option value="Germany">Germany</option>
+  <option value="USA">USA</option>
+  <option value="England">England</option>
+  <option value="Denmark">Denmark</option>
+  <option value="France">France</option>
+  <option value="Italy">Italy</option>
+  <option value="South Africa">South Africa</option>
+  <option value="Egypt">Egypt</option>
+</select>
             </div>
             <div class="col-md-4">
               <input type="text" id="weight" class="form-control" placeholder="Weight (kg)" required />
@@ -170,5 +217,16 @@
       alert("Load deleted.");
     }
   </script>
+  <!-- jQuery + Select2 JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    $('#from').select2({ placeholder: 'Select From Country' });
+    $('#to').select2({ placeholder: 'Select Destination Country' });
+  });
+</script>
+
 </body>
 </html>
