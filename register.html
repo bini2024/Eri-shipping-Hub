@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register Courier - Eri Shipping Hub</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <div class="container py-5">
+    <h2 class="text-center mb-4">✈️ Register as a Courier</h2>
+
+    <form id="courierForm" class="card p-4 shadow-sm mx-auto" style="max-width: 600px;">
+      <div class="mb-3">
+        <label for="name" class="form-label">Full Name</label>
+        <input type="text" id="name" class="form-control" required />
+      </div>
+      <div class="mb-3">
+        <label for="from" class="form-label">From</label>
+        <input type="text" id="from" class="form-control" required />
+      </div>
+      <div class="mb-3">
+        <label for="to" class="form-label">To</label>
+        <input type="text" id="to" class="form-control" required />
+      </div>
+      <div class="mb-3">
+        <label for="date" class="form-label">Travel Date</label>
+        <input type="date" id="date" class="form-control" required />
+      </div>
+      <div class="mb-3">
+        <label for="contact" class="form-label">Phone Number</label>
+        <input type="tel" id="contact" class="form-control" required />
+      </div>
+      <div class="mb-3">
+        <label for="comments" class="form-label">Comments (Optional)</label>
+        <textarea id="comments" class="form-control"></textarea>
+      </div>
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="terms" required>
+        <label class="form-check-label" for="terms">
+          I agree to the <a href="#" target="_blank">Terms & Conditions</a>
+        </label>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Submit</button>
+    </form>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ",
+      authDomain: "erishipping-e4532.firebaseapp.com",
+      projectId: "erishipping-e4532",
+      storageBucket: "erishipping-e4532.appspot.com",
+      messagingSenderId: "388550131049",
+      appId: "1:388550131049:web:e9ac1784ab8e5fabc811f8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const courierRef = collection(db, "couriers");
+
+    const form = document.getElementById("courierForm");
+    const dateInput = document.getElementById("date");
+
+    // Set min date to today (UTC)
+    const setMinDate = () => {
+      const now = new Date();
+      const utcDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+      dateInput.min = utcDate.toISOString().split('T')[0];
+    };
+    setMinDate();
+
+    // Date validation
+    dateInput.addEventListener('input', () => {
+      const selectedUTCDate = new Date(dateInput.value + 'T00:00:00Z');
+      const now = new Date();
+      const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+      if (selectedUTCDate < todayUTC) {
+        alert("❌ Please select today or a future date.");
+        dateInput.value = todayUTC.toISOString().split('T')[0];
+        setMinDate();
+      }
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      // Rate limiting: block repeat submissions within 2 hours
+      const lastSubmission = localStorage.getItem("lastCourierSubmit");
+      const now = Date.now();
+      if (lastSubmission && now - parseInt(lastSubmission) < 2 * 60 * 60 * 1000) {
+        alert("⏳ Please wait at least 2 hours before submitting again.");
+        return;
+      }
+
+      const name = form.name.value.trim();
+      const from = form.from.value.trim();
+      const to = form.to.value.trim();
+      const date = form.date.value;
+      const contact = form.contact.value.trim();
+      const comments = form.comments.value.trim();
+
+      if (!name || !from || !to || !date || !contact || !form.terms.checked) {
+        alert("❗ Please fill in all required fields and agree to the terms.");
+        return;
+      }
+
+      if (!/^\+?[0-9\s-]{7,15}$/.test(contact)) {
+        alert("📞 Please enter a valid phone number.");
+        return;
+      }
+
+      if (/http|www|@|%/.test(comments)) {
+        alert("⚠️ Comments must not contain links or strange characters.");
+        return;
+      }
+
+      const data = {
+        name,
+        from,
+        to,
+        date,
+        contact,
+        comments,
+        createdAt: serverTimestamp()
+      };
+
+      await addDoc(courierRef, data);
+      localStorage.setItem("lastCourierSubmit", now);
+      alert("✅ Courier registered successfully!");
+      form.reset();
+      setMinDate();
+    });
+  </script>
+</body>
+</html>
