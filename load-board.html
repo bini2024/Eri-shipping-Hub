@@ -57,17 +57,6 @@
       appId: "1:388550131049:web:e9ac1784ab8e5fabc811f8"
     };
 
-          // Rate Limiting: Prevent multiple submissions within 60 seconds
- let lastSubmissionTime = localStorage.getItem('lastSubmitTime');
-  let now = Date.now();
-
-  if (lastSubmissionTime && now - lastSubmissionTime < 2 * 60 * 60 * 1000) {
-    alert("⏳ Please wait at least 2 hours before submitting again.");
-    return; // stops the submission
-  }
-
-  localStorage.setItem('lastSubmitTime', now);
-
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const loadRef = collection(db, "loads");
