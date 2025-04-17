@@ -158,12 +158,12 @@
       <h1 class="text-center mb-3">
         <i class="fas fa-shipping-fast"></i>
         <span class="nav-brand">Eri Shipping Hub</span>
-        <div id="installContainer">
-  <button id="installBtn">📲 Install Eri Shipping Hub App</button>
-</div>
       </h1>
       <p class="text-center text-muted">Connecting senders with trusted couriers</p>
     </div>
+      <div id="installContainer">
+  <button id="installBtn">📲 Install Eri Shipping Hub App</button>
+</div>
   </header>
 
 <div class="container text-center mt-4">
@@ -727,6 +727,30 @@ window.deleteCourier = deleteCourier;  // Exposing to global scope for inline on
 <!-- Year script -->
 <script>
   document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+<script>
+  let deferredPrompt;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('installContainer').style.display = 'block';
+  });
+
+  document.getElementById('installBtn').addEventListener('click', () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('✅ App installed');
+        } else {
+          console.log('❌ Install dismissed');
+        }
+        deferredPrompt = null;
+        document.getElementById('installContainer').style.display = 'none';
+      });
+    }
+  });
 </script>
 
 
