@@ -154,7 +154,7 @@
       // Rate limiting: block repeat submissions within 2 hours
       const lastSubmission = localStorage.getItem("lastCourierSubmit");
       const now = Date.now();
-      if (lastSubmission && now - parseInt(lastSubmission) < 2 * 60 * 60 * 1000) {
+      if (lastSubmission && now - parseInt(lastSubmission) < 2 * 60 ) {
         alert("⏳ Please wait at least 2 hours before submitting again.");
         return;
       }
