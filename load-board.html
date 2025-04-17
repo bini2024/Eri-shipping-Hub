@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Load Board - Eri Shipping Hub</title>
+  <title>ዝርዝር ጽዕነት - Eri Shipping Hub</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 <body class="bg-light">
@@ -13,7 +13,7 @@
     <!-- Sender Form -->
     <section class="card mb-5">
       <div class="card-body">
-        <h4 class="card-title mb-3">📤 Post a New Load</h4>
+        <h4 class="card-title mb-3">📤 post loads </h4>
         <form id="loadForm">
           <div class="row g-3">
             <div class="col-md-4">
@@ -42,7 +42,7 @@
 
     <!-- Load List -->
     <section>
-      <h4 class="mb-3">📋 Loads Looking for Couriers</h4>
+      <h4 class="mb-3">📋 ዝማላእ ንብረታት</h4>
       <div id="loadList" class="row gy-3"></div>
     </section>
   </div>
@@ -87,7 +87,7 @@
       }
 
       if (selectedDate <= today) {
-        alert("Please enter a future deadline date.");
+        alert(" ዕለት ናይ ዝሓለፈ ኣይከውንን እዩ.");
         return;
       }
 
@@ -109,7 +109,7 @@
       // Limit to 1 post every 2 hours per browser
       const lastPostTime = localStorage.getItem("lastLoadPostTime");
       if (lastPostTime && (Date.now() - parseInt(lastPostTime) < 2 * 60 * 60 * 1000)) {
-        alert("Please wait at least 2 hours before posting again.");
+        alert("ካልኣይ ግዜ ቅድሚ ምምዝጋብኩም 2 ሰዓት ተጸበዩ.");
         return;
       }
 
