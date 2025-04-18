@@ -193,6 +193,25 @@
         createdAt: serverTimestamp()
       };
 
+      import { query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+
+// Check for existing match
+const duplicateCheckQuery = query(
+  courierRef,
+  where("from", "==", from),
+  where("to", "==", to),
+  where("date", "==", date),
+  where("contact", "==", contact)
+);
+
+const duplicateSnap = await getDocs(duplicateCheckQuery);
+
+if (!duplicateSnap.empty) {
+  alert("⚠️ This courier entry is already registered.");
+  return;
+}
+
+
       await addDoc(courierRef, data);
       localStorage.setItem("lastCourierSubmit", now);
       alert("✅ Courier registered successfully!");
