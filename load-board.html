@@ -206,13 +206,12 @@
         createdAt: serverTimestamp()
       };
 
-
 const duplicateLoadQuery = query(
-  loadRef, // your Firestore collection for loads
+  loadRef,
   where("from", "==", from),
   where("to", "==", to),
-  where("date", "==", date),
-  where("contact", "==", contact)
+  where("deadline", "==", deadline),
+  where("phone", "==", phone)
 );
 
 const existingLoads = await getDocs(duplicateLoadQuery);
@@ -221,6 +220,7 @@ if (!existingLoads.empty) {
   alert("⚠️ This load is already registered.");
   return;
 }
+
 
 
       await addDoc(loadRef, loadData);
