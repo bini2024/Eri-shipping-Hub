@@ -206,6 +206,24 @@
         createdAt: serverTimestamp()
       };
 
+      import { query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+
+const duplicateLoadQuery = query(
+  loadRef, // your Firestore collection for loads
+  where("from", "==", from),
+  where("to", "==", to),
+  where("date", "==", date),
+  where("contact", "==", contact)
+);
+
+const existingLoads = await getDocs(duplicateLoadQuery);
+
+if (!existingLoads.empty) {
+  alert("⚠️ This load is already registered.");
+  return;
+}
+
+
       await addDoc(loadRef, loadData);
       localStorage.setItem("lastLoadPostTime", Date.now());
       form.reset();
