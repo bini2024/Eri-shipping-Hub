@@ -112,8 +112,8 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
-
+    import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs  } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+ 
     const firebaseConfig = {
       apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ",
       authDomain: "erishipping-e4532.firebaseapp.com",
@@ -192,8 +192,6 @@
         comments,
         createdAt: serverTimestamp()
       };
-
-      import { query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
 // Check for existing match
 const duplicateCheckQuery = query(
