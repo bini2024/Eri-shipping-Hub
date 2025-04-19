@@ -128,6 +128,12 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, doc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+      // ─── 1. IMPORTS FOR RATING FEATURE ───
+  import {
+    query, where, onSnapshot as onSnapshotRatings, addDoc as addDocRating,
+    serverTimestamp as serverTimestampRating
+  } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+
 
     const firebaseConfig = {
       apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ",
@@ -145,6 +151,27 @@
 
     const form = document.getElementById("loadForm");
     const loadList = document.getElementById("loadList");
+
+      // ─── 2. HELPER: WATCH RATINGS & UPDATE AVERAGE STAR DISPLAY ───
+  function watchRatings(courierId) {
+    const ratingsQ = query(
+      collection(db, "ratings"),
+      where("courierId", "==", courierId)
+    );
+    onSnapshotRatings(ratingsQ, snap => {
+      let sum = 0, cnt = 0;
+      snap.forEach(r => { sum += r.data().score; cnt++; });
+      const avg = cnt ? (sum/cnt).toFixed(1) : null;
+      const stars = avg
+        ? "★".repeat(Math.round(avg)) + "☆".repeat(5 - Math.round(avg))
+        : "☆☆☆☆☆";
+      const txt = avg
+        ? `${stars} (${avg} from ${cnt})`
+        : `No ratings yet`;
+      document.getElementById(`rating-${courierId}`).textContent = txt;
+    });
+  }
+
 
     let isAdmin = false;
 
@@ -250,6 +277,14 @@ if (!existingLoads.empty) {
               <p><strong>Deadline:</strong> ${load.deadline}</p>
               <p><strong>Contact:</strong> <a href="tel:${load.phone}">${load.phone}</a></p>
               <p><strong>Note:</strong> ${load.comment || "N/A"}</p>
+              
+  <!-- ★ Rating display placeholder -->
+  <div id="rating-${id}">☆☆☆☆☆</div>
+  <!-- ★ Button to open rating modal -->
+  <button class="btn btn-sm btn-outline-primary mt-1"
+          onclick="openRateModal('${id}')">
+    Rate ★
+  </button>
               ${isAdmin ? `<button class="btn btn-sm btn-danger mt-2" onclick="deleteLoad('${docSnap.id}')">Delete</button>` : ""}
             </div>
           </div>
@@ -257,6 +292,9 @@ if (!existingLoads.empty) {
         loadList.appendChild(div);
       });
     });
+    // ─── 3.2 START WATCHING RATINGS FOR THIS COURIER ───
+watchRatings(id);
+
 
     window.deleteLoad = async function(id) {
       if (!confirm("Delete this load?")) return;
@@ -274,6 +312,81 @@ if (!existingLoads.empty) {
     $('#to').select2({ placeholder: 'Select Destination Country' });
   });
 </script>
+
+    <!-- ─── 4. RATE COURIER MODAL ─── -->
+  <div id="rateModal" class="modal" style="
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
+    <div style="
+      background:white; padding:1rem; border-radius:8px;
+      max-width:300px; width:90%; margin:auto;">
+      <h5 class="mb-3">Rate this Courier</h5>
+      <div id="starInputs" class="mb-2">
+        <!-- Radio ★ inputs -->
+        <label style="cursor:pointer;font-size:1.5rem;margin-right:4px;">
+          <input type="radio" name="star" value="1" style="display:none">★
+        </label>
+        <label style="cursor:pointer;font-size:1.5rem;margin-right:4px;">
+          <input type="radio" name="star" value="2" style="display:none">★
+        </label>
+        <label style="cursor:pointer;font-size:1.5rem;margin-right:4px;">
+          <input type="radio" name="star" value="3" style="display:none">★
+        </label>
+        <label style="cursor:pointer;font-size:1.5rem;margin-right:4px;">
+          <input type="radio" name="star" value="4" style="display:none">★
+        </label>
+        <label style="cursor:pointer;font-size:1.5rem;">
+          <input type="radio" name="star" value="5" style="display:none">★
+        </label>
+      </div>
+      <textarea id="rateComment" class="form-control mb-2"
+                rows="2" placeholder="Comment (optional)"></textarea>
+      <div class="d-flex justify-content-end">
+        <button id="submitRating" class="btn btn-primary btn-sm me-2">
+          Submit
+        </button>
+        <button onclick="closeRateModal()" class="btn btn-secondary btn-sm">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- ─── 5. MODAL CONTROL & SUBMIT HANDLERS ─── -->
+  <script>
+    let currentCourierId = null;
+
+    function openRateModal(courierId) {
+      currentCourierId = courierId;
+      document.getElementById('rateModal').style.display = 'flex';
+    }
+
+    function closeRateModal() {
+      document.getElementById('rateModal').style.display = 'none';
+      // Clear previous selection
+      document.querySelectorAll('input[name="star"]').forEach(i => i.checked=false);
+      document.getElementById('rateComment').value = '';
+    }
+
+    document.getElementById('submitRating').addEventListener('click', async () => {
+      const scoreEl = document.querySelector('input[name="star"]:checked');
+      if (!scoreEl) {
+        return alert("Please select 1–5 stars.");
+      }
+      const score = Number(scoreEl.value);
+      const comment = document.getElementById('rateComment').value.trim() || null;
+
+      // Save to Firestore
+      await addDocRating(collection(db, "ratings"), {
+        courierId: currentCourierId,
+        score,
+        comment,
+        createdAt: serverTimestampRating()
+      });
+      closeRateModal();
+      alert("Thanks for your feedback!");
+    });
+  </script>
+
 
 </body>
 </html>
