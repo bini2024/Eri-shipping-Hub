@@ -33,7 +33,7 @@
 </h2>
   <form id="courierForm" class="card p-4 shadow-sm mx-auto" style="max-width: 600px; ">
       <div class="mb-3">
-        <label for="name" class="form-label">Full Name</label>
+        <label for="name" class="form-label">ስም</label>
         <input type="text" id="name" class="form-control" required />
       </div>
       <div class="mb-3">
@@ -89,11 +89,11 @@
 </select>
       </div>
       <div class="mb-3">
-        <label for="date" class="form-label">Travel Date</label>
+        <label for="date" class="form-label">ዕለት መገሻ</label>
         <input type="date" id="date" class="form-control" required />
       </div>
       <div class="mb-3">
-        <label for="contact" class="form-label">Phone Number</label>
+        <label for="contact" class="form-label">ቴሌ.</label>
         <input type="tel" id="contact" class="form-control" required />
       </div>
       <div class="mb-3">
@@ -144,7 +144,7 @@
       const now = new Date();
       const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
       if (selectedUTCDate < todayUTC) {
-        alert("❌ Please select today or a future date.");
+        alert("❌ ይቕሬታ መዓልቲ ናይ ዝሓለፈ ኣይከኣልን እዩ.");
         dateInput.value = todayUTC.toISOString().split('T')[0];
         setMinDate();
       }
