@@ -270,6 +270,15 @@ if (!existingLoads.empty) {
       });
     });
 
+    if (!hasLoads) {
+    loadList.innerHTML = `
+      <div class="text-center text-muted mt-4 w-100">
+        <p class="fw-bold">📭 No loads available at the moment</p>
+      </div>
+    `;
+  }
+});
+
     window.deleteLoad = async function(id) {
       if (!confirm("Delete this load?")) return;
       await deleteDoc(doc(loadRef, id));
