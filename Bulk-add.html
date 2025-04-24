@@ -8,18 +8,14 @@
 </head>
 <body class="bg-light">
   <div class="container py-5">
-    <h3 class="text-center mb-4">📦 Bulk Courier Uploader (Multilingual + Smart Matching)</h3>
+    <h3 class="text-center mb-4">📦 Bulk Courier Uploader (Country-Compatible for Search)</h3>
 
     <div class="mb-3">
       <label for="bulkInput" class="form-label">Paste entries below (any format):</label>
       <textarea id="bulkInput" class="form-control" rows="12" placeholder="Supports formats like:
 📅 27/04/2025
-መንገዲ: ኣዲስ → ኣስመራ
-📞 0910111030 / 0944406293
-
-OR
-
-27/04/2025: Addis to Asmara, Phone: 0910111030"></textarea>
+መንገዲ: Canada → Eritrea
+📞 0910111030 / 0944406293"></textarea>
     </div>
 
     <button id="submitBulk" class="btn btn-primary">🚀 Add All Couriers</button>
@@ -50,19 +46,26 @@ OR
     const addedList = document.getElementById("addedList");
     const submitBtn = document.getElementById("submitBulk");
 
-    const normalizePlace = (place) => {
+    const normalizeCountry = (place) => {
       const map = {
+        "ኣዲስ": "Ethiopia",
         "ኡጋንዳ": "Uganda",
-        "ኣዲስ": "Addis Abeba",
-        "ኣስመራ": "Asmara",
-        "ኣመሪካ": "America(DC)",
-        "ቶሮንቶ": "Toronto",
+        "ኣስመራ": "Eritrea",
         "ካናዳ": "Canada",
         "ኤርትራ": "Eritrea",
+        "ቶሮንቶ": "Canada",
+        "ካምፓላ": "Uganda",
         "ኢቲዮፕያ": "Ethiopia",
-        "ካምፓላ": "Kampala",
+        "ኣመሪካ": "USA",
+        "ስዊዘርላንድ": "Switzerland",
         "ቱርኪ": "Turkey",
-        "ስዊዘርላንድ": "Switzerland"
+        "እንግሊዝ": "England",
+        "ደንማርክ": "Denmark",
+        "ገርመን": "Germany",
+        "ፈረንሳ": "France",
+        "ኢታልያ": "Italy",
+        "ደቡብ ኣፍሪቃ": "South Africa",
+        "እግፕት": "Egypt"
       };
       return map[place.trim()] || place.trim();
     };
@@ -91,8 +94,8 @@ OR
         const { date, from, to, phones } = currentBlock;
         if (date && from && to && phones.length > 0) {
           for (let phone of phones) {
-            const nFrom = normalizePlace(from);
-            const nTo = normalizePlace(to);
+            const nFrom = normalizeCountry(from);
+            const nTo = normalizeCountry(to);
             if (await isDuplicateEntry(date, nFrom, nTo, phone)) {
               const p = document.createElement("p");
               p.className = "text-warning mb-1";
