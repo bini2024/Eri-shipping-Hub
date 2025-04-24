@@ -8,13 +8,18 @@
 </head>
 <body class="bg-light">
   <div class="container py-5">
-    <h3 class="text-center mb-4">📦 Bulk Courier Uploader</h3>
+    <h3 class="text-center mb-4">📦 Bulk Courier Uploader (Multilingual + Smart Matching)</h3>
 
     <div class="mb-3">
-      <label for="bulkInput" class="form-label">Paste courier entries below (one per line):</label>
-      <textarea id="bulkInput" class="form-control" rows="10" placeholder="Example:
-27/04/2025: Addis to Asmara, Phone: 0910111030
-28/04/2025: Kampala to Addis, Phone: 0900108781"></textarea>
+      <label for="bulkInput" class="form-label">Paste entries below (any format):</label>
+      <textarea id="bulkInput" class="form-control" rows="12" placeholder="Supports formats like:
+📅 27/04/2025
+መንገዲ: ኣዲስ → ኣስመራ
+📞 0910111030 / 0944406293
+
+OR
+
+27/04/2025: Addis to Asmara, Phone: 0910111030"></textarea>
     </div>
 
     <button id="submitBulk" class="btn btn-primary">🚀 Add All Couriers</button>
@@ -45,6 +50,23 @@
     const addedList = document.getElementById("addedList");
     const submitBtn = document.getElementById("submitBulk");
 
+    const normalizePlace = (place) => {
+      const map = {
+        "ኡጋንዳ": "Uganda",
+        "ኣዲስ": "Addis Abeba",
+        "ኣስመራ": "Asmara",
+        "ኣመሪካ": "America(DC)",
+        "ቶሮንቶ": "Toronto",
+        "ካናዳ": "Canada",
+        "ኤርትራ": "Eritrea",
+        "ኢቲዮፕያ": "Ethiopia",
+        "ካምፓላ": "Kampala",
+        "ቱርኪ": "Turkey",
+        "ስዊዘርላንድ": "Switzerland"
+      };
+      return map[place.trim()] || place.trim();
+    };
+
     async function isDuplicateEntry(date, from, to, contact) {
       const q = query(
         courierRef,
@@ -61,59 +83,69 @@
       const lines = bulkInput.value.trim().split("\n");
       let count = 0;
       let skipped = 0;
-      let failedLines = [];
+      let failed = 0;
+      let currentBlock = { date: '', from: '', to: '', phones: [] };
       addedList.innerHTML = "";
 
-      for (let line of lines) {
-        const dateMatch = line.match(/(\d{2}\/\d{2}\/\d{4})/);
-        const routeMatch = line.match(/: (.*?)\, Phone/i);
-        const phoneMatch = line.match(/Phone\:?\s*(\+?[0-9\s\-]+)/i);
-
-        if (dateMatch && routeMatch && phoneMatch) {
-          const [from, to] = routeMatch[1].split(" to ");
-          const contact = phoneMatch[1].trim();
-
-          if (await isDuplicateEntry(dateMatch[1], from.trim(), to.trim(), contact)) {
-            const p = document.createElement("p");
-            p.className = "text-warning mb-1";
-            p.innerText = `⏭️ Skipped (duplicate): ${from.trim()} → ${to.trim()} (${dateMatch[1]})`;
-            addedList.appendChild(p);
-            skipped++;
-            continue;
-          }
-
-          const data = {
-            date: dateMatch[1],
-            from: from.trim(),
-            to: to.trim(),
-            contact,
-            createdAt: serverTimestamp()
-          };
-
-          try {
-            await addDoc(courierRef, data);
-            count++;
-            const p = document.createElement("p");
-            p.className = "text-success mb-1";
-            p.innerText = `✅ Added: ${from.trim()} → ${to.trim()} (${dateMatch[1]})`;
-            addedList.appendChild(p);
-          } catch (error) {
-            failedLines.push(line);
+      const flushEntry = async () => {
+        const { date, from, to, phones } = currentBlock;
+        if (date && from && to && phones.length > 0) {
+          for (let phone of phones) {
+            const nFrom = normalizePlace(from);
+            const nTo = normalizePlace(to);
+            if (await isDuplicateEntry(date, nFrom, nTo, phone)) {
+              const p = document.createElement("p");
+              p.className = "text-warning mb-1";
+              p.innerText = `⏭️ Skipped (duplicate): ${nFrom} → ${nTo} (${date}) - ${phone}`;
+              addedList.appendChild(p);
+              skipped++;
+              continue;
+            }
+            try {
+              await addDoc(courierRef, {
+                date,
+                from: nFrom,
+                to: nTo,
+                contact: phone,
+                createdAt: serverTimestamp()
+              });
+              count++;
+              const p = document.createElement("p");
+              p.className = "text-success mb-1";
+              p.innerText = `✅ Added: ${nFrom} → ${nTo} (${date}) - ${phone}`;
+              addedList.appendChild(p);
+            } catch (err) {
+              failed++;
+            }
           }
         } else {
-          failedLines.push(line);
+          if (date || from || to || phones.length > 0) failed++;
+        }
+        currentBlock = { date: '', from: '', to: '', phones: [] };
+      };
+
+      for (let line of lines) {
+        line = line.trim();
+        if (!line) continue;
+
+        if (/\d{2}\/\d{2}\/\d{4}/.test(line)) {
+          await flushEntry();
+          const match = line.match(/\d{2}\/\d{2}\/\d{4}/);
+          if (match) currentBlock.date = match[0];
+        } else if (/መንገዲ\:|→|to/.test(line)) {
+          let parts = line.split(/→|to/);
+          if (parts.length === 2) {
+            currentBlock.from = parts[0].replace(/መንገዲ\:/, "").trim();
+            currentBlock.to = parts[1].trim();
+          }
+        } else if (/📞|ስልኪ|Phone/i.test(line)) {
+          const phones = line.replace(/.*(📞|ስልኪ|Phone)[:\s]?/, '').split(/[\/|,]/);
+          currentBlock.phones.push(...phones.map(p => p.trim()).filter(p => p.length >= 6));
         }
       }
 
-      result.textContent = `${count} added, ${skipped} skipped (duplicates).`;
-
-      if (failedLines.length > 0) {
-        const failedMsg = document.createElement("div");
-        failedMsg.className = "text-danger mt-3";
-        failedMsg.innerHTML = `<strong>Failed to parse ${failedLines.length} entries:</strong><br><pre>${failedLines.join("\n")}</pre>`;
-        addedList.appendChild(failedMsg);
-      }
-
+      await flushEntry();
+      result.textContent = `${count} added, ${skipped} skipped, ${failed} failed.`;
       bulkInput.value = "";
     });
   </script>
