@@ -42,7 +42,7 @@
     /* Changed nav-brand color to --app-secondary (lighter blue) */
     header h1 .nav-brand {
          color: var(--app-secondary) !important; /* Changed header title text to lighter blue */
-         font-weight: 700; /* Ensure it's bold (already in .nav-brand, but good to be explicit here too) */
+         font-weight: 700; /* Ensure it's bold */
      }
      header h1, header p {
          /* Shadow applies to h1 and p */
@@ -99,7 +99,7 @@
 
 
      .section-grid {
-        /* Reverted to responsive layout: stack on small, 2 columns on medium+ */
+        /* Responsive layout: stack on small, 2 columns on medium+ */
         display: grid;
         grid-template-columns: 1fr; /* Stack on small screens by default */
         gap: 20px;
@@ -392,7 +392,7 @@
   <script type="module">
     // Import Firebase modules
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, doc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
     // Import Auth if you need it for user status display or secure actions
     // import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 
@@ -496,31 +496,24 @@
       setButtonLoadingState(searchCourierBtn, true); // Show loading state
 
       try {
-        // Query Firestore for couriers matching the selected route
-        // Filter by date > today should ideally be done in the query too for performance
+        // --- FETCH ALL AND FILTER CLIENT-SIDE (as requested) ---
+        // Get ALL courier documents from Firestore (does not require composite index)
+        const querySnapshot = await getDocs(courierCollection);
+
         const now = new Date();
-        // Ensure date comparison is correct whether storing as impenetrable-MM-DD or Timestamp
-        // Assuming date is stored as impenetrable-MM-DD string based on previous code
+        // Ensure date comparison is correct whether storing as YYYY-MM-DD or Timestamp
+        // Assuming date is stored as YYYY-MM-DD string based on previous code
         const todayISO = now.toISOString().split("T")[0];
 
-        // Build the query
-        let routeQuery = query(
-          courierCollection,
-          where("from", "==", fromCountry),
-          where("to", "==", toCountry)
-        );
-
-        // Add date filtering here for better performance if storing dates as impenetrable-MM-DD
-        // Assuming date is stored as impenetrable-MM-DD string, >= todayISO filters today and future
-         routeQuery = query(routeQuery, where("date", ">=", todayISO));
-
-
-        const querySnapshot = await getDocs(routeQuery);
         let matchingCouriers = [];
 
-        // Client-side filtering is no longer needed if date query works
+        // Client-side filtering: Loop through ALL fetched documents
         querySnapshot.forEach((doc) => {
-             matchingCouriers.push({...doc.data(), id: doc.id}); // Include doc id if needed
+            const data = doc.data();
+             // Check if courier matches route AND is not expired
+            if (data.from === fromCountry && data.to === toCountry && data.date && data.date >= todayISO) {
+                 matchingCouriers.push({...data, id: doc.id}); // Add matching courier data
+            }
         });
 
 
@@ -569,7 +562,7 @@
 
       } catch (error) {
         console.error("Error fetching couriers:", error);
-        showGeneralFeedback(`❌ Failed to find couriers: ${error.message}`, "danger");
+        showGeneralFeedback(`❌ Failed to search for couriers: ${error.message}`, "danger");
          courierResultsDiv.innerHTML = `
             <div class="alert alert-danger mt-4 mx-auto" style="max-width: 600px;">
               <p>❌ Error searching for couriers.</p>
@@ -643,6 +636,10 @@
            installBtn.style.display = 'none';
            console.log('✅ Appinstalled event fired'); // Debug
       });
+
+
+    // --- Footer Year Script ---
+    // document.getElementById("year").textContent = new Date().getFullYear(); // This script is now inside the footer HTML
 
 
     // Note: Logout and Delete Courier functions are removed as they belong on pages
