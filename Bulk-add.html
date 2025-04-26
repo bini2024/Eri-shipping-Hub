@@ -3,31 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bulk Courier Uploader - Eri Shipping Hub</title>
+  <title>Bulk Courier Uploader - Eri Shipping Hub (Enhanced)</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* Basic styling for feedback messages */
+    .feedback-section p {
+      margin-bottom: 0.25rem; /* Tighter spacing for list items */
+      padding: 0.2rem 0;
+    }
+    .feedback-section h5 {
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    .spinner-border {
+        display: inline-block;
+        width: 1.5rem;
+        height: 1.5rem;
+        vertical-align: middle;
+        margin-right: 0.5rem;
+    }
+  </style>
 </head>
 <body class="bg-light">
   <div class="container py-5">
-    <h3 class="text-center mb-4">📦 Bulk Courier Uploader (Country-Compatible for Search)</h3>
+    <h3 class="text-center mb-4">📦 Bulk Courier Uploader (Enhanced)</h3>
 
-    <div class="mb-3">
-      <label for="bulkInput" class="form-label">Paste entries below (any format):</label>
-      <textarea id="bulkInput" class="form-control" rows="12" placeholder="Supports formats like:
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Instructions for Pasting Data:</h5>
+            <p class="card-text">Paste your courier entries below. Each entry should be grouped together and include the following lines. Order within a group is flexible, but each line must start with the correct indicator:</p>
+            <ul>
+                <li>📅 **Date:** Must be on a line starting with '📅 ' followed by the date in `DD/MM/YYYY` format (e.g., `📅 27/04/2025`). This line signals the start of a new courier group.</li>
+                <li>መንገዲ / Route: Must be on a line containing 'መንገዲ:' or '→' or 'to', specifying the route like `መንገዲ: From → To` or `From to To`.</li>
+                <li>📞 Contact(s): Must be on a line starting with '📞 ' or 'ስልኪ' or 'Phone', followed by one or more phone numbers separated by `/` or `,`. Each phone number will create a separate courier entry with the same date/route. (e.g., `📞 0910111030 / 0944406293`).</li>
+            </ul>
+            <p class="card-text fw-bold">Example:</p>
+            <pre class="bg-light p-2 border rounded">
 📅 27/04/2025
 መንገዲ: Canada → Eritrea
-📞 0910111030 / 0944406293"></textarea>
+📞 0910111030 / 0944406293
+
+📅 28/04/2025
+From to Ethiopia
+Phone: 0912345678</pre>
+             <p class="card-text text-muted"><small>Duplicate entries (same date, from, to, and contact) will be skipped.</small></p>
+        </div>
     </div>
 
-    <button id="submitBulk" class="btn btn-primary">🚀 Add All Couriers</button>
-    <p id="result" class="mt-3 fw-bold text-success"></p>
 
-    <div id="addedList" class="mt-4"></div>
+    <div class="mb-3">
+      <label for="bulkInput" class="form-label">Paste entries below:</label>
+      <textarea id="bulkInput" class="form-control" rows="12" placeholder="Paste your structured data here following the instructions above..."></textarea>
+    </div>
+
+    <button id="submitBulk" class="btn btn-primary">
+        <span id="buttonText">🚀 Add All Couriers</span>
+        <span id="loadingSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+    </button>
+    <p id="overallResult" class="mt-3 fw-bold"></p>
+
+    <div class="feedback-section mt-4">
+        <div id="addedList"></div>
+        <div id="skippedList"></div>
+        <div id="errorList"></div>
+    </div>
+
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
-
+    // IMPORTANT: Replace with your actual Firebase configuration
+    
     const firebaseConfig = {
       apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ",
       authDomain: "erishipping-e4532.firebaseapp.com",
@@ -37,14 +82,24 @@
       appId: "1:388550131049:web:e9ac1784ab8e5fabc811f8"
     };
 
-    const app = initializeApp(firebaseConfig);
+
+    // Initialize Firebase ONLY if not already initialized (important in some frameworks)
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+
+    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
     const db = getFirestore(app);
     const courierRef = collection(db, "couriers");
 
     const bulkInput = document.getElementById("bulkInput");
-    const result = document.getElementById("result");
+    const overallResult = document.getElementById("overallResult");
     const addedList = document.getElementById("addedList");
+    const skippedList = document.getElementById("skippedList");
+    const errorList = document.getElementById("errorList");
     const submitBtn = document.getElementById("submitBulk");
+    const buttonText = document.getElementById("buttonText");
+    const loadingSpinner = document.getElementById("loadingSpinner");
+
 
     const normalizeCountry = (place) => {
       const map = {
@@ -67,89 +122,271 @@
         "ደቡብ ኣፍሪቃ": "South Africa",
         "እግፕት": "Egypt"
       };
-      return map[place.trim()] || place.trim();
+      const trimmedPlace = place.trim();
+      return map[trimmedPlace] || trimmedPlace;
+    };
+
+    // Basic date validation DD/MM/YYYY
+    const isValidDate = (dateStr) => {
+        if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) return false;
+        const [day, month, year] = dateStr.split('/').map(Number);
+        const date = new Date(year, month - 1, day);
+        return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
     };
 
     async function isDuplicateEntry(date, from, to, contact) {
-      const q = query(
-        courierRef,
-        where("date", "==", date),
-        where("from", "==", from),
-        where("to", "==", to),
-        where("contact", "==", contact)
-      );
-      const querySnapshot = await getDocs(q);
-      return !querySnapshot.empty;
+        // Basic validation before querying
+        if (!date || !from || !to || !contact || contact.length < 6) return false;
+
+        const q = query(
+            courierRef,
+            where("date", "==", date),
+            where("from", "==", from),
+            where("to", "==", to),
+            where("contact", "==", contact)
+        );
+        const querySnapshot = await getDocs(q);
+        return !querySnapshot.empty;
     }
 
     submitBtn.addEventListener("click", async () => {
-      const lines = bulkInput.value.trim().split("\n");
-      let count = 0;
-      let skipped = 0;
-      let failed = 0;
-      let currentBlock = { date: '', from: '', to: '', phones: [] };
-      addedList.innerHTML = "";
+        // Reset feedback areas
+        overallResult.textContent = "";
+        addedList.innerHTML = "";
+        skippedList.innerHTML = "";
+        errorList.innerHTML = "";
+        overallResult.className = "mt-3 fw-bold"; // Reset class
 
-      const flushEntry = async () => {
-        const { date, from, to, phones } = currentBlock;
-        if (date && from && to && phones.length > 0) {
-          for (let phone of phones) {
-            const nFrom = normalizeCountry(from);
-            const nTo = normalizeCountry(to);
-            if (await isDuplicateEntry(date, nFrom, nTo, phone)) {
-              const p = document.createElement("p");
-              p.className = "text-warning mb-1";
-              p.innerText = `⏭️ Skipped (duplicate): ${nFrom} → ${nTo} (${date}) - ${phone}`;
-              addedList.appendChild(p);
-              skipped++;
-              continue;
+        // Show loading spinner
+        submitBtn.disabled = true;
+        buttonText.style.display = 'none';
+        loadingSpinner.style.display = 'inline-block';
+
+
+        const lines = bulkInput.value.trim().split("\n");
+        let currentBlock = { date: '', from: '', to: '', phones: [], lineNumber: -1 }; // Track line number for errors
+        const entriesToProcess = [];
+        const errors = [];
+        let currentLineNumber = 0;
+
+        // --- Step 1: Parse the input and group data ---
+        for (let line of lines) {
+            currentLineNumber++;
+            const trimmedLine = line.trim();
+            if (!trimmedLine) continue; // Skip empty lines
+
+            if (trimmedLine.startsWith('📅')) {
+                // Start of a new block, push the previous one if valid
+                if (currentBlock.date || currentBlock.from || currentBlock.to || currentBlock.phones.length > 0) {
+                     // Validate and push the completed block
+                    entriesToProcess.push({...currentBlock}); // Push a copy
+                }
+                // Start a new block
+                const dateMatch = trimmedLine.match(/\d{2}\/\d{2}\/\d{4}/);
+                if (dateMatch && isValidDate(dateMatch[0])) {
+                    currentBlock = { date: dateMatch[0], from: '', to: '', phones: [], lineNumber: currentLineNumber };
+                } else {
+                    // Invalid date format or missing date after symbol
+                     errors.push({ originalText: line, reason: "Invalid or missing date format (DD/MM/YYYY) after 📅 symbol.", lineNumber: currentLineNumber });
+                     currentBlock = { date: '', from: '', to: '', phones: [], lineNumber: currentLineNumber }; // Reset block but keep track it started
+                }
+
+            } else if (/መንገዲ\:|→|to/i.test(trimmedLine)) { // Case-insensitive route check
+                if (!currentBlock.date) {
+                    // Route found before a date - likely an error or misformatted start
+                     errors.push({ originalText: line, reason: "Route found before a valid Date (📅 DD/MM/YYYY).", lineNumber: currentLineNumber });
+                     continue; // Skip this line for parsing into the current block
+                }
+                if (currentBlock.from || currentBlock.to) {
+                     // Duplicate route line in a block
+                     errors.push({ originalText: line, reason: "Duplicate Route line within the same entry block.", lineNumber: currentLineNumber });
+                     continue;
+                }
+
+                let parts = trimmedLine.split(/→|to/i); // Split case-insensitive
+                if (parts.length === 2) {
+                    currentBlock.from = parts[0].replace(/መንገዲ\:/i, "").trim(); // Replace case-insensitive
+                    currentBlock.to = parts[1].trim();
+                } else {
+                    errors.push({ originalText: line, reason: "Could not parse route. Expected format like 'From → To' or 'From to To'.", lineNumber: currentLineNumber });
+                }
+
+            } else if (/📞|ስልኪ|Phone/i.test(trimmedLine)) { // Case-insensitive phone check
+                 if (!currentBlock.date) {
+                    // Phone found before a date
+                     errors.push({ originalText: line, reason: "Contact found before a valid Date (📅 DD/MM/YYYY).", lineNumber: currentLineNumber });
+                     continue; // Skip this line
+                }
+                const phonePart = trimmedLine.replace(/.*(📞|ስልኪ|Phone)[:\s]?/i, '').trim();
+                if (phonePart) {
+                    const phones = phonePart.split(/[\/|,]/).map(p => p.trim()).filter(p => p.length >= 6); // Basic length check
+                    if (phones.length > 0) {
+                       currentBlock.phones.push(...phones);
+                    } else {
+                       errors.push({ originalText: line, reason: "No valid phone numbers found (min 6 digits required after trimming).", lineNumber: currentLineNumber });
+                    }
+                } else {
+                    errors.push({ originalText: line, reason: "Contact line found but no phone numbers provided after symbol.", lineNumber: currentLineNumber });
+                }
+
+            } else {
+                // Line didn't match any expected pattern
+                errors.push({ originalText: line, reason: "Line did not match any expected format (Date, Route, or Contact).", lineNumber: currentLineNumber });
             }
+        }
+
+        // Push the last block after the loop finishes
+         if (currentBlock.date || currentBlock.from || currentBlock.to || currentBlock.phones.length > 0) {
+             entriesToProcess.push({...currentBlock}); // Push the last copy
+         }
+
+
+        // --- Step 2: Validate and prepare entries from parsed blocks ---
+        const finalEntries = [];
+        const processingErrors = [];
+
+        entriesToProcess.forEach(block => {
+             if (!block.date) {
+                 // This case should ideally be caught during parsing, but as a fallback:
+                 processingErrors.push({ originalText: `Block starting line ${block.lineNumber}`, reason: "Missing Date for the block.", lineNumber: block.lineNumber });
+                 return; // Skip processing this block
+             }
+             if (!block.from || !block.to) {
+                 processingErrors.push({ originalText: `Block starting line ${block.lineNumber}`, reason: `Missing 'From' or 'To' in the route information.`, lineNumber: block.lineNumber });
+                 return; // Skip processing this block
+             }
+             if (block.phones.length === 0) {
+                 processingErrors.push({ originalText: `Block starting line ${block.lineNumber}`, reason: "No valid contact phone numbers found for this entry.", lineNumber: block.lineNumber });
+                 return; // Skip processing this block
+             }
+
+             // If block is valid, create individual entries for each phone number
+             const nFrom = normalizeCountry(block.from);
+             const nTo = normalizeCountry(block.to);
+
+             block.phones.forEach(phone => {
+                // Add validation for normalized countries if needed (e.g., check against a list of supported countries)
+                 finalEntries.push({
+                     date: block.date,
+                     from: nFrom,
+                     to: nTo,
+                     contact: phone,
+                     lineNumber: block.lineNumber // Associate entry with block start line
+                 });
+             });
+        });
+
+        // Combine initial parsing errors with block processing errors
+        errors.push(...processingErrors);
+
+        // --- Step 3: Process valid entries (Check duplicates and add to Firestore) ---
+        let addedCount = 0;
+        let skippedCount = 0;
+        let failedCount = 0; // For errors during DB add
+        const addedDetails = [];
+        const skippedDetails = [];
+        const addErrors = [];
+
+        // Use a map to track duplicates within the current batch before checking DB
+        const batchDuplicates = new Set();
+
+        for (const entry of finalEntries) {
+            const duplicateKey = `${entry.date}-${entry.from}-${entry.to}-${entry.contact}`;
+
+            if (batchDuplicates.has(duplicateKey)) {
+                 // Duplicate within the current batch
+                 skippedCount++;
+                 skippedDetails.push({ entry: entry, reason: "Duplicate within the pasted list." });
+                 continue; // Skip to next entry
+            }
+
+            batchDuplicates.add(duplicateKey); // Add to batch check set
+
+            // Check against database
             try {
-              await addDoc(courierRef, {
-                date,
-                from: nFrom,
-                to: nTo,
-                contact: phone,
-                createdAt: serverTimestamp()
-              });
-              count++;
-              const p = document.createElement("p");
-              p.className = "text-success mb-1";
-              p.innerText = `✅ Added: ${nFrom} → ${nTo} (${date}) - ${phone}`;
-              addedList.appendChild(p);
+                const isDup = await isDuplicateEntry(entry.date, entry.from, entry.to, entry.contact);
+                if (isDup) {
+                    skippedCount++;
+                    skippedDetails.push({ entry: entry, reason: "Duplicate found in existing records." });
+                } else {
+                    await addDoc(courierRef, {
+                        date: entry.date,
+                        from: entry.from,
+                        to: entry.to,
+                        contact: entry.contact,
+                        createdAt: serverTimestamp()
+                    });
+                    addedCount++;
+                    addedDetails.push({ entry: entry });
+                }
             } catch (err) {
-              failed++;
+                failedCount++;
+                addErrors.push({ entry: entry, reason: `Database add failed: ${err.message}` });
             }
-          }
-        } else {
-          if (date || from || to || phones.length > 0) failed++;
         }
-        currentBlock = { date: '', from: '', to: '', phones: [] };
-      };
 
-      for (let line of lines) {
-        line = line.trim();
-        if (!line) continue;
+        // --- Step 4: Display Results ---
 
-        if (/\d{2}\/\d{2}\/\d{4}/.test(line)) {
-          await flushEntry();
-          const match = line.match(/\d{2}\/\d{2}\/\d{4}/);
-          if (match) currentBlock.date = match[0];
-        } else if (/መንገዲ\:|→|to/.test(line)) {
-          let parts = line.split(/→|to/);
-          if (parts.length === 2) {
-            currentBlock.from = parts[0].replace(/መንገዲ\:/, "").trim();
-            currentBlock.to = parts[1].trim();
-          }
-        } else if (/📞|ስልኪ|Phone/i.test(line)) {
-          const phones = line.replace(/.*(📞|ስልኪ|Phone)[:\s]?/, '').split(/[\/|,]/);
-          currentBlock.phones.push(...phones.map(p => p.trim()).filter(p => p.length >= 6));
+        // Overall Summary
+        overallResult.textContent = `Process Complete: ${addedCount} added, ${skippedCount} skipped, ${errors.length + failedCount} failed/errors.`;
+        if (addedCount > 0) overallResult.className = "mt-3 fw-bold text-success";
+        else if (errors.length + failedCount > 0) overallResult.className = "mt-3 fw-bold text-danger";
+        else overallResult.className = "mt-3 fw-bold text-secondary";
+
+
+        // Added List
+        if (addedDetails.length > 0) {
+            addedList.innerHTML = '<h5>✅ Successfully Added:</h5>';
+            addedDetails.forEach(item => {
+                const p = document.createElement("p");
+                p.className = "text-success";
+                p.innerText = `${item.entry.from} → ${item.entry.to} (${item.entry.date}) - ${item.entry.contact}`;
+                addedList.appendChild(p);
+            });
         }
-      }
 
-      await flushEntry();
-      result.textContent = `${count} added, ${skipped} skipped, ${failed} failed.`;
-      bulkInput.value = "";
+        // Skipped List
+        if (skippedDetails.length > 0) {
+            skippedList.innerHTML = '<h5>⏭️ Skipped Entries:</h5>';
+             skippedDetails.forEach(item => {
+                const p = document.createElement("p");
+                p.className = "text-warning";
+                p.innerText = `${item.entry.from} → ${item.entry.to} (${item.entry.date}) - ${item.entry.contact} (Reason: ${item.reason})`;
+                skippedList.appendChild(p);
+            });
+        }
+
+        // Error List (Parsing + Processing + DB Add Errors)
+        const allErrors = [...errors, ...addErrors];
+        if (allErrors.length > 0) {
+            errorList.innerHTML = '<h5>❌ Errors Detected:</h5>';
+            allErrors.forEach(err => {
+                const p = document.createElement("p");
+                p.className = "text-danger";
+                let errorText = `Line ${err.lineNumber || 'N/A'}: ${err.reason}`;
+                if (err.originalText) {
+                     // Limit original text length for display
+                    errorText += ` (Original: "${err.originalText.substring(0, 100)}${err.originalText.length > 100 ? '...' : ''}")`;
+                } else if (err.entry) {
+                     errorText += ` (Entry: ${err.entry.from} → ${err.entry.to} (${err.entry.date}) - ${err.entry.contact})`;
+                }
+                p.innerText = errorText;
+                errorList.appendChild(p);
+            });
+        }
+
+
+        // Clear input only on significant success, or maybe leave it? User preference.
+        // For now, let's clear it if anything was added.
+        if (addedCount > 0) {
+             bulkInput.value = "";
+        }
+
+
+        // Hide loading spinner
+        submitBtn.disabled = false;
+        buttonText.style.display = 'inline-block';
+        loadingSpinner.style.display = 'none';
     });
   </script>
 </body>
