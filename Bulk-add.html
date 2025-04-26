@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bulk Courier Uploader - Eri Shipping Hub (Enhanced)</title>
+  <title>Bulk Courier Uploader - Eri Shipping Hub (Enhanced with Name/Comment)</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     /* Basic styling for feedback messages */
@@ -22,6 +22,10 @@
         vertical-align: middle;
         margin-right: 0.5rem;
     }
+    pre {
+        white-space: pre-wrap; /* Allow example text to wrap */
+        word-wrap: break-word;
+    }
   </style>
 </head>
 <body class="bg-light">
@@ -34,19 +38,25 @@
             <p class="card-text">Paste your courier entries below. Each entry should be grouped together and include the following lines. Order within a group is flexible, but each line must start with the correct indicator:</p>
             <ul>
                 <li>📅 **Date:** Must be on a line starting with '📅 ' followed by the date in `DD/MM/YYYY` format (e.g., `📅 27/04/2025`). This line signals the start of a new courier group.</li>
-                <li>መንገዲ / Route: Must be on a line containing 'መንገዲ:' or '→' or 'to', specifying the route like `መንገዲ: From → To` or `From to To`.</li>
-                <li>📞 Contact(s): Must be on a line starting with '📞 ' or 'ስልኪ' or 'Phone', followed by one or more phone numbers separated by `/` or `,`. Each phone number will create a separate courier entry with the same date/route. (e.g., `📞 0910111030 / 0944406293`).</li>
+                <li>🛣️ **Route:** Must be on a line containing 'መንገዲ:' or '→' or 'to', specifying the route like `መንገዲ: From → To` or `From to To`.</li>
+                <li>📞 **Contact(s):** Must be on a line starting with '📞 ' or 'ስልኪ' or 'Phone', followed by one or more phone numbers separated by `/` or `,`. Each phone number will create a separate courier entry with the same date/route/name/comment. (e.g., `📞 0910111030 / 0944406293`).</li>
+                 <li>👤 **Name / ስም (Optional):** Must be on a line starting with 'name:' or 'ስም:'. (e.g., `name: John Doe`). If not provided, a default name like '0050', '0051', etc., will be assigned.</li>
+                <li>📝 **Comment / ንብረት (Optional):** Must be on a line starting with 'comment:' or 'ንብረት:'. (e.g., `comment: 2 boxes, clothes`).</li>
             </ul>
             <p class="card-text fw-bold">Example:</p>
             <pre class="bg-light p-2 border rounded">
 📅 27/04/2025
+name: John Doe
 መንገዲ: Canada → Eritrea
 📞 0910111030 / 0944406293
+comment: Suitcase with gifts
 
 📅 28/04/2025
 From to Ethiopia
-Phone: 0912345678</pre>
-             <p class="card-text text-muted"><small>Duplicate entries (same date, from, to, and contact) will be skipped.</small></p>
+📞 0912345678
+# No name provided for this entry, a default will be assigned
+comment: Small package</pre>
+             <p class="card-text text-muted"><small>Duplicate entries (same date, from, to, contact, *and* name) will be skipped.</small></p>
         </div>
     </div>
 
@@ -72,7 +82,6 @@ Phone: 0912345678</pre>
 
   <script type="module">
     // IMPORTANT: Replace with your actual Firebase configuration
-    
     const firebaseConfig = {
       apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ",
       authDomain: "erishipping-e4532.firebaseapp.com",
@@ -81,7 +90,6 @@ Phone: 0912345678</pre>
       messagingSenderId: "388550131049",
       appId: "1:388550131049:web:e9ac1784ab8e5fabc811f8"
     };
-
 
     // Initialize Firebase ONLY if not already initialized (important in some frameworks)
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
@@ -134,16 +142,19 @@ Phone: 0912345678</pre>
         return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
     };
 
-    async function isDuplicateEntry(date, from, to, contact) {
+    async function isDuplicateEntry(date, from, to, contact, name) {
         // Basic validation before querying
         if (!date || !from || !to || !contact || contact.length < 6) return false;
+        // Include name in duplicate check
+        if (typeof name !== 'string') name = ''; // Ensure name is a string for the query
 
         const q = query(
             courierRef,
             where("date", "==", date),
             where("from", "==", from),
             where("to", "==", to),
-            where("contact", "==", contact)
+            where("contact", "==", contact),
+            where("name", "==", name) // Include name in duplicate check
         );
         const querySnapshot = await getDocs(q);
         return !querySnapshot.empty;
@@ -162,9 +173,9 @@ Phone: 0912345678</pre>
         buttonText.style.display = 'none';
         loadingSpinner.style.display = 'inline-block';
 
-
         const lines = bulkInput.value.trim().split("\n");
-        let currentBlock = { date: '', from: '', to: '', phones: [], lineNumber: -1 }; // Track line number for errors
+        // Added name and comment to currentBlock structure
+        let currentBlock = { date: '', from: '', to: '', phones: [], name: '', comment: '', lineNumber: -1 };
         const entriesToProcess = [];
         const errors = [];
         let currentLineNumber = 0;
@@ -173,53 +184,53 @@ Phone: 0912345678</pre>
         for (let line of lines) {
             currentLineNumber++;
             const trimmedLine = line.trim();
-            if (!trimmedLine) continue; // Skip empty lines
+            if (!trimmedLine || trimmedLine.startsWith('#')) continue; // Skip empty lines or comment lines starting with #
 
             if (trimmedLine.startsWith('📅')) {
                 // Start of a new block, push the previous one if valid
-                if (currentBlock.date || currentBlock.from || currentBlock.to || currentBlock.phones.length > 0) {
+                if (currentBlock.date || currentBlock.from || currentBlock.to || currentBlock.phones.length > 0 || currentBlock.name || currentBlock.comment) {
                      // Validate and push the completed block
                     entriesToProcess.push({...currentBlock}); // Push a copy
                 }
                 // Start a new block
                 const dateMatch = trimmedLine.match(/\d{2}\/\d{2}\/\d{4}/);
                 if (dateMatch && isValidDate(dateMatch[0])) {
-                    currentBlock = { date: dateMatch[0], from: '', to: '', phones: [], lineNumber: currentLineNumber };
+                    // Reset all fields for the new block
+                    currentBlock = { date: dateMatch[0], from: '', to: '', phones: [], name: '', comment: '', lineNumber: currentLineNumber };
                 } else {
                     // Invalid date format or missing date after symbol
                      errors.push({ originalText: line, reason: "Invalid or missing date format (DD/MM/YYYY) after 📅 symbol.", lineNumber: currentLineNumber });
-                     currentBlock = { date: '', from: '', to: '', phones: [], lineNumber: currentLineNumber }; // Reset block but keep track it started
+                     // Still reset block but indicate error context
+                     currentBlock = { date: '', from: '', to: '', phones: [], name: '', comment: '', lineNumber: currentLineNumber };
                 }
 
-            } else if (/መንገዲ\:|→|to/i.test(trimmedLine)) { // Case-insensitive route check
+            } else if (/መንገዲ\:|→|to/i.test(trimmedLine)) {
                 if (!currentBlock.date) {
-                    // Route found before a date - likely an error or misformatted start
                      errors.push({ originalText: line, reason: "Route found before a valid Date (📅 DD/MM/YYYY).", lineNumber: currentLineNumber });
-                     continue; // Skip this line for parsing into the current block
+                     continue;
                 }
+                 // Allow updating route if found later in block? Or flag duplicate? Flag duplicate is safer.
                 if (currentBlock.from || currentBlock.to) {
-                     // Duplicate route line in a block
                      errors.push({ originalText: line, reason: "Duplicate Route line within the same entry block.", lineNumber: currentLineNumber });
                      continue;
                 }
-
-                let parts = trimmedLine.split(/→|to/i); // Split case-insensitive
+                let parts = trimmedLine.split(/→|to/i);
                 if (parts.length === 2) {
-                    currentBlock.from = parts[0].replace(/መንገዲ\:/i, "").trim(); // Replace case-insensitive
+                    currentBlock.from = parts[0].replace(/መንገዲ\:/i, "").trim();
                     currentBlock.to = parts[1].trim();
                 } else {
                     errors.push({ originalText: line, reason: "Could not parse route. Expected format like 'From → To' or 'From to To'.", lineNumber: currentLineNumber });
                 }
 
-            } else if (/📞|ስልኪ|Phone/i.test(trimmedLine)) { // Case-insensitive phone check
+            } else if (/📞|ስልኪ|Phone/i.test(trimmedLine)) {
                  if (!currentBlock.date) {
-                    // Phone found before a date
                      errors.push({ originalText: line, reason: "Contact found before a valid Date (📅 DD/MM/YYYY).", lineNumber: currentLineNumber });
-                     continue; // Skip this line
+                     continue;
                 }
+                 // Allow adding multiple phone lines to the same block
                 const phonePart = trimmedLine.replace(/.*(📞|ስልኪ|Phone)[:\s]?/i, '').trim();
                 if (phonePart) {
-                    const phones = phonePart.split(/[\/|,]/).map(p => p.trim()).filter(p => p.length >= 6); // Basic length check
+                    const phones = phonePart.split(/[\/|,]/).map(p => p.trim()).filter(p => p.length >= 6);
                     if (phones.length > 0) {
                        currentBlock.phones.push(...phones);
                     } else {
@@ -228,15 +239,31 @@ Phone: 0912345678</pre>
                 } else {
                     errors.push({ originalText: line, reason: "Contact line found but no phone numbers provided after symbol.", lineNumber: currentLineNumber });
                 }
+            } else if (/name\:|ስም\:/i.test(trimmedLine)) { // Check for Name
+                 if (!currentBlock.date) {
+                     errors.push({ originalText: line, reason: "Name found before a valid Date (📅 DD/MM/YYYY).", lineNumber: currentLineNumber });
+                     continue;
+                }
+                 // Overwrite name if multiple lines found (take the last one)
+                 currentBlock.name = trimmedLine.replace(/.*(name|ስም)[:\s]?/i, '').trim();
 
-            } else {
+            } else if (/comment\:|ንብረት\:/i.test(trimmedLine)) { // Check for Comment
+                 if (!currentBlock.date) {
+                     errors.push({ originalText: line, reason: "Comment found before a valid Date (📅 DD/MM/YYYY).", lineNumber: currentLineNumber });
+                     continue;
+                }
+                 // Overwrite comment if multiple lines found (take the last one)
+                 currentBlock.comment = trimmedLine.replace(/.*(comment|ንብረት)[:\s]?/i, '').trim();
+
+            }
+            else {
                 // Line didn't match any expected pattern
-                errors.push({ originalText: line, reason: "Line did not match any expected format (Date, Route, or Contact).", lineNumber: currentLineNumber });
+                errors.push({ originalText: line, reason: "Line did not match any expected format (Date, Route, Contact, Name, or Comment).", lineNumber: currentLineNumber });
             }
         }
 
         // Push the last block after the loop finishes
-         if (currentBlock.date || currentBlock.from || currentBlock.to || currentBlock.phones.length > 0) {
+         if (currentBlock.date || currentBlock.from || currentBlock.to || currentBlock.phones.length > 0 || currentBlock.name || currentBlock.comment) {
              entriesToProcess.push({...currentBlock}); // Push the last copy
          }
 
@@ -244,20 +271,21 @@ Phone: 0912345678</pre>
         // --- Step 2: Validate and prepare entries from parsed blocks ---
         const finalEntries = [];
         const processingErrors = [];
+        let defaultNameCounter = 50; // Initialize default name counter
 
         entriesToProcess.forEach(block => {
+             // Basic block validation (date, route, phones are essential)
              if (!block.date) {
-                 // This case should ideally be caught during parsing, but as a fallback:
-                 processingErrors.push({ originalText: `Block starting line ${block.lineNumber}`, reason: "Missing Date for the block.", lineNumber: block.lineNumber });
-                 return; // Skip processing this block
+                 processingErrors.push({ originalText: `Block starting line ${block.lineNumber}`, reason: "Missing or invalid Date for the block.", lineNumber: block.lineNumber });
+                 return;
              }
              if (!block.from || !block.to) {
                  processingErrors.push({ originalText: `Block starting line ${block.lineNumber}`, reason: `Missing 'From' or 'To' in the route information.`, lineNumber: block.lineNumber });
-                 return; // Skip processing this block
+                 return;
              }
              if (block.phones.length === 0) {
                  processingErrors.push({ originalText: `Block starting line ${block.lineNumber}`, reason: "No valid contact phone numbers found for this entry.", lineNumber: block.lineNumber });
-                 return; // Skip processing this block
+                 return;
              }
 
              // If block is valid, create individual entries for each phone number
@@ -265,12 +293,20 @@ Phone: 0912345678</pre>
              const nTo = normalizeCountry(block.to);
 
              block.phones.forEach(phone => {
-                // Add validation for normalized countries if needed (e.g., check against a list of supported countries)
+                 let entryName = block.name || ''; // Get name from block, default to empty string
+
+                 // Assign default name if empty
+                 if (!entryName) {
+                     entryName = String(defaultNameCounter++).padStart(4, '0');
+                 }
+
                  finalEntries.push({
                      date: block.date,
                      from: nFrom,
                      to: nTo,
                      contact: phone,
+                     name: entryName, // Add assigned name
+                     comment: block.comment || '', // Add comment, default to empty string
                      lineNumber: block.lineNumber // Associate entry with block start line
                  });
              });
@@ -288,32 +324,38 @@ Phone: 0912345678</pre>
         const addErrors = [];
 
         // Use a map to track duplicates within the current batch before checking DB
+        // Duplicate key now includes name
         const batchDuplicates = new Set();
 
         for (const entry of finalEntries) {
-            const duplicateKey = `${entry.date}-${entry.from}-${entry.to}-${entry.contact}`;
+            // Duplicate check key includes name
+            const duplicateKey = `${entry.date}-${entry.from}-${entry.to}-${entry.contact}-${entry.name}`;
 
             if (batchDuplicates.has(duplicateKey)) {
                  // Duplicate within the current batch
                  skippedCount++;
                  skippedDetails.push({ entry: entry, reason: "Duplicate within the pasted list." });
-                 continue; // Skip to next entry
+                 continue;
             }
 
             batchDuplicates.add(duplicateKey); // Add to batch check set
 
             // Check against database
             try {
-                const isDup = await isDuplicateEntry(entry.date, entry.from, entry.to, entry.contact);
+                // Duplicate check in DB also includes name
+                const isDup = await isDuplicateEntry(entry.date, entry.from, entry.to, entry.contact, entry.name);
                 if (isDup) {
                     skippedCount++;
                     skippedDetails.push({ entry: entry, reason: "Duplicate found in existing records." });
                 } else {
+                    // Add all fields to Firestore document
                     await addDoc(courierRef, {
                         date: entry.date,
                         from: entry.from,
                         to: entry.to,
                         contact: entry.contact,
+                        name: entry.name,
+                        comment: entry.comment,
                         createdAt: serverTimestamp()
                     });
                     addedCount++;
@@ -331,8 +373,18 @@ Phone: 0912345678</pre>
         overallResult.textContent = `Process Complete: ${addedCount} added, ${skippedCount} skipped, ${errors.length + failedCount} failed/errors.`;
         if (addedCount > 0) overallResult.className = "mt-3 fw-bold text-success";
         else if (errors.length + failedCount > 0) overallResult.className = "mt-3 fw-bold text-danger";
-        else overallResult.className = "mt-3 fw-bold text-secondary";
+        else if (skippedCount > 0) overallResult.className = "mt-3 fw-bold text-warning"; // Warning if only skips
+        else overallResult.className = "mt-3 fw-bold text-secondary"; // Neutral if nothing happened
 
+
+        // Helper to format entry details for display
+        const formatEntryDisplay = (entry) => {
+            let text = `${entry.name} (${entry.from} → ${entry.to}) - ${entry.contact}`;
+            if (entry.comment) {
+                text += ` [${entry.comment}]`;
+            }
+            return text;
+        };
 
         // Added List
         if (addedDetails.length > 0) {
@@ -340,7 +392,7 @@ Phone: 0912345678</pre>
             addedDetails.forEach(item => {
                 const p = document.createElement("p");
                 p.className = "text-success";
-                p.innerText = `${item.entry.from} → ${item.entry.to} (${item.entry.date}) - ${item.entry.contact}`;
+                p.innerText = formatEntryDisplay(item.entry);
                 addedList.appendChild(p);
             });
         }
@@ -351,7 +403,7 @@ Phone: 0912345678</pre>
              skippedDetails.forEach(item => {
                 const p = document.createElement("p");
                 p.className = "text-warning";
-                p.innerText = `${item.entry.from} → ${item.entry.to} (${item.entry.date}) - ${item.entry.contact} (Reason: ${item.reason})`;
+                p.innerText = `${formatEntryDisplay(item.entry)} (Reason: ${item.reason})`;
                 skippedList.appendChild(p);
             });
         }
@@ -365,10 +417,11 @@ Phone: 0912345678</pre>
                 p.className = "text-danger";
                 let errorText = `Line ${err.lineNumber || 'N/A'}: ${err.reason}`;
                 if (err.originalText) {
-                     // Limit original text length for display
+                    // Limit original text length for display
                     errorText += ` (Original: "${err.originalText.substring(0, 100)}${err.originalText.length > 100 ? '...' : ''}")`;
                 } else if (err.entry) {
-                     errorText += ` (Entry: ${err.entry.from} → ${err.entry.to} (${err.entry.date}) - ${err.entry.contact})`;
+                    // Display entry details for DB errors
+                     errorText += ` (Entry: ${formatEntryDisplay(err.entry)})`;
                 }
                 p.innerText = errorText;
                 errorList.appendChild(p);
@@ -378,7 +431,7 @@ Phone: 0912345678</pre>
 
         // Clear input only on significant success, or maybe leave it? User preference.
         // For now, let's clear it if anything was added.
-        if (addedCount > 0) {
+        if (addedCount > 0 && errors.length === 0 && failedCount === 0) { // Only clear if everything added without errors
              bulkInput.value = "";
         }
 
