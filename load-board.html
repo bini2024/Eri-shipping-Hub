@@ -84,10 +84,6 @@
     </div>
   </header>
     <div class="container">
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <strong>Important Security Note:</strong> This page's delete button is hidden from non-admins on the client-side only. To prevent *any* user from deleting data, you **MUST configure Firebase Security Rules** for your 'loads' collection.
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
          <div id="generalFeedback" class="alert alert-info alert-dismissible fade show d-none" role="alert">
             <span id="generalFeedbackText"></span>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -295,9 +291,14 @@
          isAdmin = !!user;
          console.log("Admin status:", isAdmin); // For debugging
          // Re-render loads to show/hide delete buttons based on new admin status
-         renderLoads(loadRef); // You might need to trigger a re-fetch/re-render
-                               // Or handle visibility directly if snapshot is already attached
-                               // Calling renderLoads(currentSnapshotData) is safer if you store snapshot data
+         // You might need to trigger a re-fetch/re-render of the loads list here
+         // if the visibility of the delete button needs to change instantly upon login/logout.
+         // The onSnapshot listener above will re-render when data *changes*,
+         // but won't re-render if only the isAdmin state changes without data changing.
+         // A simple way is to manually re-render the current snapshot data if available,
+         // or detach/re-attach the snapshot listener, which might be overkill.
+         // For now, the button visibility will update on the next data change or page reload.
+         // If immediate update is required, store snapshot data and call renderLoads(storedData) here.
     });
 
     // --- Form Submission ---
@@ -451,13 +452,13 @@
             const div = document.createElement("div");
             div.className = "col-md-4"; // Use Bootstrap grid column
             div.innerHTML = `
-              <div class="card border-0 shadow-sm h-100"> {/* Added h-100 for uniform height */}
-                <div class="card-body d-flex flex-column"> {/* Use flex to push button down */}
+              <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex flex-column">
                   <h5 class="card-title">${load.from} → ${load.to}</h5>
                   <p class="card-text"><strong>Weight:</strong> ${load.weight} kg</p>
                   <p class="card-text"><strong>Deadline:</strong> ${load.deadline}</p>
                   <p class="card-text"><strong>Contact:</strong> <a href="tel:${load.phone}">${load.phone}</a></p>
-                  <p class="card-text flex-grow-1"><strong>Note:</strong> ${load.comment || "N/A"}</p> {/* flex-grow-1 pushes delete to bottom */}
+                  <p class="card-text flex-grow-1"><strong>Note:</strong> ${load.comment || "N/A"}</p>
                   ${isAdmin ? `<button class="btn btn-sm btn-danger mt-2 delete-load-btn" data-id="${docSnap.id}">
                                   <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                   <span class="button-text">Delete</span>
