@@ -5,124 +5,189 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Register Courier - Eri Shipping Hub</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
    body {
  background: linear-gradient(to bottom right, #0a3d62, #1e2a38);
   background-size: cover; /* Ensures the image covers the entire page */
   background-position: center center; /* Keeps the image centered */
   background-attachment: fixed; /* Keeps the background fixed during scrolling */
-  height: 100vh; /* Makes sure the background covers the full viewport height */
-  margin: 0;
-  min-height: 100vh; }
-    
+  min-height: 100vh;
+  margin: 0; }
+
     .nav-brand {
       font-weight: 700;
-      color: var(--primary-color) !important;
-    } 
+      color: var(--bs-primary) !important; /* Use Bootstrap variable */
+    }
+
+    header h1, header p {
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.3); /* Optional: adds readability */
+    }
+
+    .card {
+        background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent cards */
+        backdrop-filter: blur(5px); /* Optional: adds blur effect */
+    }
+
+    /* Style for validation feedback in placeholders */
+    .form-control.is-invalid::placeholder {
+        color: var(--bs-danger);
+        opacity: 0.8;
+    }
+    /* Style Select2 when invalid */
+    .select2-container--bootstrap-5 .select2-selection.is-invalid {
+         border-color: var(--bs-danger) !important;
+         padding-right: calc(1.5em + 0.75rem) !important;
+         background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linecap='round' stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e") !important;
+         background-repeat: no-repeat !important;
+         background-position: right calc(0.375em + 0.1875rem) center !important;
+         background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem) !important;
+    }
+
+     /* Adjust Select2 placeholder styles */
+    .select2-container .select2-selection--single .select2-selection__placeholder {
+        color: #6c757d !important;
+    }
+     .select2-container--bootstrap-5 .select2-selection {
+        padding-top: 0.55rem !important;
+        padding-bottom: 0.55rem !important;
+     }
+      .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow b {
+         top: 60% !important;
+     }
+
+     /* Loading Button State */
+     .btn .spinner-border {
+        display: none; /* Hidden by default */
+        margin-right: .5rem;
+     }
+     .btn.loading .spinner-border {
+        display: inline-block;
+     }
+     .btn.loading .button-text {
+        visibility: hidden; /* Hide text while loading */
+     }
+
+     /* Style for invalid checkbox */
+    .form-check-input.is-invalid ~ .form-check-label {
+        color: var(--bs-danger);
+    }
+
+
 </style>
-  
+
 </head>
+<body class="bg-light">
   <header class="py-4 mb-4">
     <div class="container">
-      <h1 class="text-center mb-3">
+      <h1 class="text-center mb-2">
         <i class="fas fa-shipping-fast"></i>
         <span class="nav-brand text-white">Eri Shipping Hub</span>
       </h1>
-      <p class="text-center text-white">Our community, our courier</p>
+      <p class="text-center text-white-50">Our community, our courier</p>
     </div>
   </header>
-<body class="bg-light">
   <div class="container py-5">
     <h2 class="text-center mb-4">
-      <i class="fas fa-user-tie me-2"></i>
-  <span style=" background: #0a3d62; color: white; padding: 0.5rem 1.5rem; border-radius: 1rem; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  ">
-   ምዝገባ ተጓዓዛይ
-  </span>
-</h2>
-  <form id="courierForm" class="card p-4 shadow-sm mx-auto" style="max-width: 600px; ">
-      <div class="mb-3">
+      <i class="fas fa-user-tie me-2 text-white"></i>
+      <span style=" background: #0a3d62; color: white; padding: 0.5rem 1.5rem; border-radius: 1rem; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      ">
+       ምዝገባ ተጓዓዛይ
+      </span>
+    </h2>
+    <div id="generalFeedback" class="alert alert-info alert-dismissible fade show d-none mx-auto" role="alert" style="max-width: 600px;">
+        <span id="generalFeedbackText"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <form id="courierForm" class="card p-4 shadow-sm mx-auto" style="max-width: 600px; " novalidate> <div class="mb-3">
         <label for="name" class="form-label">ስም</label>
-        <input type="text" id="name" class="form-control" required />
-      </div>
+        <input type="text" id="name" class="form-control" placeholder="Your Name" required /> </div>
       <div class="mb-3">
-         <select id="from" class="form-select" required>
-  <option value="" disabled selected>ካብ</option>
-  <option value="Ethiopia">🇪🇹 Ethiopia</option>
-<option value="Eritrea">🇪🇷 Eritrea</option>
-<option value="Uganda">🇺🇬 Uganda</option>
-<option value="Canada">🇨🇦 Canada</option>
-<option value="Turkey">🇹🇷 Turkey</option>
-<option value="Dubai">🇦🇪 Dubai</option>
-<option value="Kenya">🇰🇪 Kenya</option>
-<option value="Angola">🇦🇴 Angola</option>
-<option value="Switzerland">🇨🇭 Switzerland</option>
-<option value="Netherlands">🇳🇱 Netherlands</option>
-<option value="Belgium">🇧🇪 Belgium</option>
-<option value="Sweden">🇸🇪 Sweden</option>
-<option value="Germany">🇩🇪 Germany</option>
-<option value="USA">🇺🇸 USA</option>
-<option value="England">🇬🇧 England</option>
-<option value="Denmark">🇩🇰 Denmark</option>
-<option value="France">🇫🇷 France</option>
-<option value="Italy">🇮🇹 Italy</option>
-<option value="South Africa">🇿🇦 South Africa</option>
-<option value="Egypt">🇪🇬 Egypt</option>
-
-</select>
-      </div>
+         <label for="from" class="form-label">ካብ</label> <select id="from" class="form-select" required>
+            <option value="" disabled selected>Select Origin Country</option> <option value="Ethiopia">🇪🇹 Ethiopia</option>
+            <option value="Eritrea">🇪🇷 Eritrea</option>
+            <option value="Uganda">🇺🇬 Uganda</option>
+            <option value="Canada">🇨🇦 Canada</option>
+            <option value="Turkey">🇹🇷 Turkey</option>
+            <option value="Dubai">🇦🇪 Dubai</option>
+            <option value="Kenya">🇰🇪 Kenya</option>
+            <option value="Angola">🇦🇴 Angola</option>
+            <option value="Switzerland">🇨🇭 Switzerland</option>
+            <option value="Netherlands">🇳🇱 Netherlands</option>
+            <option value="Belgium">🇧🇪 Belgium</option>
+            <option value="Sweden">🇸🇪 Sweden</option>
+            <option value="Germany">🇩🇪 Germany</option>
+            <option value="USA">🇺🇸 USA</option>
+            <option value="England">🇬🇧 England</option>
+            <option value="Denmark">🇩🇰 Denmark</option>
+            <option value="France">🇫🇷 France</option>
+            <option value="Italy">🇮🇹 Italy</option>
+            <option value="South Africa">🇿🇦 South Africa</option>
+            <option value="Egypt">🇪🇬 Egypt</option>
+          </select>
+          </div>
       <div class="mb-3">
-         <select id="to" class="form-select" required>
-  <option value="" disabled selected>ናብ</option>
-<option value="Ethiopia">🇪🇹 Ethiopia</option>
-<option value="Eritrea">🇪🇷 Eritrea</option>
-<option value="Uganda">🇺🇬 Uganda</option>
-<option value="Canada">🇨🇦 Canada</option>
-<option value="Turkey">🇹🇷 Turkey</option>
-<option value="Dubai">🇦🇪 Dubai</option>
-<option value="Kenya">🇰🇪 Kenya</option>
-<option value="Angola">🇦🇴 Angola</option>
-<option value="Switzerland">🇨🇭 Switzerland</option>
-<option value="Netherlands">🇳🇱 Netherlands</option>
-<option value="Belgium">🇧🇪 Belgium</option>
-<option value="Sweden">🇸🇪 Sweden</option>
-<option value="Germany">🇩🇪 Germany</option>
-<option value="USA">🇺🇸 USA</option>
-<option value="England">🇬🇧 England</option>
-<option value="Denmark">🇩🇰 Denmark</option>
-<option value="France">🇫🇷 France</option>
-<option value="Italy">🇮🇹 Italy</option>
-<option value="South Africa">🇿🇦 South Africa</option>
-<option value="Egypt">🇪🇬 Egypt</option>
-
-</select>
-      </div>
+         <label for="to" class="form-label">ናብ</label> <select id="to" class="form-select" required>
+            <option value="" disabled selected>Select Destination Country</option> <option value="Ethiopia">🇪🇹 Ethiopia</option>
+            <option value="Eritrea">🇪🇷 Eritrea</option>
+            <option value="Uganda">🇺🇬 Uganda</option>
+            <option value="Canada">🇨🇦 Canada</option>
+            <option value="Turkey">🇹🇷 Turkey</option>
+            <option value="Dubai">🇦🇪 Dubai</option>
+            <option value="Kenya">🇰🇪 Kenya</option>
+            <option value="Angola">🇦🇴 Angola</option>
+            <option value="Switzerland">🇨🇭 Switzerland</option>
+            <option value="Netherlands">🇳🇱 Netherlands</option>
+            <option value="Belgium">🇧🇪 Belgium</option>
+            <option value="Sweden">🇸🇪 Sweden</option>
+            <option value="Germany">🇩🇪 Germany</option>
+            <option value="USA">🇺🇸 USA</option>
+            <option value="England">🇬🇧 England</option>
+            <option value="Denmark">🇩🇰 Denmark</option>
+            <option value="France">🇫🇷 France</option>
+            <option value="Italy">🇮🇹 Italy</option>
+            <option value="South Africa">🇿🇦 South Africa</option>
+            <option value="Egypt">🇪🇬 Egypt</option>
+          </select>
+          </div>
       <div class="mb-3">
         <label for="date" class="form-label">ዕለት መገሻ</label>
-        <input type="date" id="date" class="form-control" required />
-      </div>
+        <input type="date" id="date" class="form-control" placeholder="Select Departure Date" required /> </div>
       <div class="mb-3">
         <label for="contact" class="form-label">ቴሌ.</label>
-        <input type="tel" id="contact" class="form-control" required />
-      </div>
+        <input type="tel" id="contact" class="form-control" placeholder="e.g., +1 123 456 7890" required /> </div>
       <div class="mb-3">
         <label for="comments" class="form-label">Comments (Optional)</label>
-        <textarea id="comments" class="form-control"></textarea>
-      </div>
+        <textarea id="comments" class="form-control" placeholder="Any additional notes..."></textarea> </div>
       <div class="form-check mb-3">
         <input class="form-check-input" type="checkbox" id="terms" required>
         <label class="form-check-label" for="terms">
           I agree to the <a href="terms.html" target="_blank">Terms & Conditions</a>
         </label>
-      </div>
-      <button type="submit" class="btn btn-primary w-100">Submit</button>
+         </div>
+      <button type="submit" class="btn btn-primary w-100">
+         <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+         <span class="button-text">Submit</span>
+      </button>
     </form>
   </div>
 
+   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
     import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs  } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
- 
+     // Import Auth if you plan to use it later for secure registration
+    // import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+
+
+    // ACTUAL Firebase configuration provided by the user
     const firebaseConfig = {
       apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ",
       authDomain: "erishipping-e4532.firebaseapp.com",
@@ -132,99 +197,242 @@
       appId: "1:388550131049:web:e9ac1784ab8e5fabc811f8"
     };
 
-    const app = initializeApp(firebaseConfig);
+    // Initialize Firebase ONLY if not already initialized
+     const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
     const db = getFirestore(app);
+    // const auth = getAuth(app); // Initialize Auth if you plan to use it
     const courierRef = collection(db, "couriers");
 
     const form = document.getElementById("courierForm");
     const dateInput = document.getElementById("date");
+    const submitBtn = form.querySelector('button[type="submit"]'); // Get the submit button
 
-    // Set min date to today (UTC)
-    const setMinDate = () => {
-      const now = new Date();
-      const utcDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
-      dateInput.min = utcDate.toISOString().split('T')[0];
-    };
-    setMinDate();
-
-    // Date validation
-    dateInput.addEventListener('input', () => {
-      const selectedUTCDate = new Date(dateInput.value + 'T00:00:00Z');
-      const now = new Date();
-      const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
-      if (selectedUTCDate < todayUTC) {
-        alert("❌ ይቕሬታ መዓልቲ ናይ ዝሓለፈ ኣይከኣልን እዩ.");
-        dateInput.value = todayUTC.toISOString().split('T')[0];
-        setMinDate();
-      }
+    // Store original placeholders for inputs
+    const originalPlaceholders = {};
+    form.querySelectorAll('input:not([type="checkbox"]), textarea').forEach(input => { // Exclude checkbox
+        originalPlaceholders[input.id] = input.placeholder;
     });
+     // Select2 placeholders are handled via JS config
 
+    // --- UI Feedback Helpers ---
+    function showGeneralFeedback(message, type = 'info') {
+        generalFeedback.classList.remove('alert-info', 'alert-success', 'alert-warning', 'alert-danger');
+        generalFeedback.classList.add(`alert-${type}`, 'show');
+        generalFeedbackText.textContent = message;
+        generalFeedback.classList.remove('d-none');
+    }
+
+    function hideGeneralFeedback() {
+        generalFeedback.classList.add('d-none');
+    }
+
+     function setButtonLoadingState(button, isLoading) {
+        if (isLoading) {
+            button.classList.add('loading');
+            button.disabled = true;
+        } else {
+            button.classList.remove('loading');
+            button.disabled = false;
+        }
+    }
+
+    // Modified setValidationFeedback to use placeholders for standard inputs
+    function setValidationFeedback(inputElement, message = '') {
+        // Apply is-invalid class to all invalid inputs/selects
+        if (message) {
+            inputElement.classList.add('is-invalid');
+            // For standard inputs/textareas, set the placeholder to the message
+            if (inputElement.tagName === 'INPUT' || inputElement.tagName === 'TEXTAREA') {
+                 inputElement.placeholder = message;
+            }
+            // For checkbox, just apply is-invalid class
+             if (inputElement.type === 'checkbox') {
+                 // Class is already applied to input, CSS handles label color
+             }
+        } else {
+            inputElement.classList.remove('is-invalid');
+            // For standard inputs/textareas, restore original placeholder
+            if (inputElement.tagName === 'INPUT' || inputElement.tagName === 'TEXTAREA') {
+                 inputElement.placeholder = originalPlaceholders[inputElement.id] || ''; // Restore or clear
+            }
+             // For checkbox, just remove is-invalid class
+        }
+    }
+
+    function clearAllValidationFeedback() {
+        form.querySelectorAll('.form-control, .form-select, .form-check-input').forEach(input => { // Include checkbox
+            setValidationFeedback(input, ''); // Clear feedback for all fields
+        });
+    }
+
+    // --- Date Handling ---
+    // Set min date to today (local time) for date input
+     const setMinDate = () => {
+         const now = new Date();
+         const year = now.getFullYear();
+         const month = (now.getMonth() + 1).toString().padStart(2, '0');
+         const day = now.getDate().toString().padStart(2, '0');
+         dateInput.min = `${year}-${month}-${day}`;
+     };
+    setMinDate(); // Set min date on page load
+
+    // --- Form Submission ---
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      // Rate limiting: block repeat submissions within 2 hours
-      const lastSubmission = localStorage.getItem("lastCourierSubmit");
-      const now = Date.now();
-      if (lastSubmission && now - parseInt(lastSubmission) < 2 * 60 * 60 * 500) {
-        alert("⏳ Please wait at least 1 hour before submitting again.");
-        return;
-      }
+      hideGeneralFeedback(); // Hide any previous general message
+      clearAllValidationFeedback(); // Clear previous validation errors and restore placeholders
 
       const name = form.name.value.trim();
       const from = form.from.value.trim();
       const to = form.to.value.trim();
-      const date = form.date.value;
+      const date = form.date.value; // YYYY-MM-DD string
       const contact = form.contact.value.trim();
       const comments = form.comments.value.trim();
+      const termsChecked = form.terms.checked;
 
-      if (!name || !from || !to || !date || !contact || !form.terms.checked) {
-        alert("❗ Please fill in all required fields and agree to the terms.");
+
+      let isValid = true;
+      let errorMessages = []; // Collect messages for the general feedback
+
+      // Client-Side Validation
+      if (!name) { setValidationFeedback(form.name, "Name is required."); isValid = false; }
+      if (!from) { setValidationFeedback(form.from, "Origin is required."); isValid = false; errorMessages.push("Origin country is required."); } // Select2 error message
+      if (!to) { setValidationFeedback(form.to, "Destination is required."); isValid = false; errorMessages.push("Destination country is required."); } // Select2 error message
+
+      if (!date) {
+           setValidationFeedback(form.date, "Date is required."); isValid = false;
+      } else {
+           // Check future date - use local time comparison since date input uses local time
+           const selectedLocalDate = new Date(date + 'T00:00:00'); // Interpret YYYY-MM-DD in local timezone
+           const now = new Date();
+           const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Today in local timezone
+           if (selectedLocalDate < todayLocal) {
+                setValidationFeedback(form.date, "Must be a future date."); isValid = false;
+           }
+      }
+
+      // Basic phone validation (at least 7 digits, allows +, -, spaces)
+      if (!contact || !/^\+?[0-9\s-]{7,}$/.test(contact)) {
+           setValidationFeedback(form.contact, "Valid phone req'd (min 7 digits)."); isValid = false;
+      }
+
+      // Simple comment validation
+       if (/http|www|@|%/.test(comments)) {
+           setValidationFeedback(form.comments, "Invalid chars in comment."); isValid = false;
+       }
+
+       if (!termsChecked) {
+           setValidationFeedback(form.terms, "You must agree to terms."); isValid = false; errorMessages.push("You must agree to the terms and conditions.");
+       }
+
+
+      if (!isValid) {
+          // Show general feedback with a summary message
+          showGeneralFeedback("Please fix the errors in the form.", "warning");
+          return; // Stop submission if client-side validation fails
+      }
+
+      // Cooldown Check (Client-side only - easily bypassed)
+      const lastSubmission = localStorage.getItem("lastCourierSubmit");
+      // Correct calculation for 2 hours in milliseconds (2 * 60 minutes * 60 seconds * 1000 milliseconds)
+      const cooldownDuration = 2 * 60 * 60 * 1000;
+      const now = Date.now();
+
+      if (lastSubmission && now - parseInt(lastSubmission) < cooldownDuration) {
+        const remainingTime = cooldownDuration - (now - parseInt(lastSubmission));
+        const minutes = Math.ceil(remainingTime / (60 * 1000)); // Calculate minutes remaining
+        showGeneralFeedback(`⏳ Please wait ${minutes} more minute(s) before submitting again.`, "warning");
         return;
       }
 
-      if (!/^\+?[0-9\s-]{7,15}$/.test(contact)) {
-        alert("📞 Please enter a valid phone number.");
-        return;
+      setButtonLoadingState(submitBtn, true); // Show loading state
+
+      try {
+        // Duplicate Check
+        const duplicateCheckQuery = query(
+          courierRef,
+          where("from", "==", from),
+          where("to", "==", to),
+          where("date", "==", date),
+          where("contact", "==", contact)
+           // Optional: Include name in duplicate check?
+           // where("name", "==", name)
+        );
+
+        const duplicateSnap = await getDocs(duplicateCheckQuery);
+
+        if (!duplicateSnap.empty) {
+          showGeneralFeedback("⚠️ This courier entry is already registered.", "warning");
+           setButtonLoadingState(submitBtn, false);
+          return;
+        }
+
+
+        // Add Courier Data to Firestore (Anonymous write - **Requires Firestore Rules**)
+        const data = {
+          name,
+          from,
+          to,
+          date,
+          contact,
+          comments,
+          createdAt: serverTimestamp()
+          // Optional: Add user ID if using Firebase Auth
+          // userId: auth.currentUser ? auth.currentUser.uid : null,
+        };
+
+        await addDoc(courierRef, data);
+        localStorage.setItem("lastCourierSubmit", now); // Update cooldown time
+        form.reset(); // Reset form on success
+         // Reset Select2 values and trigger change to clear validation styles/placeholders
+         $('#from').val(null).trigger('change');
+         $('#to').val(null).trigger('change');
+         clearAllValidationFeedback(); // Ensure placeholders are restored
+         setMinDate(); // Reset min date
+
+        showGeneralFeedback("✅ Courier registered successfully!", "success");
+
+      } catch (error) {
+        console.error("Error registering courier:", error);
+        showGeneralFeedback(`❌ Failed to register courier: ${error.message}`, "danger");
+      } finally {
+        setButtonLoadingState(submitBtn, false); // Hide loading state
       }
-
-      if (/http|www|@|%/.test(comments)) {
-        alert("⚠️ Comments must not contain links or strange characters.");
-        return;
-      }
-
-      const data = {
-        name,
-        from,
-        to,
-        date,
-        contact,
-        comments,
-        createdAt: serverTimestamp()
-      };
-
-// Check for existing match
-const duplicateCheckQuery = query(
-  courierRef,
-  where("from", "==", from),
-  where("to", "==", to),
-  where("date", "==", date),
-  where("contact", "==", contact)
-);
-
-const duplicateSnap = await getDocs(duplicateCheckQuery);
-
-if (!duplicateSnap.empty) {
-  alert("⚠️ This courier entry is already registered.");
-  return;
-}
-
-
-      await addDoc(courierRef, data);
-      localStorage.setItem("lastCourierSubmit", now);
-      alert("✅ Courier registered successfully!");
-      form.reset();
-      setMinDate();
     });
+
+
+    // --- Initialize Select2 ---
+     $(document).ready(function() {
+        // Store initial placeholders for Select2 elements too
+         form.querySelectorAll('select').forEach(select => {
+             const selectedOption = select.querySelector('option[disabled][selected]');
+             if (selectedOption) {
+                originalPlaceholders[select.id] = selectedOption.textContent;
+             }
+         });
+
+        $('#from').select2({ placeholder: originalPlaceholders['from'] || 'Select Origin Country', theme: 'bootstrap-5' });
+        $('#to').select2({ placeholder: originalPlaceholders['to'] || 'Select Destination Country', theme: 'bootstrap-5' });
+
+         // Watch Select2 changes to remove is-invalid class
+         $('#from, #to').on('change', function() {
+             // Add/remove is-invalid based on if a value is selected
+             if ($(this).val()) {
+                 $(this).removeClass('is-invalid');
+             } else {
+                 // If value is cleared (e.g., manual reset), apply is-invalid if required
+                 // This part is less critical as main validation runs on submit
+             }
+         });
+
+          // Watch terms checkbox changes to remove is-invalid class
+         $('#terms').on('change', function() {
+             setValidationFeedback(this, ''); // Clear validation feedback when checked/unchecked
+         });
+
+      });
+
   </script>
 </body>
 </html>
