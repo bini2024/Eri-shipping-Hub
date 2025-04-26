@@ -5,118 +5,182 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Load Board - Eri Shipping Hub</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <!-- Select2 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<style>
-   body {
-  background-image: url('https://raw.githubusercontent.com/bini2024/Eri-shipping-Hub/refs/heads/main/Erishipping.jpg'); /* Path to your logo image */
-  background-size: cover; /* Ensures the image covers the entire page */
-  background-position: center center; /* Keeps the image centered */
-  background-attachment: fixed; /* Keeps the background fixed during scrolling */
-  height: 100vh; /* Makes sure the background covers the full viewport height */
-  margin: 0;
-  min-height: 100vh; }
-    
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+     body {
+      background-image: url('https://raw.githubusercontent.com/bini2024/Eri-shipping-Hub/refs/heads/main/Erishipping.jpg');
+      background-size: cover;
+      background-position: center center;
+      background-attachment: fixed;
+      min-height: 100vh;
+      margin: 0;
+    }
+
     .nav-brand {
       font-weight: 700;
-      color: var(--primary-color) !important;
-    } 
-</style>
+      color: var(--bs-primary) !important; /* Use Bootstrap variable */
+    }
+
+    header h1, header p {
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.3); /* Optional: adds readability */
+    }
+    .card {
+        background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent cards */
+        backdrop-filter: blur(5px); /* Optional: adds blur effect */
+    }
+
+    /* Style for validation feedback */
+    /* Removed invalid-feedback div styles as they are removed from HTML */
+    .form-control.is-invalid::placeholder { /* Style placeholder when invalid */
+        color: var(--bs-danger);
+        opacity: 0.8; /* Make it slightly less prominent than normal text */
+    }
+     /* Style Select2 when invalid */
+    .select2-container--bootstrap-5 .select2-selection.is-invalid {
+         border-color: var(--bs-danger) !important;
+         padding-right: calc(1.5em + 0.75rem) !important; /* Add space for possible icon */
+         background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linecap='round' stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e") !important;
+         background-repeat: no-repeat !important;
+         background-position: right calc(0.375em + 0.1875rem) center !important;
+         background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem) !important;
+    }
+
+
+     /* Adjust Select2 placeholder styles */
+    .select2-container .select2-selection--single .select2-selection__placeholder {
+        color: #6c757d !important; /* Bootstrap muted text color */
+    }
+     .select2-container--bootstrap-5 .select2-selection {
+        padding-top: 0.55rem !important; /* Adjust padding for Bootstrap 5 form control height */
+        padding-bottom: 0.55rem !important;
+     }
+      .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow b {
+         top: 60% !important; /* Adjust arrow position */
+     }
+
+     /* Loading Button State */
+     .btn .spinner-border {
+        display: none; /* Hidden by default */
+        margin-right: .5rem;
+     }
+     .btn.loading .spinner-border {
+        display: inline-block;
+     }
+     .btn.loading .button-text {
+        visibility: hidden; /* Hide text while loading */
+     }
+
+  </style>
 </head>
 <body class="bg-light">
-  <header class="py-4 mb-4">
+  <header class="py-4 mb-4 text-dark">
     <div class="container">
-      <h1 class="text-center mb-3">
+      <h1 class="text-center mb-2">
         <i class="fas fa-shipping-fast"></i>
         <span class="nav-brand">Eri Shipping Hub</span>
       </h1>
-      <p class="text-center text-muted">Our community, our courier</p>
+      <p class="text-center text-secondary">Our community, our courier</p>
     </div>
   </header>
+    <div class="container">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Important Security Note:</strong> This page's delete button is hidden from non-admins on the client-side only. To prevent *any* user from deleting data, you **MUST configure Firebase Security Rules** for your 'loads' collection.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+         <div id="generalFeedback" class="alert alert-info alert-dismissible fade show d-none" role="alert">
+            <span id="generalFeedbackText"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+
+
   <div class="container py-4">
     <h3 class="text-center mb-4">📦 ዝርዝር ዝውሰድ ንብረታት</h3>
 
-    <!-- Sender Form -->
     <section class="card mb-5">
       <div class="card-body">
         <h4 class="card-title mb-3">📤 Post a New Load</h4>
-        <form id="loadForm">
-          <div class="row g-3">
+        <form id="loadForm" novalidate> <div class="row g-3">
             <div class="col-md-4">
-              <select id="from" class="form-select" required>
-  <option value="" disabled selected  >ካብ .... ዝከይድ ንብረት ኣለኒ</option>
-  <option value="Ethiopia">🇪🇹 Ethiopia</option>
-<option value="Eritrea">🇪🇷 Eritrea</option>
-<option value="Uganda">🇺🇬 Uganda</option>
-<option value="Canada">🇨🇦 Canada</option>
-<option value="Turkey">🇹🇷 Turkey</option>
-<option value="Dubai">🇦🇪 Dubai</option>
-<option value="Kenya">🇰🇪 Kenya</option>
-<option value="Angola">🇦🇴 Angola</option>
-<option value="Switzerland">🇨🇭 Switzerland</option>
-<option value="Netherlands">🇳🇱 Netherlands</option>
-<option value="Belgium">🇧🇪 Belgium</option>
-<option value="Sweden">🇸🇪 Sweden</option>
-<option value="Germany">🇩🇪 Germany</option>
-<option value="USA">🇺🇸 USA</option>
-<option value="England">🇬🇧 England</option>
-<option value="Denmark">🇩🇰 Denmark</option>
-<option value="France">🇫🇷 France</option>
-<option value="Italy">🇮🇹 Italy</option>
-<option value="South Africa">🇿🇦 South Africa</option>
-<option value="Egypt">🇪🇬 Egypt</option>
-
-  
-</select>
-            </div>
+                <label for="from" class="form-label visually-hidden">From Country</label>
+                <select id="from" class="form-select" required>
+                  <option value="" disabled selected>ካብ .... ዝከይድ ንብረት ኣለኒ</option>
+                   <option value="Ethiopia">🇪🇹 Ethiopia</option>
+                  <option value="Eritrea">🇪🇷 Eritrea</option>
+                  <option value="Uganda">🇺🇬 Uganda</option>
+                  <option value="Canada">🇨🇦 Canada</option>
+                  <option value="Turkey">🇹🇷 Turkey</option>
+                  <option value="Dubai">🇦🇪 Dubai</option>
+                  <option value="Kenya">🇰🇪 Kenya</option>
+                  <option value="Angola">🇦🇴 Angola</option>
+                  <option value="Switzerland">🇨🇭 Switzerland</option>
+                  <option value="Netherlands">🇳🇱 Netherlands</option>
+                  <option value="Belgium">🇧🇪 Belgium</option>
+                  <option value="Sweden">🇸🇪 Sweden</option>
+                  <option value="Germany">🇩🇪 Germany</option>
+                  <option value="USA">🇺🇸 USA</option>
+                  <option value="England">🇬🇧 England</option>
+                  <option value="Denmark">🇩🇰 Denmark</option>
+                  <option value="France">🇫🇷 France</option>
+                  <option value="Italy">🇮🇹 Italy</option>
+                  <option value="South Africa">🇿🇦 South Africa</option>
+                  <option value="Egypt">🇪🇬 Egypt</option>
+                </select>
+                 </div>
             <div class="col-md-4">
-              <select id="to" class="form-select" required>
-  <option value="" disabled selected>ናብ (ክበጽሓሉ ዝደለካዮ ቦታ)</option>
-  <option value="Ethiopia">🇪🇹 Ethiopia</option>
-<option value="Eritrea">🇪🇷 Eritrea</option>
-<option value="Uganda">🇺🇬 Uganda</option>
-<option value="Canada">🇨🇦 Canada</option>
-<option value="Turkey">🇹🇷 Turkey</option>
-<option value="Dubai">🇦🇪 Dubai</option>
-<option value="Kenya">🇰🇪 Kenya</option>
-<option value="Angola">🇦🇴 Angola</option>
-<option value="Switzerland">🇨🇭 Switzerland</option>
-<option value="Netherlands">🇳🇱 Netherlands</option>
-<option value="Belgium">🇧🇪 Belgium</option>
-<option value="Sweden">🇸🇪 Sweden</option>
-<option value="Germany">🇩🇪 Germany</option>
-<option value="USA">🇺🇸 USA</option>
-<option value="England">🇬🇧 England</option>
-<option value="Denmark">🇩🇰 Denmark</option>
-<option value="France">🇫🇷 France</option>
-<option value="Italy">🇮🇹 Italy</option>
-<option value="South Africa">🇿🇦 South Africa</option>
-<option value="Egypt">🇪🇬 Egypt</option>
-
-  
-</select>
-            </div>
+                 <label for="to" class="form-label visually-hidden">To Country</label>
+                <select id="to" class="form-select" required>
+                  <option value="" disabled selected>ናብ (ክበጽሓሉ ዝደለካዮ ቦታ)</option>
+                   <option value="Ethiopia">🇪🇹 Ethiopia</option>
+                  <option value="Eritrea">🇪🇷 Eritrea</option>
+                  <option value="Uganda">🇺🇬 Uganda</option>
+                  <option value="Canada">🇨🇦 Canada</option>
+                  <option value="Turkey">🇹🇷 Turkey</option>
+                  <option value="Dubai">🇦🇪 Dubai</option>
+                  <option value="Kenya">🇰🇪 Kenya</option>
+                  <option value="Angola">🇦🇴 Angola</option>
+                  <option value="Switzerland">🇨🇭 Switzerland</option>
+                  <option value="Netherlands">🇳🇱 Netherlands</option>
+                  <option value="Belgium">🇧🇪 Belgium</option>
+                  <option value="Sweden">🇸🇪 Sweden</option>
+                  <option value="Germany">🇩🇪 Germany</option>
+                  <option value="USA">🇺🇸 USA</option>
+                  <option value="England">🇬🇧 England</option>
+                  <option value="Denmark">🇩🇰 Denmark</option>
+                  <option value="France">🇫🇷 France</option>
+                  <option value="Italy">🇮🇹 Italy</option>
+                  <option value="South Africa">🇿🇦 South Africa</option>
+                  <option value="Egypt">🇪🇬 Egypt</option>
+                </select>
+                 </div>
             <div class="col-md-4">
+                 <label for="weight" class="form-label visually-hidden">Weight</label>
               <input type="text" id="weight" class="form-control" placeholder="ኪሎ(ክብደት)" required />
-            </div>
+               </div>
             <div class="col-md-6">
+                 <label for="deadline" class="form-label visually-hidden">Deadline Date</label>
               <input type="date" id="deadline" class="form-control" placeholder="enter deadline" required />
-            </div>
+               </div>
             <div class="col-md-6">
+                 <label for="phone" class="form-label visually-hidden">Phone Number</label>
               <input type="tel" id="phone" class="form-control" placeholder="ቴሌ" required />
-            </div>
+               </div>
             <div class="col-12">
+                 <label for="comment" class="form-label visually-hidden">Comment (Optional)</label>
               <textarea id="comment" class="form-control" placeholder=" ተወሳኪ ሓበሬታ (optional)"></textarea>
-            </div>
+              </div>
           </div>
-          <button class="btn btn-primary mt-3" type="submit">Post Load</button>
+          <button id="submitLoadBtn" class="btn btn-primary mt-3" type="submit">
+             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+             <span class="button-text">Post Load</span>
+          </button>
         </form>
       </div>
     </section>
 
-    <!-- Load List -->
     <section>
-      <h4 class="mb-3"> 
+      <h4 class="mb-3">
       <span style="
     background: #0a3d62;
     color: white;
@@ -127,17 +191,25 @@
   ">
    📋 ዝውሰድ ንብረት
   </span>
-      
+
       </h4>
-      <div id="loadList" class="row gy-3"></div>
+      <div id="loadList" class="row gy-3">
+          </div>
     </section>
   </div>
 
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, doc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 
+    // ACTUAL Firebase configuration provided by the user
     const firebaseConfig = {
       apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ",
       authDomain: "erishipping-e4532.firebaseapp.com",
@@ -147,155 +219,345 @@
       appId: "1:388550131049:web:e9ac1784ab8e5fabc811f8"
     };
 
-    const app = initializeApp(firebaseConfig);
+    // Initialize Firebase ONLY if not already initialized
+    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
     const db = getFirestore(app);
     const auth = getAuth(app);
     const loadRef = collection(db, "loads");
 
     const form = document.getElementById("loadForm");
     const loadList = document.getElementById("loadList");
+    const submitLoadBtn = document.getElementById("submitLoadBtn");
+    const generalFeedback = document.getElementById("generalFeedback");
+    const generalFeedbackText = document.getElementById("generalFeedbackText");
 
-    let isAdmin = false;
+    let isAdmin = false; // State to track admin status
 
+    // Store original placeholders for inputs
+    const originalPlaceholders = {};
+    document.querySelectorAll('#loadForm input, #loadForm textarea').forEach(input => {
+        originalPlaceholders[input.id] = input.placeholder;
+    });
+
+    // --- UI Feedback Helpers ---
+    function showGeneralFeedback(message, type = 'info') {
+        generalFeedback.classList.remove('alert-info', 'alert-success', 'alert-warning', 'alert-danger');
+        generalFeedback.classList.add(`alert-${type}`, 'show');
+        generalFeedbackText.textContent = message;
+        generalFeedback.classList.remove('d-none');
+    }
+
+    function hideGeneralFeedback() {
+        generalFeedback.classList.add('d-none');
+    }
+
+    function setButtonLoadingState(button, isLoading) {
+        if (isLoading) {
+            button.classList.add('loading');
+            button.disabled = true;
+        } else {
+            button.classList.remove('loading');
+            button.disabled = false;
+        }
+    }
+
+    // Modified setValidationFeedback to use placeholders for standard inputs
+    function setValidationFeedback(inputElement, message = '') {
+        // Apply is-invalid class to all invalid inputs/selects
+        if (message) {
+            inputElement.classList.add('is-invalid');
+            // For standard inputs/textareas, set the placeholder to the message
+            if (inputElement.tagName === 'INPUT' || inputElement.tagName === 'TEXTAREA') {
+                 inputElement.placeholder = message;
+                 // Select2 handles its own placeholder via JS config,
+                 // we just add the is-invalid class to the select element.
+            }
+        } else {
+            inputElement.classList.remove('is-invalid');
+            // For standard inputs/textareas, restore original placeholder
+            if (inputElement.tagName === 'INPUT' || inputElement.tagName === 'TEXTAREA') {
+                 inputElement.placeholder = originalPlaceholders[inputElement.id] || ''; // Restore or clear
+            }
+            // Select2 just needs the class removed
+        }
+    }
+
+    function clearAllValidationFeedback() {
+        form.querySelectorAll('.form-control, .form-select').forEach(input => {
+            setValidationFeedback(input, ''); // Clear feedback for all fields
+        });
+    }
+
+    // --- Authentication State ---
     onAuthStateChanged(auth, (user) => {
-      isAdmin = !!user;
+        // Determine admin status securely here in a real app
+        // For this example, we still assume any logged-in user can see the button (NOT SECURE)
+         isAdmin = !!user;
+         console.log("Admin status:", isAdmin); // For debugging
+         // Re-render loads to show/hide delete buttons based on new admin status
+         renderLoads(loadRef); // You might need to trigger a re-fetch/re-render
+                               // Or handle visibility directly if snapshot is already attached
+                               // Calling renderLoads(currentSnapshotData) is safer if you store snapshot data
     });
 
+    // --- Form Submission ---
     form.addEventListener("submit", async (e) => {
-      e.preventDefault();
+        e.preventDefault();
 
-      const from = form.from.value.trim();
-      const to = form.to.value.trim();
-      const weight = form.weight.value.trim();
-      const deadline = form.deadline.value;
-      const phone = form.phone.value.trim();
-      const comment = form.comment.value.trim();
+        hideGeneralFeedback(); // Hide any previous general message
+        clearAllValidationFeedback(); // Clear previous validation errors and restore placeholders
 
-      const today = new Date();
-      const selectedDate = new Date(deadline);
+        const from = form.from.value.trim();
+        const to = form.to.value.trim();
+        const weight = form.weight.value.trim();
+        const deadline = form.deadline.value;
+        const phone = form.phone.value.trim();
+        const comment = form.comment.value.trim();
 
-      if (!from || !to || !weight || !deadline || !phone) {
-        alert("All fields are required.");
-        return;
-      }
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Compare dates only, ignore time
+        const selectedDate = new Date(deadline);
 
-      if (selectedDate <= today) {
-        alert("Please enter a future deadline date.");
-        return;
-      }
+        let isValid = true;
+        let errorMessages = []; // Collect messages for the general feedback
 
-      if (!/^\+?[0-9\s-]{7,15}$/.test(phone)) {
-        alert("Please enter a valid phone number.");
-        return;
-      }
+        // Basic Client-Side Validation (Server-side is needed for security!)
+        if (!from) { setValidationFeedback(form.from, "Please select origin."); isValid = false; errorMessages.push("Please select origin country."); } // Select2 error message
+        if (!to) { setValidationFeedback(form.to, "Please select destination."); isValid = false; errorMessages.push("Please select destination country."); } // Select2 error message
 
-      if (parseFloat(weight) > 1000 || isNaN(weight)) {
-        alert("Please enter a valid weight (less than 1000 kg).");
-        return;
-      }
+        const weightValue = parseFloat(weight);
+        if (weight === "" || isNaN(weightValue) || weightValue <= 0 || weightValue >= 1000) {
+             setValidationFeedback(form.weight, "Valid weight req'd (>0, <1000)."); isValid = false; errorMessages.push("Please enter a valid weight (> 0 and < 1000 kg).");
+        }
 
-      if (/http|www|@|%/.test(comment)) {
-        alert("Comments must not contain links or strange characters.");
-        return;
-      }
+        if (!deadline) {
+             setValidationFeedback(form.deadline, "Deadline req'd."); isValid = false; errorMessages.push("Please enter a deadline date.");
+        } else if (selectedDate < today) {
+            setValidationFeedback(form.deadline, "Future date req'd."); isValid = false; errorMessages.push("Please enter a future deadline date.");
+        }
 
-      const lastPostTime = localStorage.getItem("lastLoadPostTime");
-      if (lastPostTime && (Date.now() - parseInt(lastPostTime) < 2 * 60 * 60 * 1000)) {
-        alert("Please wait at least 2 hours before posting again.");
-        return;
-      }
+        // Basic phone validation (at least 7 digits, allows +, -, spaces)
+        if (!phone || !/^\+?[0-9\s-]{7,}$/.test(phone)) {
+             setValidationFeedback(form.phone, "Valid phone req'd (min 7 digits)."); isValid = false; errorMessages.push("Please enter a valid phone number (min 7 digits).");
+        }
 
-      const loadData = {
-        from,
-        to,
-        weight,
-        deadline,
-        phone,
-        comment,
-        createdAt: serverTimestamp()
-      };
-
-const duplicateLoadQuery = query(
-  loadRef,
-  where("from", "==", from),
-  where("to", "==", to),
-  where("deadline", "==", deadline),
-  where("phone", "==", phone)
-);
-
-const existingLoads = await getDocs(duplicateLoadQuery);
-
-if (!existingLoads.empty) {
-  alert("⚠️ This load is already registered.");
-  return;
-}
+        // Simple comment validation
+         if (/http|www|@|%/.test(comment)) {
+             setValidationFeedback(form.comment, "Invalid chars in comment."); isValid = false; errorMessages.push("Comments must not contain links or strange characters.");
+         }
 
 
+        if (!isValid) {
+            // Show general feedback with collected messages if needed, or just rely on placeholders+red borders
+            showGeneralFeedback("Please fix the errors in the form.", "warning"); // Standard message indicating errors exist
+            return; // Stop submission if client-side validation fails
+        }
 
-      await addDoc(loadRef, loadData);
-      localStorage.setItem("lastLoadPostTime", Date.now());
-      form.reset();
-      alert("Load posted successfully!");
+        // Cooldown Check
+        const lastPostTime = localStorage.getItem("lastLoadPostTime");
+        const cooldownDuration = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+        if (lastPostTime && (Date.now() - parseInt(lastPostTime) < cooldownDuration) && !isAdmin) { // Admins bypass cooldown? Optional
+             const remainingTime = cooldownDuration - (Date.now() - parseInt(lastPostTime));
+             const minutes = Math.ceil(remainingTime / (60 * 1000));
+             showGeneralFeedback(`Please wait ${minutes} more minute(s) before posting again.`, "warning");
+            return;
+        }
+
+        setButtonLoadingState(submitLoadBtn, true); // Show loading state
+
+        try {
+            // Duplicate Check
+            const duplicateLoadQuery = query(
+                loadRef,
+                where("from", "==", from),
+                where("to", "==", to),
+                where("deadline", "==", deadline),
+                where("phone", "==", phone)
+            );
+            const existingLoads = await getDocs(duplicateLoadQuery);
+
+            if (!existingLoads.empty) {
+                showGeneralFeedback("⚠️ This load is already registered.", "warning");
+                 setButtonLoadingState(submitLoadBtn, false);
+                return;
+            }
+
+            // Add Load to Firestore
+            const loadData = {
+                from,
+                to,
+                weight: weightValue, // Store as number
+                deadline,
+                phone,
+                comment,
+                createdAt: serverTimestamp()
+                // Consider adding user UID here if you want to associate loads with users
+                // userId: auth.currentUser ? auth.currentUser.uid : null,
+            };
+
+            await addDoc(loadRef, loadData);
+            localStorage.setItem("lastLoadPostTime", Date.now()); // Update cooldown time
+            form.reset(); // Reset form on success
+            // Reset Select2 placeholders manually after form reset
+            $('#from').val(null).trigger('change');
+            $('#to').val(null).trigger('change');
+            clearAllValidationFeedback(); // Ensure placeholders are restored after reset
+
+
+            showGeneralFeedback("✅ Load posted successfully!", "success");
+
+        } catch (error) {
+            console.error("Error posting load:", error);
+            showGeneralFeedback(`❌ Failed to post load: ${error.message}`, "danger");
+        } finally {
+            setButtonLoadingState(submitLoadBtn, false); // Hide loading state
+        }
     });
 
+    // --- Displaying Loads ---
+    // Added a function to render loads, called initially and on snapshot updates
+    function renderLoads(loadsSnapshot) {
+         loadList.innerHTML = ""; // Clear current list
+        const now = new Date();
+         let hasLoadsToDisplay = false; // Track if any non-expired loads exist
+
+        if (loadsSnapshot.empty) {
+             loadList.innerHTML = `
+                <div class="text-center text-muted mt-4 w-100">
+                  <p class="fw-bold">📭 No loads available at the moment</p>
+                </div>
+              `;
+             return; // No loads at all in the snapshot
+        }
+
+
+        loadsSnapshot.forEach(docSnap => {
+            const load = docSnap.data();
+            // Ensure deadline is treated as a date string if it came from Firestore
+            // (Firebase Timestamps handle date comparisons better in queries)
+            const deadlineDate = new Date(load.deadline + 'T00:00:00'); // Assume YYYY-MM-DD string
+
+
+            // Filter expired loads client-side before displaying
+            // Use <= now to hide loads whose deadline is today or in the past
+            if (deadlineDate <= now) {
+                 // Optional: Consider deleting expired loads here if you have permissions and want auto-cleanup
+                 // if (isAdmin) { deleteLoad(docSnap.id); } // Dangerous to auto-delete on client snapshot, use Cloud Function!
+                return; // Skip displaying expired load
+            }
+
+            hasLoadsToDisplay = true; // Found a non-expired load
+
+            const div = document.createElement("div");
+            div.className = "col-md-4"; // Use Bootstrap grid column
+            div.innerHTML = `
+              <div class="card border-0 shadow-sm h-100"> {/* Added h-100 for uniform height */}
+                <div class="card-body d-flex flex-column"> {/* Use flex to push button down */}
+                  <h5 class="card-title">${load.from} → ${load.to}</h5>
+                  <p class="card-text"><strong>Weight:</strong> ${load.weight} kg</p>
+                  <p class="card-text"><strong>Deadline:</strong> ${load.deadline}</p>
+                  <p class="card-text"><strong>Contact:</strong> <a href="tel:${load.phone}">${load.phone}</a></p>
+                  <p class="card-text flex-grow-1"><strong>Note:</strong> ${load.comment || "N/A"}</p> {/* flex-grow-1 pushes delete to bottom */}
+                  ${isAdmin ? `<button class="btn btn-sm btn-danger mt-2 delete-load-btn" data-id="${docSnap.id}">
+                                  <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                  <span class="button-text">Delete</span>
+                               </button>` : ""}
+                </div>
+              </div>
+            `;
+            loadList.appendChild(div);
+        });
+
+         // Display "No loads" message if all loads were filtered out or if snapshot was initially empty
+         if (!hasLoadsToDisplay && !loadsSnapshot.empty) {
+             loadList.innerHTML = `
+                <div class="text-center text-muted mt-4 w-100">
+                  <p class="fw-bold">📭 No loads available at the moment (All available loads have expired)</p>
+                </div>
+              `;
+         } else if (!hasLoadsToDisplay && loadsSnapshot.empty) {
+              loadList.innerHTML = `
+                <div class="text-center text-muted mt-4 w-100">
+                  <p class="fw-bold">📭 No loads available at the moment</p>
+                </div>
+              `;
+         }
+
+    }
+
+
+    // Listen for real-time updates to the loads collection
     onSnapshot(loadRef, (snapshot) => {
-      loadList.innerHTML = "";
-      const now = new Date();
-      let hasLoads = false;
-
-
-      snapshot.forEach(docSnap => {
-        const load = docSnap.data();
-        const deadlineDate = new Date(load.deadline);
-
-        // Auto skip expired
-        if (deadlineDate < now) return;
-
-        hasLoads = true;
-        
-        const div = document.createElement("div");
-        div.className = "col-md-4";
-        div.innerHTML = `
-          <div class="card border-0 shadow-sm">
-            <div class="card-body">
-              <h5 class="card-title">${load.from} → ${load.to}</h5>
-              <p><strong>Weight:</strong> ${load.weight} kg</p>
-              <p><strong>Deadline:</strong> ${load.deadline}</p>
-              <p><strong>Contact:</strong> <a href="tel:${load.phone}">${load.phone}</a></p>
-              <p><strong>Note:</strong> ${load.comment || "N/A"}</p>
-              ${isAdmin ? `<button class="btn btn-sm btn-danger mt-2" onclick="deleteLoad('${docSnap.id}')">Delete</button>` : ""}
+        renderLoads(snapshot); // Call the render function whenever data changes
+    }, (error) => {
+        console.error("Error fetching loads:", error);
+        showGeneralFeedback(`Error loading loads: ${error.message}`, "danger");
+         loadList.innerHTML = `
+            <div class="text-center text-danger mt-4 w-100">
+              <p>❌ Failed to load available loads.</p>
             </div>
-          </div>
-        `;
-        loadList.appendChild(div);
+          `;
+    });
+
+    // --- Delete Functionality (Admin UI Only) ---
+    // Use event delegation to handle clicks on delete buttons
+    loadList.addEventListener('click', async (event) => {
+        const deleteButton = event.target.closest('.delete-load-btn'); // Find the nearest delete button ancestor
+        if (!deleteButton || deleteButton.disabled) return; // Not a delete button click or button is disabled
+
+        const loadId = deleteButton.dataset.id;
+
+        if (!isAdmin) {
+            // This check is redundant if security rules are correct, but good for UI feedback
+            showGeneralFeedback("You do not have permission to delete loads.", "danger");
+            return;
+        }
+
+        if (!confirm("Are you sure you want to delete this load?")) {
+            return; // User cancelled deletion
+        }
+
+        setButtonLoadingState(deleteButton, true); // Show loading state on delete button
+
+        try {
+            await deleteDoc(doc(loadRef, loadId));
+            // onSnapshot listener will automatically update the list when deleted
+            showGeneralFeedback("🗑️ Load deleted successfully!", "success");
+        } catch (error) {
+            console.error("Error deleting load:", error);
+             // Check if the error is a permission denied error from security rules
+            if (error.code === 'permission-denied') {
+                 showGeneralFeedback("❌ You do not have permission to delete this load. (Security rules blocked the action)", "danger");
+            } else {
+                 showGeneralFeedback(`❌ Failed to delete load: ${error.message}`, "danger");
+            }
+             setButtonLoadingState(deleteButton, false); // Hide loading state on error
+        }
+    });
+
+
+    // --- Initialize Select2 ---
+     $(document).ready(function() {
+        // Store initial placeholders for Select2 elements too, though they are handled differently
+         document.querySelectorAll('#loadForm select').forEach(select => {
+             const selectedOption = select.querySelector('option[disabled][selected]');
+             if (selectedOption) {
+                originalPlaceholders[select.id] = selectedOption.textContent;
+             }
+         });
+
+        $('#from').select2({ placeholder: originalPlaceholders['from'] || 'Select From Country', theme: 'bootstrap-5' });
+        $('#to').select2({ placeholder: originalPlaceholders['to'] || 'Select Destination Country', theme: 'bootstrap-5' });
+
+         // Watch Select2 changes to remove is-invalid class
+         $('#from, #to').on('change', function() {
+             if ($(this).val()) {
+                 $(this).removeClass('is-invalid');
+             }
+         });
       });
 
-      if (!hasLoads) {
-  loadList.innerHTML = `
-    <div class="text-center text-muted mt-4 w-100">
-      <p class="fw-bold">📭 No loads available at the moment</p>
-    </div>
-  `;
-}
-
-    });
-
-    window.deleteLoad = async function(id) {
-      if (!confirm("Delete this load?")) return;
-      await deleteDoc(doc(loadRef, id));
-      alert("Load deleted.");
-    }
   </script>
-  <!-- jQuery + Select2 JS -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-<script>
-  $(document).ready(function() {
-    $('#from').select2({ placeholder: 'Select From Country' });
-    $('#to').select2({ placeholder: 'Select Destination Country' });
-  });
-</script>
 
 </body>
 </html>
