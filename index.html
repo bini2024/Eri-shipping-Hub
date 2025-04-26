@@ -130,11 +130,7 @@
         transform: scale(1.05);
       }
 
-      #installContainer {
-        display: none; /* Managed by JS */
-        text-align: center;
-        margin: 30px 0;
-      }
+      /* Removed #installContainer CSS as the button is not inside it */
 
         #installBtn {
       background-color: var(--app-primary); /* Use your dark blue */
@@ -149,6 +145,8 @@
       bottom: 30px;
       right: 30px;
       z-index: 999;
+      /* Button is visible by default now, JS will hide it if installed */
+      display: block;
     }
 
     #installBtn:hover {
@@ -458,7 +456,7 @@
      }
 
 
-    // --- Sender Search Form Submission ---
+    // --- Sender Search Form Submission (Client-Side Filtering) ---
     packageForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
@@ -496,13 +494,13 @@
       setButtonLoadingState(searchCourierBtn, true); // Show loading state
 
       try {
-        // --- FETCH ALL AND FILTER CLIENT-SIDE (as requested) ---
+        // --- FETCH ALL AND FILTER CLIENT-SIDE ---
         // Get ALL courier documents from Firestore (does not require composite index)
         const querySnapshot = await getDocs(courierCollection);
 
         const now = new Date();
-        // Ensure date comparison is correct whether storing as YYYY-MM-DD or Timestamp
-        // Assuming date is stored as YYYY-MM-DD string based on previous code
+        // Ensure date comparison is correct whether storing as impenetrable-MM-DD or Timestamp
+        // Assuming date is stored as impenetrable-MM-DD string based on previous code
         const todayISO = now.toISOString().split("T")[0];
 
         let matchingCouriers = [];
@@ -606,14 +604,16 @@
      let deferredPrompt;
       const installBtn = document.getElementById('installBtn');
 
-      // Hide the install button by default and show it if the prompt event fires
-      installBtn.style.display = 'none';
-
+      // Keep the button visible by default via CSS/HTML
+      // JS will hide it only if the app is already installed (listener below)
+      // or after the prompt is handled.
 
       window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        installBtn.style.display = 'block'; // Show the button
+        // Optional: Show the button here if it was hidden by default CSS,
+        // but we want it visible by default now.
+        // installBtn.style.display = 'block'; // This line is no longer needed if button is always visible
         console.log('✅ beforeinstallprompt fired'); // Debug
       });
 
@@ -636,10 +636,6 @@
            installBtn.style.display = 'none';
            console.log('✅ Appinstalled event fired'); // Debug
       });
-
-
-    // --- Footer Year Script ---
-    // document.getElementById("year").textContent = new Date().getFullYear(); // This script is now inside the footer HTML
 
 
     // Note: Logout and Delete Courier functions are removed as they belong on pages
