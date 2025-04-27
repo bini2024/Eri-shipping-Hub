@@ -600,42 +600,35 @@
       });
 
 
-    // --- PWA Install Button Logic ---
-     let deferredPrompt;
-      const installBtn = document.getElementById('installBtn');
+   let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+installBtn.style.display = 'none'; // Hidden by default
 
-      // Keep the button visible by default via CSS/HTML
-      // JS will hide it only if the app is already installed (listener below)
-      // or after the prompt is handled.
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = 'block'; // Show button only when available
+});
 
-      window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        // Optional: Show the button here if it was hidden by default CSS,
-        // but we want it visible by default now.
-        // installBtn.style.display = 'block'; // This line is no longer needed if button is always visible
-        console.log('✅ beforeinstallprompt fired'); // Debug
-      });
+installBtn.addEventListener('click', async () => {
+  installBtn.style.display = 'none'; // Hide immediately after click
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      console.log('✅ User accepted install prompt');
+    } else {
+      console.log('❌ User dismissed install prompt');
+    }
+    deferredPrompt = null;
+  }
+});
 
-      installBtn.addEventListener('click', () => {
-        installBtn.style.display = 'none'; // Hide the button once clicked
-        if (deferredPrompt) {
-          deferredPrompt.prompt();
-          deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === 'accepted') {
-              console.log('✅ App installed');
-            } else {
-              console.log('❌ Install dismissed');
-            }
-            deferredPrompt = null;
-          });
-        }
-      });
-      // If the app is already installed, hide the button
-      window.addEventListener('appinstalled', () => {
-           installBtn.style.display = 'none';
-           console.log('✅ Appinstalled event fired'); // Debug
-      });
+window.addEventListener('appinstalled', () => {
+  console.log('✅ App installed successfully');
+  installBtn.style.display = 'none'; // Hide install button forever
+});
+ 
 
 
     // Note: Logout and Delete Courier functions are removed as they belong on pages
@@ -701,6 +694,7 @@
         <p class="mb-0 text-white">&copy; <span id="year"></span> <strong>Eri Shipping Hub</strong>. All rights reserved.</p>
       </div>
     </footer>
+<button id="installBtn" style="display: none;">📲 Install Eri Shipping Hub App</button>
 
     <script>
       document.getElementById("year").textContent = new Date().getFullYear();
