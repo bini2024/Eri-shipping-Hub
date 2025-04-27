@@ -7,24 +7,108 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="manifest" href="/site.webmanifest">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16k.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <style>
+     body {
+        background-color: #f8f9fa; /* Light background matching Bootstrap */
+     }
+     .table th {
+         cursor: pointer; /* Indicate sortable columns (if you add sorting JS) */
+     }
+     /* Style for loading state on buttons */
+      .btn .spinner-border {
+        display: none; /* Hidden by default */
+        margin-right: .5rem;
+     }
+     .btn.loading .spinner-border {
+        display: inline-block;
+     }
+     .btn.loading .button-text {
+        visibility: hidden; /* Hide text while loading */
+     }
+  </style>
 </head>
-<body class="bg-light">
+<body>
   <div class="container mt-5">
     <h3 class="text-center mb-4">Admin Panel</h3>
-    <div id="adminCouriers" class="row gy-3"></div>
-    <div class="text-end">
-      <button onclick="logout()" class="btn btn-sm btn-danger mt-3">Logout</button>
-    </div>
-  </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+    <div id="generalFeedback" class="alert alert-info alert-dismissible fade show d-none" role="alert">
+        <span id="generalFeedbackText"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="text-end mb-3">
+      <button id="logoutBtn" class="btn btn-sm btn-danger">Logout</button>
+    </div>
+
+    <div id="adminContent" style="display: none;"> <ul class="nav nav-tabs mb-3" id="adminTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="couriers-tab" data-bs-toggle="tab" data-bs-target="#couriers" type="button" role="tab" aria-controls="couriers" aria-selected="true">Couriers</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="loads-tab" data-bs-toggle="tab" data-bs-target="#loads" type="button" role="tab" aria-controls="loads" aria-controls="loads" aria-selected="false">Loads</button>
+        </li>
+         </ul>
+
+      <div class="tab-content" id="adminTabsContent">
+        <div class="tab-pane fade show active" id="couriers" role="tabpanel" aria-labelledby="couriers-tab">
+          <h4>Courier Entries</h4>
+          <div class="table-responsive">
+             <table class="table table-striped table-hover">
+               <thead>
+                 <tr>
+                   <th>Name</th>
+                   <th>Route</th>
+                   <th>Date</th>
+                   <th>Contact</th>
+                   <th>Comment</th>
+                   <th>Posted At</th>
+                   <th>Actions</th>
+                 </tr>
+               </thead>
+               <tbody id="couriersTableBody">
+                 <tr><td colspan="7" class="text-center text-muted">Loading couriers...</td></tr>
+               </tbody>
+             </table>
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="loads" role="tabpanel" aria-labelledby="loads-tab">
+           <h4>Load Entries</h4>
+            <div class="table-responsive">
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Weight (kg)</th>
+                    <th>Deadline</th>
+                    <th>Contact</th>
+                    <th>Comment</th>
+                    <th>Posted At</th>
+                     <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="loadsTableBody">
+                  <tr><td colspan="8" class="text-center text-muted">Loading loads...</td></tr>
+                </tbody>
+              </table>
+            </div>
+        </div>
+         </div>
+
+    </div> <div id="authMessage" class="alert alert-warning text-center" role="alert">
+        Access denied. Please log in with an administrator account.
+    </div>
+
+  </div> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> <script type="module">
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, deleteDoc, doc, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"; // Import orderBy, query
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 
+    // Your Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ",
       authDomain: "erishipping-e4532.firebaseapp.com",
@@ -34,79 +118,242 @@
       appId: "1:388550131049:web:e9ac1784ab8e5fabc811f8"
     };
 
-    const app = initializeApp(firebaseConfig);
+    // Initialize Firebase
+    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
     const db = getFirestore(app);
     const auth = getAuth(app);
 
+    // Firestore Collection References
     const courierCollection = collection(db, "couriers");
-    const adminCouriers = document.getElementById("adminCouriers");
+    const loadsCollection = collection(db, "loads"); // Reference to the loads collection
 
-    // Require login to access admin page
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        window.location.href = "login.html";
+    // UI Elements
+    const adminContent = document.getElementById('adminContent');
+    const authMessage = document.getElementById('authMessage');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const couriersTableBody = document.getElementById('couriersTableBody');
+    const loadsTableBody = document.getElementById('loadsTableBody'); // Table body for loads
+    const generalFeedback = document.getElementById("generalFeedback");
+    const generalFeedbackText = document.getElementById("generalFeedbackText");
+
+
+    // --- Admin Authentication Check ---
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // User is logged in, now CHECK IF THEY ARE AN ADMIN
+        // *** IMPORTANT: Implement your secure admin check here ***
+        // This example uses a simple check against hardcoded UIDs (NOT SECURE for real admins)
+        // A secure way is using Firebase Custom Claims set via Admin SDK,
+        // or checking a secure list of admin UIDs on the server (e.g., via a Cloud Function).
+
+        // --- Example Secure Admin Check (using Custom Claims - Requires Admin SDK setup) ---
+        // const idTokenResult = await user.getIdTokenResult();
+        // const isAdmin = idTokenResult.claims.admin === true;
+
+        // --- Example Simple Check (using hardcoded UIDs - **Replace with your actual Admin UIDs**) ---
+         const adminUIDs = ['REPLACE_WITH_YOUR_ADMIN_UID_1', 'REPLACE_WITH_YOUR_ADMIN_UID_2']; // *** CRITICAL: Add actual Admin UIDs ***
+         const isAdmin = adminUIDs.includes(user.uid);
+
+
+        if (isAdmin) {
+          // User is logged in AND is an admin
+          console.log("Admin user detected:", user.uid);
+          authMessage.style.display = 'none'; // Hide auth message
+          adminContent.style.display = 'block'; // Show admin content
+          loadAdminData(); // Load data for admin
+        } else {
+          // User is logged in but NOT an admin
+          console.warn("Logged in user is not an admin:", user.uid);
+          authMessage.textContent = "Access denied. Your account does not have administrator privileges.";
+          authMessage.classList.remove('alert-warning', 'alert-success', 'alert-danger');
+          authMessage.classList.add('alert-danger', 'show');
+          adminContent.style.display = 'none'; // Hide admin content
+          // Optional: Automatically log out non-admin users
+          // signOut(auth); // Uncomment to auto-logout non-admins
+        }
       } else {
-        loadCouriers(); // Only load if user is logged in
+        // User is NOT logged in
+        console.log("No user logged in. Redirecting to login.");
+        window.location.href = "login.html"; // Redirect to your login page
       }
     });
 
-    function loadCouriers() {
-      onSnapshot(courierCollection, (snapshot) => {
-        adminCouriers.innerHTML = "";
-        if (snapshot.empty) {
-          adminCouriers.innerHTML = "<p class='text-muted text-center'>No couriers found.</p>";
-          return;
-        }
-
-        snapshot.forEach((docSnap) => {
-          const data = docSnap.data();
-          const card = document.createElement("div");
-          card.className = "col-md-4";
-          card.innerHTML = `
-            <div class="card shadow-sm border-0">
-              <div class="card-body">
-                <h5 class="card-title">${data.name || "Courier"}</h5>
-                <p class="card-text"><strong>From:</strong> ${data.from}</p>
-                <p class="card-text"><strong>To:</strong> ${data.to}</p>
-                <p class="card-text"><strong>Date:</strong> ${data.date || "N/A"}</p>
-                <p class="card-text"><strong>Contact:</strong> <a href="tel:${data.contact}">${data.contact}</a></p>
-                <p class="card-text"><strong>Comment:</strong> ${data.comments || "No comments"}</p>
-                <button onclick="deleteCourier('${docSnap.id}')" class="btn btn-sm btn-outline-danger mt-2">
-                  <i class="fas fa-trash"></i> Delete
-                </button>
-              </div>
-            </div>
-          `;
-          adminCouriers.appendChild(card);
-        });
+    // --- Load Admin Data (Couriers and Loads) ---
+    function loadAdminData() {
+      // Load Couriers (Ordered by creation date)
+      const couriersQuery = query(courierCollection, orderBy('createdAt', 'desc')); // Add ordering if createdAt exists
+      onSnapshot(couriersQuery, (snapshot) => {
+        renderCouriersTable(snapshot);
+      }, (error) => {
+        console.error("Error fetching couriers:", error);
+        showGeneralFeedback(`Error loading couriers: ${error.message}`, "danger");
+         couriersTableBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Failed to load couriers.</td></tr>`;
       });
+
+      // Load Loads (Ordered by creation date)
+      const loadsQuery = query(loadsCollection, orderBy('createdAt', 'desc')); // Add ordering if createdAt exists
+       onSnapshot(loadsQuery, (snapshot) => {
+         renderLoadsTable(snapshot);
+       }, (error) => {
+         console.error("Error fetching loads:", error);
+         showGeneralFeedback(`Error loading loads: ${error.message}`, "danger");
+          loadsTableBody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">Failed to load loads.</td></tr>`;
+       });
+
+       // *** IMPORTANT ***
+       // Ensure 'createdAt' field exists in your 'couriers' and 'loads' documents.
+       // If not, use a different field or add serverTimestamp() when creating docs.
+       // You may need a Firestore Index for the orderBy clause if combined with other filters later.
     }
 
-    // Delete function (only if authenticated)
-    window.deleteCourier = async function(id) {
-      try {
-        const user = auth.currentUser;
-        if (!user) {
-          alert("You must be logged in to delete.");
-          return;
-        }
-        if (confirm("Are you sure you want to delete this courier?")) {
-          await deleteDoc(doc(courierCollection, id));
-          alert("Courier deleted.");
-        }
-      } catch (error) {
-        console.error("Delete error:", error);
-        alert("Error deleting courier: " + error.message);
+    // --- Render Couriers Table ---
+    function renderCouriersTable(snapshot) {
+      couriersTableBody.innerHTML = ""; // Clear current table body
+
+      if (snapshot.empty) {
+        couriersTableBody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">No couriers found.</td></tr>`;
+        return;
       }
+
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${data.name || "N/A"}</td>
+          <td>${data.from} &rarr; ${data.to}</td>
+          <td>${data.date || "N/A"}</td>
+          <td><a href="tel:${data.contact}">${data.contact}</a></td>
+          <td>${data.comments || "N/A"}</td>
+          <td>${data.createdAt ? new Date(data.createdAt.toDate()).toLocaleString() : "N/A"}</td> <td>
+            <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${docSnap.id}" data-collection="couriers">
+               <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+               <span class="button-text"><i class="fas fa-trash"></i> Delete</span>
+            </button>
+          </td>
+        `;
+        couriersTableBody.appendChild(row);
+      });
     }
 
-    // Logout
-    window.logout = function () {
-      signOut(auth).then(() => {
-        localStorage.removeItem("isAdmin");
-        window.location.href = "login.html";
-      });
-    };
+    // --- Render Loads Table ---
+     function renderLoadsTable(snapshot) {
+       loadsTableBody.innerHTML = ""; // Clear current table body
+
+       if (snapshot.empty) {
+         loadsTableBody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">No loads found.</td></tr>`;
+         return;
+       }
+
+       snapshot.forEach((docSnap) => {
+         const data = docSnap.data();
+         const row = document.createElement("tr");
+         row.innerHTML = `
+           <td>${data.from}</td>
+           <td>${data.to}</td>
+           <td>${data.weight || "N/A"}</td>
+           <td>${data.deadline || "N/A"}</td>
+           <td><a href="tel:${data.contact}">${data.contact}</a></td>
+           <td>${data.comment || "N/A"}</td>
+           <td>${data.createdAt ? new Date(data.createdAt.toDate()).toLocaleString() : "N/A"}</td> <td>
+             <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${docSnap.id}" data-collection="loads">
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span class="button-text"><i class="fas fa-trash"></i> Delete</span>
+             </button>
+           </td>
+         `;
+         loadsTableBody.appendChild(row);
+       });
+     }
+
+
+    // --- Delete Functionality (using Event Delegation) ---
+    // Use a single listener on the container to handle clicks on delete buttons in both tables
+     document.querySelector('.container').addEventListener('click', async (event) => {
+         const deleteButton = event.target.closest('.delete-btn');
+         if (!deleteButton || deleteButton.disabled) return; // Not a delete button or button is disabled
+
+         const docId = deleteButton.dataset.id;
+         const collectionName = deleteButton.dataset.collection; // 'couriers' or 'loads'
+         const collectionRef = collectionName === 'couriers' ? courierCollection : loadsCollection;
+
+         // *** IMPORTANT: Admin check is done by onAuthStateChanged and Security Rules ***
+         // This client-side prompt is just for user confirmation.
+         if (!confirm(`Are you sure you want to delete this ${collectionName.slice(0, -1)} entry?`)) { // Remove 's' for message
+             return; // User cancelled
+         }
+
+         setButtonLoadingState(deleteButton, true); // Show loading state on the specific button
+
+         try {
+             // *** This delete operation MUST be allowed ONLY for authenticated admins by Firestore Security Rules ***
+             await deleteDoc(doc(collectionRef, docId));
+             // onSnapshot listeners will automatically update the tables
+             showGeneralFeedback(`🗑️ ${collectionName.slice(0, -1)} entry deleted successfully!`, "success");
+         } catch (error) {
+             console.error(`Error deleting ${collectionName.slice(0, -1)}:`, error);
+              // Check if the error is a permission denied error from security rules
+             if (error.code === 'permission-denied') {
+                  showGeneralFeedback(`❌ You do not have permission to delete this entry. (Security rules blocked the action)`, "danger");
+             } else {
+                  showGeneralFeedback(`❌ Failed to delete ${collectionName.slice(0, -1)} entry: ${error.message}`, "danger");
+             }
+              setButtonLoadingState(deleteButton, false); // Hide loading state on error
+         }
+     });
+
+
+    // --- UI Feedback Helpers (Consistent) ---
+     function showGeneralFeedback(message, type = 'info') {
+        generalFeedback.classList.remove('alert-info', 'alert-success', 'alert-warning', 'alert-danger');
+        generalFeedback.classList.add(`alert-${type}`, 'show');
+        generalFeedbackText.textContent = message;
+        generalFeedback.classList.remove('d-none');
+         // Optional: Auto-hide after a few seconds
+         // setTimeout(() => { hideGeneralFeedback(); }, 5000);
+    }
+
+    function hideGeneralFeedback() {
+        generalFeedback.classList.add('d-none');
+    }
+
+     function setButtonLoadingState(button, isLoading) {
+        if (isLoading) {
+            button.classList.add('loading');
+            button.disabled = true;
+            // Add spinner to button
+            const spinner = button.querySelector('.spinner-border');
+            if (!spinner) { // Add spinner if not already there
+                 const newSpinner = document.createElement('span');
+                 newSpinner.className = 'spinner-border spinner-border-sm';
+                 newSpinner.setAttribute('role', 'status');
+                 newSpinner.setAttribute('aria-hidden', 'true');
+                 button.prepend(newSpinner); // Add spinner before text
+            }
+        } else {
+            button.classList.remove('loading');
+            button.disabled = false;
+             // Remove spinner
+            const spinner = button.querySelector('.spinner-border');
+            if (spinner) {
+                 spinner.remove();
+            }
+        }
+    }
+
+
+    // --- Logout ---
+    logoutBtn.addEventListener('click', () => {
+       signOut(auth).then(() => {
+         // localStorage.removeItem("isAdmin"); // Remove this if admin check is only via Auth
+         window.location.href = "login.html"; // Redirect to your login page
+       }).catch((error) => {
+         console.error("Logout error:", error);
+         showGeneralFeedback(`Logout failed: ${error.message}`, "danger");
+       });
+    });
+
+    // Note: Global deleteCourier and logout functions are replaced by event listeners
+    // and direct calls within the module where possible.
   </script>
 </body>
 </html>
