@@ -31,7 +31,6 @@
     }
 
     /* Style for validation feedback */
-    /* Removed invalid-feedback div styles as they are removed from HTML */
     .form-control.is-invalid::placeholder { /* Style placeholder when invalid */
         color: var(--bs-danger);
         opacity: 0.8; /* Make it slightly less prominent than normal text */
@@ -167,7 +166,14 @@
               <textarea id="comment" class="form-control" placeholder=" ተወሳኪ ሓበሬታ (optional)"></textarea>
               </div>
           </div>
-          <button id="submitLoadBtn" class="btn btn-primary mt-3" type="submit">
+
+           <div class="form-check mt-3">
+              <input class="form-check-input" type="checkbox" value="" id="agreeToTermsCheckbox">
+              <label class="form-check-label" for="agreeToTermsCheckbox">
+                I agree to the <a href="terms.html" target="_blank">Terms & Conditions</a>
+              </label>
+            </div>
+           <button id="submitLoadBtn" class="btn btn-primary mt-3" type="submit">
              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
              <span class="button-text">Post Load</span>
           </button>
@@ -285,25 +291,41 @@
     }
 
     // --- Authentication State ---
+    // *** IMPORTANT SECURITY NOTE ***
+    // The isAdmin check below (isAdmin = !!user) is ONLY for controlling
+    // the visibility of UI elements client-side.
+    // This is NOT a secure way to control access to data operations (like delete).
+    // Secure admin checks for database operations MUST be done in your
+    // Firestore Security Rules using request.auth.token.admin == true.
+    // You need to set a custom claim 'admin: true' on the user's Authentication
+    // token on your backend (e.g., via Firebase Cloud Functions or Admin SDK)
+    // for request.auth.token.admin == true to work in rules.
     onAuthStateChanged(auth, (user) => {
-        // Determine admin status securely here in a real app
-        // For this example, we still assume any logged-in user can see the button (NOT SECURE)
-         isAdmin = !!user;
-         console.log("Admin status:", isAdmin); // For debugging
-         // Re-render loads to show/hide delete buttons based on new admin status
-         // You might need to trigger a re-fetch/re-render of the loads list here
-         // if the visibility of the delete button needs to change instantly upon login/logout.
-         // The onSnapshot listener above will re-render when data *changes*,
-         // but won't re-render if only the isAdmin state changes without data changing.
-         // A simple way is to manually re-render the current snapshot data if available,
-         // or detach/re-attach the snapshot listener, which might be overkill.
-         // For now, the button visibility will update on the next data change or page reload.
-         // If immediate update is required, store snapshot data and call renderLoads(storedData) here.
+        // Client-side UI control only (NOT secure for data operations)
+         isAdmin = !!user; // For demo/UI: Any logged-in user is admin client-side
+         console.log("Admin status (client-side UI only):", isAdmin); // For debugging
+         // Note: Updating isAdmin here doesn't automatically re-render existing loads
+         // to show/hide the delete button unless the onSnapshot triggers a data change.
+         // If immediate UI update on login/logout is needed, you would need to re-run
+         // renderLoads with the current snapshot data if available, or re-attach listener.
+         // For simplicity in this example, UI update happens on data change or page reload.
     });
+
 
     // --- Form Submission ---
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
+
+        // --- ADDED: Check Terms & Conditions checkbox ---
+        const agreeToTermsCheckbox = document.getElementById('agreeToTermsCheckbox');
+        if (!agreeToTermsCheckbox.checked) {
+            showGeneralFeedback("Please read and agree to the Terms & Conditions before posting a load.", "warning");
+            // Apply validation feedback to the checkbox or its container if desired
+            // agreeToTermsCheckbox.classList.add('is-invalid'); // Bootstrap doesn't style checkboxes with is-invalid well by default
+            return; // Stop the function execution
+        }
+        // --- END ADDED: Check Terms & Conditions checkbox ---
+
 
         hideGeneralFeedback(); // Hide any previous general message
         clearAllValidationFeedback(); // Clear previous validation errors and restore placeholders
@@ -320,44 +342,44 @@
         const selectedDate = new Date(deadline);
 
         let isValid = true;
-        let errorMessages = []; // Collect messages for the general feedback
+        let errorMessages = [];
 
         // Basic Client-Side Validation (Server-side is needed for security!)
-        if (!from) { setValidationFeedback(form.from, "Please select origin."); isValid = false; errorMessages.push("Please select origin country."); } // Select2 error message
-        if (!to) { setValidationFeedback(form.to, "Please select destination."); isValid = false; errorMessages.push("Please select destination country."); } // Select2 error message
+        if (!from) { setValidationFeedback(form.from, "Please select origin."); isValid = false; }
+        if (!to) { setValidationFeedback(form.to, "Please select destination."); isValid = false; }
 
         const weightValue = parseFloat(weight);
         if (weight === "" || isNaN(weightValue) || weightValue <= 0 || weightValue >= 1000) {
-             setValidationFeedback(form.weight, "Valid weight req'd (>0, <1000)."); isValid = false; errorMessages.push("Please enter a valid weight (> 0 and < 1000 kg).");
+             setValidationFeedback(form.weight, "Valid weight req'd (>0, <1000)."); isValid = false;
         }
 
         if (!deadline) {
-             setValidationFeedback(form.deadline, "Deadline req'd."); isValid = false; errorMessages.push("Please enter a deadline date.");
+             setValidationFeedback(form.deadline, "Deadline req'd."); isValid = false;
         } else if (selectedDate < today) {
-            setValidationFeedback(form.deadline, "Future date req'd."); isValid = false; errorMessages.push("Please enter a future deadline date.");
+            setValidationFeedback(form.deadline, "Future date req'd."); isValid = false;
         }
 
         // Basic phone validation (at least 7 digits, allows +, -, spaces)
         if (!phone || !/^\+?[0-9\s-]{7,}$/.test(phone)) {
-             setValidationFeedback(form.phone, "Valid phone req'd (min 7 digits)."); isValid = false; errorMessages.push("Please enter a valid phone number (min 7 digits).");
+             setValidationFeedback(form.phone, "Valid phone req'd (min 7 digits)."); isValid = false;
         }
 
         // Simple comment validation
          if (/http|www|@|%/.test(comment)) {
-             setValidationFeedback(form.comment, "Invalid chars in comment."); isValid = false; errorMessages.push("Comments must not contain links or strange characters.");
+             setValidationFeedback(form.comment, "Invalid chars in comment."); isValid = false;
          }
 
 
         if (!isValid) {
-            // Show general feedback with collected messages if needed, or just rely on placeholders+red borders
-            showGeneralFeedback("Please fix the errors in the form.", "warning"); // Standard message indicating errors exist
+            showGeneralFeedback("Please fix the errors in the form.", "warning");
             return; // Stop submission if client-side validation fails
         }
 
         // Cooldown Check
         const lastPostTime = localStorage.getItem("lastLoadPostTime");
         const cooldownDuration = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
-        if (lastPostTime && (Date.now() - parseInt(lastPostTime) < cooldownDuration) && !isAdmin) { // Admins bypass cooldown? Optional
+        // Admins bypass cooldown check client-side for UI/testing simplicity (NOT SECURE)
+        if (!isAdmin && lastPostTime && (Date.now() - parseInt(lastPostTime) < cooldownDuration)) {
              const remainingTime = cooldownDuration - (Date.now() - parseInt(lastPostTime));
              const minutes = Math.ceil(remainingTime / (60 * 1000));
              showGeneralFeedback(`Please wait ${minutes} more minute(s) before posting again.`, "warning");
@@ -375,6 +397,7 @@
                 where("deadline", "==", deadline),
                 where("phone", "==", phone)
             );
+             // *** This next line performs the READ operation for duplicate check ***
             const existingLoads = await getDocs(duplicateLoadQuery);
 
             if (!existingLoads.empty) {
@@ -403,6 +426,7 @@
             $('#from').val(null).trigger('change');
             $('#to').val(null).trigger('change');
             clearAllValidationFeedback(); // Ensure placeholders are restored after reset
+            agreeToTermsCheckbox.checked = false; // Uncheck T&C after successful post
 
 
             showGeneralFeedback("✅ Load posted successfully!", "success");
@@ -436,15 +460,16 @@
             const load = docSnap.data();
             // Ensure deadline is treated as a date string if it came from Firestore
             // (Firebase Timestamps handle date comparisons better in queries)
-            const deadlineDate = new Date(load.deadline + 'T00:00:00'); // Assume YYYY-MM-DD string
+            // Assuming load.deadline is a "YYYY-MM-DD" string from the input type="date"
+            const deadlineDate = new Date(load.deadline + 'T00:00:00'); // Adding T00:00:00 to avoid timezone issues
 
 
             // Filter expired loads client-side before displaying
             // Use <= now to hide loads whose deadline is today or in the past
             if (deadlineDate <= now) {
-                 // Optional: Consider deleting expired loads here if you have permissions and want auto-cleanup
-                 // if (isAdmin) { deleteLoad(docSnap.id); } // Dangerous to auto-delete on client snapshot, use Cloud Function!
-                return; // Skip displaying expired load
+                 // IMPORTANT: Do NOT rely on client-side filtering for SECURITY.
+                 // Implement server-side checks (e.g., Cloud Functions) to handle expired data cleanup securely.
+                return; // Skip displaying expired load in the UI
             }
 
             hasLoadsToDisplay = true; // Found a non-expired load
@@ -459,10 +484,12 @@
                   <p class="card-text"><strong>Deadline:</strong> ${load.deadline}</p>
                   <p class="card-text"><strong>Contact:</strong> <a href="tel:${load.phone}">${load.phone}</a></p>
                   <p class="card-text flex-grow-1"><strong>Note:</strong> ${load.comment || "N/A"}</p>
-                  ${isAdmin ? `<button class="btn btn-sm btn-danger mt-2 delete-load-btn" data-id="${docSnap.id}">
+                  ${isAdmin ? // This check controls UI visibility only (NOT secure)
+                    `<button class="btn btn-sm btn-danger mt-2 delete-load-btn" data-id="${docSnap.id}">
                                   <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                   <span class="button-text">Delete</span>
-                               </button>` : ""}
+                               </button>`
+                    : ""}
                 </div>
               </div>
             `;
@@ -504,17 +531,24 @@
     // Use event delegation to handle clicks on delete buttons
     loadList.addEventListener('click', async (event) => {
         const deleteButton = event.target.closest('.delete-load-btn'); // Find the nearest delete button ancestor
-        if (!deleteButton || deleteButton.disabled) return; // Not a delete button click or button is disabled
+        // Only proceed if a delete button was clicked and it's not disabled
+        if (!deleteButton || deleteButton.disabled) return;
 
         const loadId = deleteButton.dataset.id;
 
+        // --- IMPORTANT SECURITY NOTE ---
+        // This client-side isAdmin check is ONLY for hiding the button in the UI.
+        // The actual security check MUST happen in your Firestore Security Rules
+        // to prevent unauthorized users from deleting data even if they bypass the UI.
+        // The rule `allow delete: if isAdmin();` is where the real security is enforced.
         if (!isAdmin) {
-            // This check is redundant if security rules are correct, but good for UI feedback
-            showGeneralFeedback("You do not have permission to delete loads.", "danger");
+             // This client-side check is redundant if security rules are correct,
+             // but provides immediate UI feedback. The security rule is the real gatekeeper.
+             showGeneralFeedback("You do not have permission to delete loads.", "danger");
             return;
         }
 
-        if (!confirm("Are you sure you want to delete this load?")) {
+        if (!confirm("Are you sure you want to delete this load? This cannot be undone.")) {
             return; // User cancelled deletion
         }
 
