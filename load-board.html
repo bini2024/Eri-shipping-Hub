@@ -55,17 +55,42 @@
      /* Adjust Select2 placeholder styles */
     .select2-container .select2-selection--single .select2-selection__placeholder {
         color: #6c757d !important;
+        line-height: calc(1.5em + 0.75rem + 2px); /* Match line height with input */
     }
-     /* Style Select2 to look more like an input box */
-     .select2-container--bootstrap-5 .select2-selection {
-        padding-top: 0.55rem !important;
-        padding-bottom: 0.55rem !important;
+
+    /* Style Select2 to look more like an input box */
+    .select2-container--bootstrap-5 .select2-selection {
+        padding-top: 0.375rem !important; /* Adjust padding */
+        padding-bottom: 0.375rem !important; /* Adjust padding */
         min-height: calc(1.5em + 0.75rem + 2px); /* Match Bootstrap form-control height */
         border: 1px solid #ced4da !important; /* Add standard bootstrap border */
         border-radius: var(--bs-border-radius); /* Use bootstrap border radius */
-     }
-      .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow b {
-         top: 60% !important;
+        display: flex; /* Use flexbox for alignment */
+        align-items: center; /* Center vertically */
+    }
+
+    .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+         padding-left: 0.75rem !important; /* Standard bootstrap input padding-left */
+         padding-right: 2.5rem !important; /* Make space for the arrow/clear */
+         line-height: calc(1.5em + 0.75rem) !important; /* Adjust line height */
+         color: #212529; /* Standard input text color */
+         flex-grow: 1; /* Allow text to take available space */
+         overflow: hidden; /* Hide overflowing text */
+         text-overflow: ellipsis; /* Add ellipsis for overflow */
+         white-space: nowrap; /* Prevent wrapping */
+    }
+
+      .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow {
+         height: 100%; /* Match parent height */
+         right: 0.75rem !important; /* Position correctly */
+         top: 0 !important; /* Align to top */
+         display: flex; /* Use flexbox */
+         align-items: center; /* Center vertically */
+      }
+
+     .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow b {
+         border-top-color: #888; /* Standard arrow color */
+         border-width: 5px 4px 0 4px !important; /* Standard arrow size */
      }
 
      /* Loading Button State */
@@ -120,7 +145,7 @@
   </header>
 
   <div class="container">
-       <div id="generalFeedback" class="alert alert-info alert-dismissible fade show d-none" role="alert">
+       <div id="generalFeedback" class="alert alert-info alert-dismissible fade d-none" role="alert">
           <span id="generalFeedbackText"></span>
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
@@ -270,7 +295,7 @@
     const generalFeedbackText = document.getElementById("generalFeedbackText");
     const agreeToTermsCheckbox = document.getElementById('agreeToTermsCheckbox');
 
-    let isAdmin = false; // State to track admin status (client-side UI only)
+    let isAdmin = false; // State to track admin status (client-side UI only) - **Note: This is for UI only. Real admin checks must be done using Firestore Security Rules.**
     let currentSnapshot = null; // Store the latest snapshot
 
     // Store original placeholders
@@ -286,24 +311,23 @@
     });
 
     // --- UI Feedback Helpers ---
-    function showGeneralFeedback(message, type = 'info') {
+    let feedbackHideTimeout = null; // To manage the timeout for hiding feedback
+
+    function showGeneralFeedback(message, type = 'info', duration = 7000) { // Added duration parameter
         console.log("Showing feedback:", message, type); // Debug log
-        // Use a timeout to ensure the alert is added to the DOM before showing
-        setTimeout(() => {
-            generalFeedback.classList.remove('alert-info', 'alert-success', 'alert-warning', 'alert-danger', 'd-none');
-            generalFeedback.classList.add(`alert-${type}`);
-            generalFeedbackText.textContent = message;
-            generalFeedback.classList.add('show');
+        // Clear any existing hide timeout before showing a new message
+        if (feedbackHideTimeout) {
+            clearTimeout(feedbackHideTimeout);
+        }
 
-            // Clear any existing hide timeout
-            if (generalFeedback.hideTimeout) {
-                clearTimeout(generalFeedback.hideTimeout);
-            }
-            // Set new hide timeout
-            generalFeedback.hideTimeout = setTimeout(() => hideGeneralFeedback(), 7000); // Auto-dismiss after 7 seconds
-        }, 10); // Small delay
+        generalFeedback.classList.remove('alert-info', 'alert-success', 'alert-warning', 'alert-danger', 'd-none');
+        generalFeedback.classList.add(`alert-${type}`);
+        generalFeedbackText.textContent = message;
+        generalFeedback.classList.add('show'); // Trigger fade in
+
+         // Set new hide timeout
+         feedbackHideTimeout = setTimeout(() => hideGeneralFeedback(), duration); // Use dynamic duration
     }
-
 
     function hideGeneralFeedback() {
         console.log("Hiding feedback"); // Debug log
@@ -311,6 +335,7 @@
         // Use a timeout matching the Bootstrap fade transition duration before adding d-none
         setTimeout(() => {
             generalFeedback.classList.add('d-none');
+            feedbackHideTimeout = null; // Clear the timeout variable
         }, 200); // Adjust timing if Bootstrap transition duration is different
     }
 
@@ -350,18 +375,28 @@
 
     // --- Authentication State ---
     // Controls UI visibility only. Real access control is via Firestore Rules.
+    // To implement true admin roles, you would need a backend check (e.g., custom claims, or checking an 'admins' collection).
+    // This client-side 'isAdmin' flag is purely for showing/hiding UI elements based on ANY logged-in user vs non-logged-in.
+    // It DOES NOT provide security.
     onAuthStateChanged(auth, (user) => {
         const wasAdmin = isAdmin;
-        // TODO: Implement proper admin check (e.g., custom claims) if needed
-        // For now, any logged-in user is considered admin for UI purposes
+        // For the purpose of *this client-side UI*, isAdmin is true if *any* user is logged in.
+        // **IMPORTANT:** This does NOT mean the user is an actual administrator with elevated privileges in your database.
+        // Implement proper admin checks (Firestore Security Rules) for real security.
         isAdmin = !!user;
 
-        console.log("Auth state changed. User:", user, "isAdmin (client-side):", isAdmin); // Debug log
+        console.log("Auth state changed. User:", user, "isAdmin (client-side UI):", isAdmin); // Debug log
 
-        // Re-render list if admin status changed to update UI controls (like delete button)
+        // Re-render list if admin status changed to update UI controls (like delete button visibility)
         if (isAdmin !== wasAdmin && currentSnapshot) {
             console.log("Admin status changed, re-rendering list.");
             renderLoads(currentSnapshot);
+        } else if (isAdmin && !wasAdmin && currentSnapshot) {
+             // If a user just logged in (became "admin" from client-side UI perspective)
+             renderLoads(currentSnapshot);
+        } else if (!isAdmin && wasAdmin && currentSnapshot) {
+             // If a user just logged out (ceased being "admin" from client-side UI perspective)
+              renderLoads(currentSnapshot);
         }
     });
 
@@ -422,7 +457,6 @@
 
         if (!isValid) {
             console.log("Form validation failed."); // Debug log
-            // showGeneralFeedback("Please fix the errors highlighted in the form.", "warning"); // Feedback already shown for T&C
             setButtonLoadingState(submitLoadBtn, false); // Re-enable button if it was clicked while disabled
             return;
         }
@@ -442,7 +476,7 @@
                  const remainingTime = cooldownDuration - (currentTime - parseInt(lastPostTime));
                  const minutes = Math.ceil(remainingTime / (60 * 1000));
                  console.log(`Cooldown active. ${minutes} minutes remaining.`); // Debug log
-                 showGeneralFeedback(`Please wait ${minutes} more minute(s) before posting again.`, "warning");
+                 showGeneralFeedback(`Please wait ${minutes} more minute(s) before posting again.`, "warning", 10000); // Show for 10 seconds
                  setButtonLoadingState(submitLoadBtn, false);
                  return; // Block submission
             }
@@ -465,7 +499,7 @@
 
             if (!existingLoads.empty) {
                 console.log("Duplicate found!"); // Debug log
-                showGeneralFeedback("⚠️ This exact load (origin, destination, deadline, phone) seems to be already registered.", "warning");
+                showGeneralFeedback("⚠️ This exact load (origin, destination, deadline, phone) seems to be already registered.", "warning", 10000); // Show for 10 seconds
                 setButtonLoadingState(submitLoadBtn, false);
                 return; // Block submission
             }
@@ -489,7 +523,7 @@
             console.log("Document added successfully."); // Debug log
 
             // Set cooldown timestamp only for non-admins
-            if (!isAdmin) {
+            if (!isAdmin) { // isAdmin here means *not* logged in according to the previous logic. This should be !auth.currentUser
                  localStorage.setItem("lastLoadPostTime", currentTime);
                  console.log("Cooldown timestamp set for non-admin."); // Debug log
             }
@@ -501,12 +535,17 @@
             clearAllValidationFeedback();
             agreeToTermsCheckbox.checked = false;
 
+            // Re-fetch loads to ensure the new one appears immediately
+            // Note: onSnapshot should handle this automatically, but a manual fetch might be needed in some complex scenarios
+            // or if the listener hasn't fully initialized. Relying on onSnapshot is generally preferred.
+            // However, if the list doesn't update instantly, you might consider a small delay before showing success
+            // or trusting the onSnapshot listener. For now, we trust onSnapshot.
 
-            showGeneralFeedback("✅ Load posted successfully!", "success");
+            showGeneralFeedback("✅ Load posted successfully!", "success", 7000); // Show success for 7 seconds
 
         } catch (error) {
             console.error("Error during Firestore operation:", error); // Log the actual error
-            showGeneralFeedback(`❌ Failed to post load: ${error.message}. Please check console for details.`, "danger");
+            showGeneralFeedback(`❌ Failed to post load: ${error.message}. Please check console for details.`, "danger", 10000); // Show error for 10 seconds
         } finally {
             setButtonLoadingState(submitLoadBtn, false); // Ensure button is re-enabled
         }
@@ -552,7 +591,7 @@
                   <p class="card-text mb-1"><strong>Deadline:</strong> ${load.deadline}</p>
                   <p class="card-text mb-1"><strong>Contact:</strong> <a href="tel:${load.phone}">${load.phone}</a></p>
                   <p class="card-text flex-grow-1 mb-3"><strong>Note:</strong> ${load.comment || "<i>No additional notes.</i>"}</p>
-                  ${isAdmin ?
+                  ${isAdmin ? // This controls UI visibility only. True admin check is needed in Security Rules.
                     `<button class="btn btn-sm btn-outline-danger mt-auto delete-load-btn" data-id="${docSnap.id}">
                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                        <span class="button-text"><i class="fas fa-trash-alt me-1"></i>Delete</span>
@@ -582,7 +621,7 @@
         renderLoads(snapshot);
     }, (error) => {
         console.error("Error fetching loads:", error);
-        showGeneralFeedback(`Error loading loads: ${error.message}`, "danger");
+        showGeneralFeedback(`Error loading loads: ${error.message}`, "danger", 10000); // Show error for 10 seconds
         loadList.innerHTML = `<div class="col-12 text-center text-danger mt-4"><p>❌ Failed to load available loads.</p></div>`;
     });
 
@@ -594,7 +633,8 @@
         const loadId = deleteButton.dataset.id;
         console.log(`Delete button clicked for load ID: ${loadId}. isAdmin: ${isAdmin}`); // Debug log
 
-        if (!isAdmin) {
+        // This is a client-side UI check. Real permission check must be in Firestore Security Rules.
+        if (!isAdmin) { // isAdmin here is based on `!!auth.currentUser`
              showGeneralFeedback("You do not have permission to delete loads.", "danger");
             return;
         }
@@ -615,9 +655,9 @@
         } catch (error) {
             console.error(`Error deleting load ${loadId}:`, error); // Log the actual error
             if (error.code === 'permission-denied') {
-                 showGeneralFeedback("❌ Permission Denied. You might not have the necessary rights to delete this load.", "danger");
+                 showGeneralFeedback("❌ Permission Denied. You might not have the necessary rights to delete this load. Ensure your Firestore Security Rules allow this operation for authenticated users.", "danger", 10000); // More specific message and duration
             } else {
-                 showGeneralFeedback(`❌ Failed to delete load: ${error.message}`, "danger");
+                 showGeneralFeedback(`❌ Failed to delete load: ${error.message}`, "danger", 10000); // Show error for 10 seconds
             }
              setButtonLoadingState(deleteButton, false); // Reset button state on error only
         }
@@ -629,12 +669,39 @@
         $('#from').select2({
             placeholder: originalPlaceholders['from'] || 'Select From Country',
             theme: 'bootstrap-5',
-            allowClear: true // Optional: adds a clear button
+            allowClear: true, // Optional: adds a clear button
+            // Add custom template for displaying selected options with flags if needed
+            templateSelection: function (state) {
+                if (!state.id) {
+                    return state.text;
+                }
+                // Assuming the option value is the country name and text includes the flag
+                return $(`<span>${state.text}</span>`);
+            },
+             templateResult: function (state) {
+                 if (!state.id) {
+                     return state.text;
+                 }
+                  // Assuming the option text includes the flag
+                 return $(`<span>${state.text}</span>`);
+             }
         });
         $('#to').select2({
             placeholder: originalPlaceholders['to'] || 'Select Destination Country',
             theme: 'bootstrap-5',
-            allowClear: true // Optional: adds a clear button
+            allowClear: true, // Optional: adds a clear button
+             templateSelection: function (state) {
+                if (!state.id) {
+                    return state.text;
+                }
+                 return $(`<span>${state.text}</span>`);
+            },
+             templateResult: function (state) {
+                 if (!state.id) {
+                     return state.text;
+                 }
+                 return $(`<span>${state.text}</span>`);
+             }
         });
 
          $('#from, #to').on('change', function() {
