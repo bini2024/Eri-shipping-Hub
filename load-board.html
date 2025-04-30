@@ -364,6 +364,9 @@
             generalFeedback.classList.add('d-none');
             // The main timeout handler or manual close handler clears feedbackHideTimeout.
             // We don't clear it here to avoid race conditions if hide is called multiple times.
+            // Let's rely on the main timeout handler to clear it.
+            // If hide is called directly (e.g., by button), the button handler clears it.
+            // feedbackHideTimeout = null; // Removed this line from inner timeout
             console.log("[Feedback|HIDE|INNER_TIMEOUT] Added 'd-none'.");
         }, 300); // This duration should match Bootstrap's fade transition time
         console.log("[Feedback|HIDE] Set inner 300ms timeout for d-none.");
@@ -449,7 +452,9 @@
         e.preventDefault();
         console.log("Form submitted."); // Debug log
 
-        hideGeneralFeedback(); // Hide previous messages immediately
+        // Removed the initial hideGeneralFeedback() call here
+        // hideGeneralFeedback(); // Removed
+
         clearAllValidationFeedback();
 
         const from = $('#from').val();
