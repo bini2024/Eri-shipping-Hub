@@ -147,7 +147,7 @@
   <div class="container">
        <div id="generalFeedback" class="alert alert-info alert-dismissible fade d-none" role="alert">
           <span id="generalFeedbackText"></span>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          <button type="button" class="btn-close" aria-label="Close"></button>
       </div>
   </div>
 
@@ -294,6 +294,9 @@
     const generalFeedback = document.getElementById("generalFeedback");
     const generalFeedbackText = document.getElementById("generalFeedbackText");
     const agreeToTermsCheckbox = document.getElementById('agreeToTermsCheckbox');
+    // Get the close button element
+    const feedbackCloseButton = generalFeedback.querySelector('.btn-close');
+
 
     let isAdmin = false; // State to track admin status (client-side UI only) - **Note: This is for UI only. Real admin checks must be done using Firestore Security Rules.**
     let currentSnapshot = null; // Store the latest snapshot
@@ -354,6 +357,18 @@
             console.log("[Feedback] Added 'd-none' class and cleared timeout variable.");
         }, 300); // Increased delay slightly to ensure fade out completes
     }
+
+    // Manually handle click on the close button
+    feedbackCloseButton.addEventListener('click', () => {
+         console.log("[Feedback] Close button clicked. Manually hiding.");
+         hideGeneralFeedback();
+         // Clear the automatic hide timeout if it exists
+         if (feedbackHideTimeout) {
+            clearTimeout(feedbackHideTimeout);
+            feedbackHideTimeout = null; // Clear the timeout variable
+            console.log("[Feedback] Cleared automatic hide timeout due to manual close.");
+         }
+    });
 
 
     function setButtonLoadingState(button, isLoading) {
