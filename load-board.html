@@ -288,17 +288,22 @@
     // --- UI Feedback Helpers ---
     function showGeneralFeedback(message, type = 'info') {
         console.log("Showing feedback:", message, type); // Debug log
-        generalFeedback.classList.remove('alert-info', 'alert-success', 'alert-warning', 'alert-danger', 'd-none'); // Ensure d-none is removed
-        generalFeedback.classList.add(`alert-${type}`);
-        generalFeedbackText.textContent = message;
-        generalFeedback.classList.add('show'); // Trigger fade in
-         // Clear any existing hide timeout
-         if (generalFeedback.hideTimeout) {
-            clearTimeout(generalFeedback.hideTimeout);
-         }
-         // Set new hide timeout
-         generalFeedback.hideTimeout = setTimeout(() => hideGeneralFeedback(), 5000); // Auto-dismiss after 5 seconds
+        // Use a timeout to ensure the alert is added to the DOM before showing
+        setTimeout(() => {
+            generalFeedback.classList.remove('alert-info', 'alert-success', 'alert-warning', 'alert-danger', 'd-none');
+            generalFeedback.classList.add(`alert-${type}`);
+            generalFeedbackText.textContent = message;
+            generalFeedback.classList.add('show');
+
+            // Clear any existing hide timeout
+            if (generalFeedback.hideTimeout) {
+                clearTimeout(generalFeedback.hideTimeout);
+            }
+            // Set new hide timeout
+            generalFeedback.hideTimeout = setTimeout(() => hideGeneralFeedback(), 7000); // Auto-dismiss after 7 seconds
+        }, 10); // Small delay
     }
+
 
     function hideGeneralFeedback() {
         console.log("Hiding feedback"); // Debug log
@@ -306,7 +311,7 @@
         // Use a timeout matching the Bootstrap fade transition duration before adding d-none
         setTimeout(() => {
             generalFeedback.classList.add('d-none');
-        }, 150); // Adjust timing if Bootstrap transition duration is different
+        }, 200); // Adjust timing if Bootstrap transition duration is different
     }
 
 
@@ -320,7 +325,7 @@
     }
 
     function setValidationFeedback(inputElement, message = '') {
-        const isSelect2 = inputElement.classList.contains('select2-hidden-accessible');
+        const isSelect2 = $(inputElement).hasClass('select2-hidden-accessible');
         const targetElement = isSelect2 ? $(inputElement).next('.select2-container').find('.select2-selection') : $(inputElement);
 
         if (message) {
@@ -365,11 +370,6 @@
         e.preventDefault();
         console.log("Form submitted."); // Debug log
 
-        if (!agreeToTermsCheckbox.checked) {
-            showGeneralFeedback("Please read and agree to the Terms & Conditions before posting.", "warning");
-            return;
-        }
-
         hideGeneralFeedback(); // Hide previous messages immediately
         clearAllValidationFeedback();
 
@@ -382,19 +382,27 @@
 
         console.log("Form Data:", { from, to, weight, deadline, phone, comment }); // Debug log
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const selectedDate = new Date(deadline + 'T00:00:00');
-
+        // --- Client-Side Validation ---
         let isValid = true;
 
-        // --- Client-Side Validation ---
-        if (!from) { setValidationFeedback(form.from, "Please select origin."); isValid = false; }
-        if (!to) { setValidationFeedback(form.to, "Please select destination."); isValid = false; }
+        if (!agreeToTermsCheckbox.checked) {
+            showGeneralFeedback("Please read and agree to the Terms & Conditions before posting.", "warning");
+            isValid = false;
+        }
+
+        if (!from) { setValidationFeedback(form.from, "Select origin country."); isValid = false; }
+        if (!to) { setValidationFeedback(form.to, "Select destination country."); isValid = false; }
 
         const weightValue = parseFloat(weight);
         if (weight === "" || isNaN(weightValue) || weightValue <= 0 || weightValue >= 1000) {
-             setValidationFeedback(form.weight, "Valid weight req'd (>0, <1000)."); isValid = false;
+             setValidationFeedback(form.weight, "Valid weight required (>0, <1000 kg)."); isValid = false;
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        let selectedDate = null;
+        if (deadline) {
+            selectedDate = new Date(deadline + 'T00:00:00');
         }
 
         if (!deadline) {
@@ -410,40 +418,46 @@
          if (/http|www|@|%|tel:|mailto:/.test(comment)) {
              setValidationFeedback(form.comment, "Comment contains invalid characters."); isValid = false;
          }
-        // --- End Validation ---
+        // --- End Client-Side Validation ---
 
         if (!isValid) {
             console.log("Form validation failed."); // Debug log
-            showGeneralFeedback("Please fix the errors highlighted in the form.", "warning");
+            // showGeneralFeedback("Please fix the errors highlighted in the form.", "warning"); // Feedback already shown for T&C
+            setButtonLoadingState(submitLoadBtn, false); // Re-enable button if it was clicked while disabled
             return;
         }
         console.log("Form validation passed."); // Debug log
-
-        // --- Cooldown Check ---
-        console.log("Checking cooldown. isAdmin:", isAdmin); // Debug log
-        const lastPostTime = localStorage.getItem("lastLoadPostTime");
-        const cooldownDuration = 2 * 60 * 60 * 1000; // 2 hours
-        if (!isAdmin && lastPostTime && (Date.now() - parseInt(lastPostTime) < cooldownDuration)) {
-             const remainingTime = cooldownDuration - (Date.now() - parseInt(lastPostTime));
-             const minutes = Math.ceil(remainingTime / (60 * 1000));
-             console.log(`Cooldown active. ${minutes} minutes remaining.`); // Debug log
-             showGeneralFeedback(`Please wait ${minutes} more minute(s) before posting again.`, "warning"); // Show feedback
-             return; // Block submission
-        }
-        console.log("Cooldown check passed or bypassed."); // Debug log
-        // --- End Cooldown Check ---
 
 
         setButtonLoadingState(submitLoadBtn, true);
 
         try {
+            // --- Cooldown Check ---
+            console.log("Checking cooldown. isAdmin:", isAdmin); // Debug log
+            const lastPostTime = localStorage.getItem("lastLoadPostTime");
+            const cooldownDuration = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+            const currentTime = Date.now();
+
+            if (!isAdmin && lastPostTime && (currentTime - parseInt(lastPostTime) < cooldownDuration)) {
+                 const remainingTime = cooldownDuration - (currentTime - parseInt(lastPostTime));
+                 const minutes = Math.ceil(remainingTime / (60 * 1000));
+                 console.log(`Cooldown active. ${minutes} minutes remaining.`); // Debug log
+                 showGeneralFeedback(`Please wait ${minutes} more minute(s) before posting again.`, "warning");
+                 setButtonLoadingState(submitLoadBtn, false);
+                 return; // Block submission
+            }
+            console.log("Cooldown check passed or bypassed."); // Debug log
+            // --- End Cooldown Check ---
+
+
             // --- Duplicate Check ---
             console.log("Checking for duplicates..."); // Debug log
+            // Ensure 'deadline' is treated as a string for exact match in query
             const duplicateLoadQuery = query(
                 loadRef,
                 where("from", "==", from),
                 where("to", "==", to),
-                where("deadline", "==", deadline),
+                where("deadline", "==", deadline), // Use string format for query
                 where("phone", "==", phone)
             );
             const existingLoads = await getDocs(duplicateLoadQuery);
@@ -451,7 +465,7 @@
 
             if (!existingLoads.empty) {
                 console.log("Duplicate found!"); // Debug log
-                showGeneralFeedback("⚠️ This exact load (origin, destination, deadline, phone) seems to be already registered.", "warning"); // Show feedback
+                showGeneralFeedback("⚠️ This exact load (origin, destination, deadline, phone) seems to be already registered.", "warning");
                 setButtonLoadingState(submitLoadBtn, false);
                 return; // Block submission
             }
@@ -464,11 +478,11 @@
                 from,
                 to,
                 weight: weightValue,
-                deadline,
+                deadline, // Store as string (YYYY-MM-DD)
                 phone,
                 comment,
                 createdAt: serverTimestamp(),
-                // userId: auth.currentUser ? auth.currentUser.uid : null,
+                // userId: auth.currentUser ? auth.currentUser.uid : null, // Optional: if you want to link loads to users
             };
 
             await addDoc(loadRef, loadData);
@@ -476,14 +490,17 @@
 
             // Set cooldown timestamp only for non-admins
             if (!isAdmin) {
-                 localStorage.setItem("lastLoadPostTime", Date.now());
+                 localStorage.setItem("lastLoadPostTime", currentTime);
                  console.log("Cooldown timestamp set for non-admin."); // Debug log
             }
+
+            // Reset form and validation feedback
             form.reset();
-            $('#from').val(null).trigger('change');
-            $('#to').val(null).trigger('change');
+            $('#from').val(null).trigger('change'); // Reset Select2
+            $('#to').val(null).trigger('change'); // Reset Select2
             clearAllValidationFeedback();
             agreeToTermsCheckbox.checked = false;
+
 
             showGeneralFeedback("✅ Load posted successfully!", "success");
 
@@ -512,11 +529,13 @@
 
         loadsSnapshot.forEach(docSnap => {
             const load = docSnap.data();
-            const deadlineDate = new Date(load.deadline + 'T00:00:00');
+            // Check if deadline is a valid string before creating Date object
+            const deadlineDate = load.deadline ? new Date(load.deadline + 'T00:00:00') : null;
 
-            if (deadlineDate < now) {
-                // console.log("Skipping expired load:", docSnap.id, load.deadline); // Debug log (optional)
-                return; // Skip expired load
+            // Skip if deadline is in the past or invalid
+            if (!deadlineDate || deadlineDate < now) {
+                // console.log("Skipping expired or invalid load:", docSnap.id, load.deadline); // Debug log (optional)
+                return;
             }
 
             hasLoadsToDisplay = true;
@@ -546,11 +565,16 @@
         });
 
          if (!hasLoadsToDisplay && !loadsSnapshot.empty) {
+              // This case might happen if all loads in the snapshot just expired
              loadList.innerHTML = `<div class="col-12 text-center text-muted mt-4"><p class="fw-bold fs-5">📭 No current loads found (any previous loads may have expired).</p></div>`;
+         } else if (!hasLoadsToDisplay && loadsSnapshot.empty) {
+              // This case happens if the snapshot was initially empty
+             loadList.innerHTML = `<div class="col-12 text-center text-muted mt-4"><p class="fw-bold fs-5">📭 No loads available right now.</p></div>`;
          }
     }
 
     // --- Firestore Listener ---
+    // Order by createdAt to show the newest loads first
     const loadsQuery = query(loadRef, orderBy("createdAt", "desc"));
     console.log("Setting up Firestore listener..."); // Debug log
     onSnapshot(loadsQuery, (snapshot) => {
@@ -586,7 +610,7 @@
         try {
             await deleteDoc(doc(loadRef, loadId));
             console.log(`Document ${loadId} deleted successfully.`); // Debug log
-            // List updates via onSnapshot
+            // List updates via onSnapshot listener automatically
             showGeneralFeedback("🗑️ Load deleted successfully!", "success");
         } catch (error) {
             console.error(`Error deleting load ${loadId}:`, error); // Log the actual error
@@ -604,16 +628,26 @@
         console.log("Document ready. Initializing Select2..."); // Debug log
         $('#from').select2({
             placeholder: originalPlaceholders['from'] || 'Select From Country',
-            theme: 'bootstrap-5'
+            theme: 'bootstrap-5',
+            allowClear: true // Optional: adds a clear button
         });
         $('#to').select2({
             placeholder: originalPlaceholders['to'] || 'Select Destination Country',
-            theme: 'bootstrap-5'
+            theme: 'bootstrap-5',
+            allowClear: true // Optional: adds a clear button
         });
 
          $('#from, #to').on('change', function() {
-            setValidationFeedback(this, '');
+            setValidationFeedback(this, ''); // Clear validation on change
          });
+
+        // Add input event listeners for instant validation feedback clearing
+        document.querySelectorAll('#loadForm input, #loadForm textarea').forEach(input => {
+            input.addEventListener('input', () => {
+                setValidationFeedback(input, '');
+            });
+        });
+
          console.log("Select2 initialized."); // Debug log
       });
 
