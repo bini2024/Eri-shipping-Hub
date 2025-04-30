@@ -317,57 +317,70 @@
     let feedbackHideTimeout = null; // To manage the timeout for hiding feedback
 
     function showGeneralFeedback(message, type = 'info', duration = 7000) { // Added duration parameter
-        console.log(`[Feedback] Showing: "${message}" (Type: ${type}, Duration: ${duration}ms) at ${new Date().toLocaleTimeString()}`); // Debug log with timestamp
+        console.log(`[Feedback|SHOW] Showing: "${message}" (Type: ${type}, Duration: ${duration}ms) at ${new Date().toLocaleTimeString()}`);
 
-        // Clear any existing hide timeout before showing a new message
         if (feedbackHideTimeout) {
+            console.log(`[Feedback|SHOW] Clearing existing timeout ID: ${feedbackHideTimeout}`);
             clearTimeout(feedbackHideTimeout);
-            console.log("[Feedback] Cleared previous hide timeout.");
+            feedbackHideTimeout = null; // Ensure it's null after clearing
+            console.log("[Feedback|SHOW] Cleared previous hide timeout, variable is now null.");
         }
 
-        generalFeedback.classList.remove('alert-info', 'alert-success', 'alert-warning', 'alert-danger', 'd-none');
+        // Remove d-none immediately to make the alert element visible for transitions
+        generalFeedback.classList.remove('d-none');
+        generalFeedback.classList.remove('alert-info', 'alert-success', 'alert-warning', 'alert-danger');
         generalFeedback.classList.add(`alert-${type}`);
         generalFeedbackText.textContent = message;
 
-        // Ensure 'show' class is added to trigger the fade-in transition
-        // Removing and re-adding can help if the element was somehow stuck
-        generalFeedback.classList.remove('show');
-        // Use a small delay to ensure the class removal registers before adding it back
-        setTimeout(() => {
-             generalFeedback.classList.add('show');
-             console.log("[Feedback] Added 'show' class.");
-        }, 50); // Small delay to re-trigger transition
+        // Force a reflow to ensure the removal of d-none is processed by the browser
+        // before adding the 'show' class to trigger the fade-in.
+        generalFeedback.offsetHeight; // Accessing offsetHeight forces a reflow
+        console.log("[Feedback|SHOW] Forced reflow.");
 
 
-         // Set new hide timeout
+        // Add 'show' class to trigger the fade-in transition
+        generalFeedback.classList.add('show');
+        console.log("[Feedback|SHOW] Added 'show' class.");
+
+
+         // Set new hide timeout for automatic dismissal
          feedbackHideTimeout = setTimeout(() => {
-             console.log(`[Feedback] Timeout finished (${duration}ms). Calling hideGeneralFeedback.`);
+             console.log(`[Feedback|TIMEOUT] Main timeout finished (${duration}ms). Calling hideGeneralFeedback.`);
              hideGeneralFeedback();
             }, duration); // Use dynamic duration
-         console.log(`[Feedback] Set new hide timeout.`);
+         console.log(`[Feedback|SHOW] Set new timeout ID: ${feedbackHideTimeout} for ${duration}ms.`);
     }
 
     function hideGeneralFeedback() {
-        console.log(`[Feedback] Hiding at ${new Date().toLocaleTimeString()}`); // Debug log with timestamp
+        console.log(`[Feedback|HIDE] Hiding process started at ${new Date().toLocaleTimeString()}`);
+        // Remove 'show' class to trigger the fade-out transition
         generalFeedback.classList.remove('show');
-        // Use a timeout matching the Bootstrap fade transition duration before adding d-none
+        console.log("[Feedback|HIDE] Removed 'show' class.");
+
+        // After the fade-out transition duration, add the 'd-none' class to fully hide
+        // and clear the timeout variable.
         setTimeout(() => {
+            console.log("[Feedback|HIDE|INNER_TIMEOUT] Adding 'd-none'.");
             generalFeedback.classList.add('d-none');
-            feedbackHideTimeout = null; // Clear the timeout variable
-            console.log("[Feedback] Added 'd-none' class and cleared timeout variable.");
-        }, 300); // Increased delay slightly to ensure fade out completes
+            // The main timeout handler or manual close handler clears feedbackHideTimeout.
+            // We don't clear it here to avoid race conditions if hide is called multiple times.
+            console.log("[Feedback|HIDE|INNER_TIMEOUT] Added 'd-none'.");
+        }, 300); // This duration should match Bootstrap's fade transition time
+        console.log("[Feedback|HIDE] Set inner 300ms timeout for d-none.");
     }
 
     // Manually handle click on the close button
     feedbackCloseButton.addEventListener('click', () => {
-         console.log("[Feedback] Close button clicked. Manually hiding.");
-         hideGeneralFeedback();
-         // Clear the automatic hide timeout if it exists
+         console.log("[Feedback|CLOSE_BTN] Close button clicked.");
+         // Clear the automatic hide timeout if it exists before hiding manually
          if (feedbackHideTimeout) {
+            console.log(`[Feedback|CLOSE_BTN] Clearing automatic timeout ID: ${feedbackHideTimeout}`);
             clearTimeout(feedbackHideTimeout);
-            feedbackHideTimeout = null; // Clear the timeout variable
-            console.log("[Feedback] Cleared automatic hide timeout due to manual close.");
+            feedbackHideTimeout = null; // Ensure it's null after clearing
+            console.log("[Feedback|CLOSE_BTN] Cleared automatic timeout, variable is now null.");
          }
+         hideGeneralFeedback(); // Call our hide function
+         console.log("[Feedback|CLOSE_BTN] Called hideGeneralFeedback.");
     });
 
 
