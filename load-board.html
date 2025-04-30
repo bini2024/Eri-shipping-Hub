@@ -287,17 +287,28 @@
 
     // --- UI Feedback Helpers ---
     function showGeneralFeedback(message, type = 'info') {
-        generalFeedback.classList.remove('alert-info', 'alert-success', 'alert-warning', 'alert-danger');
-        generalFeedback.classList.add(`alert-${type}`, 'show');
+        console.log("Showing feedback:", message, type); // Debug log
+        generalFeedback.classList.remove('alert-info', 'alert-success', 'alert-warning', 'alert-danger', 'd-none'); // Ensure d-none is removed
+        generalFeedback.classList.add(`alert-${type}`);
         generalFeedbackText.textContent = message;
-        generalFeedback.classList.remove('d-none');
-         setTimeout(() => hideGeneralFeedback(), 5000); // Auto-dismiss after 5 seconds
+        generalFeedback.classList.add('show'); // Trigger fade in
+         // Clear any existing hide timeout
+         if (generalFeedback.hideTimeout) {
+            clearTimeout(generalFeedback.hideTimeout);
+         }
+         // Set new hide timeout
+         generalFeedback.hideTimeout = setTimeout(() => hideGeneralFeedback(), 5000); // Auto-dismiss after 5 seconds
     }
 
     function hideGeneralFeedback() {
+        console.log("Hiding feedback"); // Debug log
         generalFeedback.classList.remove('show');
-        setTimeout(() => generalFeedback.classList.add('d-none'), 150); // Delay to allow fade out
+        // Use a timeout matching the Bootstrap fade transition duration before adding d-none
+        setTimeout(() => {
+            generalFeedback.classList.add('d-none');
+        }, 150); // Adjust timing if Bootstrap transition duration is different
     }
+
 
     function setButtonLoadingState(button, isLoading) {
         button.disabled = isLoading;
@@ -340,7 +351,7 @@
         // For now, any logged-in user is considered admin for UI purposes
         isAdmin = !!user;
 
-        console.log("Admin status (client-side UI only):", isAdmin);
+        console.log("Auth state changed. User:", user, "isAdmin (client-side):", isAdmin); // Debug log
 
         // Re-render list if admin status changed to update UI controls (like delete button)
         if (isAdmin !== wasAdmin && currentSnapshot) {
@@ -352,13 +363,14 @@
     // --- Form Submission ---
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
+        console.log("Form submitted."); // Debug log
 
         if (!agreeToTermsCheckbox.checked) {
             showGeneralFeedback("Please read and agree to the Terms & Conditions before posting.", "warning");
             return;
         }
 
-        hideGeneralFeedback();
+        hideGeneralFeedback(); // Hide previous messages immediately
         clearAllValidationFeedback();
 
         const from = $('#from').val();
@@ -367,6 +379,8 @@
         const deadline = form.deadline.value;
         const phone = form.phone.value.trim();
         const comment = form.comment.value.trim();
+
+        console.log("Form Data:", { from, to, weight, deadline, phone, comment }); // Debug log
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -389,93 +403,107 @@
             setValidationFeedback(form.deadline, "Deadline must be today or a future date."); isValid = false;
         }
 
-        // Basic phone validation (allows +, -, spaces, min 7 digits)
         if (!phone || !/^\+?[0-9\s-]{7,}$/.test(phone)) {
              setValidationFeedback(form.phone, "Valid phone number required (min 7 digits)."); isValid = false;
         }
 
-        // Prevent potentially harmful characters/links in comments
          if (/http|www|@|%|tel:|mailto:/.test(comment)) {
              setValidationFeedback(form.comment, "Comment contains invalid characters."); isValid = false;
          }
         // --- End Validation ---
 
         if (!isValid) {
+            console.log("Form validation failed."); // Debug log
             showGeneralFeedback("Please fix the errors highlighted in the form.", "warning");
             return;
         }
+        console.log("Form validation passed."); // Debug log
 
-        // Cooldown Check (Client-side, Admins bypass)
+        // --- Cooldown Check ---
+        console.log("Checking cooldown. isAdmin:", isAdmin); // Debug log
         const lastPostTime = localStorage.getItem("lastLoadPostTime");
-        const cooldownDuration = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+        const cooldownDuration = 2 * 60 * 60 * 1000; // 2 hours
         if (!isAdmin && lastPostTime && (Date.now() - parseInt(lastPostTime) < cooldownDuration)) {
              const remainingTime = cooldownDuration - (Date.now() - parseInt(lastPostTime));
              const minutes = Math.ceil(remainingTime / (60 * 1000));
-             showGeneralFeedback(`Please wait ${minutes} more minute(s) before posting again.`, "warning");
-            return;
+             console.log(`Cooldown active. ${minutes} minutes remaining.`); // Debug log
+             showGeneralFeedback(`Please wait ${minutes} more minute(s) before posting again.`, "warning"); // Show feedback
+             return; // Block submission
         }
+        console.log("Cooldown check passed or bypassed."); // Debug log
+        // --- End Cooldown Check ---
+
 
         setButtonLoadingState(submitLoadBtn, true);
 
         try {
-            // Duplicate Check (Based on key fields)
+            // --- Duplicate Check ---
+            console.log("Checking for duplicates..."); // Debug log
             const duplicateLoadQuery = query(
                 loadRef,
                 where("from", "==", from),
                 where("to", "==", to),
                 where("deadline", "==", deadline),
                 where("phone", "==", phone)
-                // Consider adding weight or other fields if needed for uniqueness
             );
             const existingLoads = await getDocs(duplicateLoadQuery);
+            console.log("Duplicate query result:", existingLoads.size, "documents found."); // Debug log
 
             if (!existingLoads.empty) {
-                showGeneralFeedback("⚠️ This exact load (origin, destination, deadline, phone) seems to be already registered.", "warning");
+                console.log("Duplicate found!"); // Debug log
+                showGeneralFeedback("⚠️ This exact load (origin, destination, deadline, phone) seems to be already registered.", "warning"); // Show feedback
                 setButtonLoadingState(submitLoadBtn, false);
-                return;
+                return; // Block submission
             }
+            console.log("No duplicate found."); // Debug log
+            // --- End Duplicate Check ---
 
             // Add Load Data to Firestore
+            console.log("Adding document to Firestore..."); // Debug log
             const loadData = {
                 from,
                 to,
-                weight: weightValue, // Store as number
+                weight: weightValue,
                 deadline,
                 phone,
                 comment,
                 createdAt: serverTimestamp(),
-                // Uncomment to associate load with logged-in user
                 // userId: auth.currentUser ? auth.currentUser.uid : null,
             };
 
             await addDoc(loadRef, loadData);
+            console.log("Document added successfully."); // Debug log
 
-            if (!isAdmin) { // Set cooldown only for non-admins
+            // Set cooldown timestamp only for non-admins
+            if (!isAdmin) {
                  localStorage.setItem("lastLoadPostTime", Date.now());
+                 console.log("Cooldown timestamp set for non-admin."); // Debug log
             }
             form.reset();
-            $('#from').val(null).trigger('change'); // Reset Select2 fields
+            $('#from').val(null).trigger('change');
             $('#to').val(null).trigger('change');
             clearAllValidationFeedback();
-            agreeToTermsCheckbox.checked = false; // Uncheck terms checkbox
+            agreeToTermsCheckbox.checked = false;
 
             showGeneralFeedback("✅ Load posted successfully!", "success");
 
         } catch (error) {
-            console.error("Error posting load:", error);
-            showGeneralFeedback(`❌ Failed to post load: ${error.message}. Please try again.`, "danger");
+            console.error("Error during Firestore operation:", error); // Log the actual error
+            showGeneralFeedback(`❌ Failed to post load: ${error.message}. Please check console for details.`, "danger");
         } finally {
-            setButtonLoadingState(submitLoadBtn, false);
+            setButtonLoadingState(submitLoadBtn, false); // Ensure button is re-enabled
         }
     });
 
     // --- Displaying Loads ---
     function renderLoads(loadsSnapshot) {
-         currentSnapshot = loadsSnapshot; // Store snapshot for potential re-renders
-         loadList.innerHTML = ""; // Clear current list
+         currentSnapshot = loadsSnapshot;
+         loadList.innerHTML = "";
          const now = new Date();
-         now.setHours(0, 0, 0, 0); // Use start of today for comparison
+         now.setHours(0, 0, 0, 0);
          let hasLoadsToDisplay = false;
+
+         console.log("Rendering loads. Snapshot size:", loadsSnapshot.size); // Debug log
 
         if (loadsSnapshot.empty) {
              loadList.innerHTML = `<div class="col-12 text-center text-muted mt-4"><p class="fw-bold fs-5">📭 No loads available right now.</p></div>`;
@@ -484,18 +512,17 @@
 
         loadsSnapshot.forEach(docSnap => {
             const load = docSnap.data();
-            const deadlineDate = new Date(load.deadline + 'T00:00:00'); // Interpret date string correctly
+            const deadlineDate = new Date(load.deadline + 'T00:00:00');
 
-            // Filter expired loads (deadline is before today)
             if (deadlineDate < now) {
-                // Optionally, implement deletion of expired loads via Cloud Functions
-                return; // Skip rendering expired load
+                // console.log("Skipping expired load:", docSnap.id, load.deadline); // Debug log (optional)
+                return; // Skip expired load
             }
 
-            hasLoadsToDisplay = true; // Found a valid load to display
+            hasLoadsToDisplay = true;
 
             const div = document.createElement("div");
-            div.className = "col-lg-4 col-md-6 mb-4"; // Responsive columns with margin
+            div.className = "col-lg-4 col-md-6 mb-4";
             div.innerHTML = `
               <div class="card h-100">
                 <div class="card-body d-flex flex-column">
@@ -506,7 +533,7 @@
                   <p class="card-text mb-1"><strong>Deadline:</strong> ${load.deadline}</p>
                   <p class="card-text mb-1"><strong>Contact:</strong> <a href="tel:${load.phone}">${load.phone}</a></p>
                   <p class="card-text flex-grow-1 mb-3"><strong>Note:</strong> ${load.comment || "<i>No additional notes.</i>"}</p>
-                  ${isAdmin ? // Delete button only shown if isAdmin is true (client-side check)
+                  ${isAdmin ?
                     `<button class="btn btn-sm btn-outline-danger mt-auto delete-load-btn" data-id="${docSnap.id}">
                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                        <span class="button-text"><i class="fas fa-trash-alt me-1"></i>Delete</span>
@@ -518,17 +545,17 @@
             loadList.appendChild(div);
         });
 
-         // Show message if all loads were filtered out (i.e., all were expired)
          if (!hasLoadsToDisplay && !loadsSnapshot.empty) {
              loadList.innerHTML = `<div class="col-12 text-center text-muted mt-4"><p class="fw-bold fs-5">📭 No current loads found (any previous loads may have expired).</p></div>`;
          }
     }
 
     // --- Firestore Listener ---
-    // Listen for real-time updates, order by creation date descending (newest first)
     const loadsQuery = query(loadRef, orderBy("createdAt", "desc"));
+    console.log("Setting up Firestore listener..."); // Debug log
     onSnapshot(loadsQuery, (snapshot) => {
-        renderLoads(snapshot); // Re-render the list when data changes
+        console.log("Firestore snapshot received."); // Debug log
+        renderLoads(snapshot);
     }, (error) => {
         console.error("Error fetching loads:", error);
         showGeneralFeedback(`Error loading loads: ${error.message}`, "danger");
@@ -538,44 +565,43 @@
     // --- Delete Functionality (Admin UI Only) ---
     loadList.addEventListener('click', async (event) => {
         const deleteButton = event.target.closest('.delete-load-btn');
-        if (!deleteButton || deleteButton.disabled) return; // Ignore clicks not on the button or if disabled
+        if (!deleteButton || deleteButton.disabled) return;
 
         const loadId = deleteButton.dataset.id;
+        console.log(`Delete button clicked for load ID: ${loadId}. isAdmin: ${isAdmin}`); // Debug log
 
-        // --- SECURITY REMINDER ---
-        // This client-side check is for UX only.
-        // Firestore Rules MUST enforce that only authorized admins can delete.
         if (!isAdmin) {
              showGeneralFeedback("You do not have permission to delete loads.", "danger");
             return;
         }
-        // --- END SECURITY REMINDER ---
 
         if (!confirm("Are you sure you want to permanently delete this load? This cannot be undone.")) {
-            return; // User cancelled
+             console.log("Deletion cancelled by user."); // Debug log
+            return;
         }
 
         setButtonLoadingState(deleteButton, true);
+        console.log(`Attempting to delete document: ${loadId}`); // Debug log
 
         try {
             await deleteDoc(doc(loadRef, loadId));
-            // List will update automatically via onSnapshot listener
+            console.log(`Document ${loadId} deleted successfully.`); // Debug log
+            // List updates via onSnapshot
             showGeneralFeedback("🗑️ Load deleted successfully!", "success");
-            // Button is removed by renderLoads, no need to reset state here
         } catch (error) {
-            console.error("Error deleting load:", error);
+            console.error(`Error deleting load ${loadId}:`, error); // Log the actual error
             if (error.code === 'permission-denied') {
                  showGeneralFeedback("❌ Permission Denied. You might not have the necessary rights to delete this load.", "danger");
             } else {
                  showGeneralFeedback(`❌ Failed to delete load: ${error.message}`, "danger");
             }
-             // Only reset button state if deletion failed and button might still exist
-             setButtonLoadingState(deleteButton, false);
+             setButtonLoadingState(deleteButton, false); // Reset button state on error only
         }
     });
 
     // --- Initialize Select2 ---
      $(document).ready(function() {
+        console.log("Document ready. Initializing Select2..."); // Debug log
         $('#from').select2({
             placeholder: originalPlaceholders['from'] || 'Select From Country',
             theme: 'bootstrap-5'
@@ -585,10 +611,10 @@
             theme: 'bootstrap-5'
         });
 
-         // Clear validation styling on Select2 change
          $('#from, #to').on('change', function() {
             setValidationFeedback(this, '');
          });
+         console.log("Select2 initialized."); // Debug log
       });
 
   </script>
