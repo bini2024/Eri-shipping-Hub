@@ -15,6 +15,7 @@
       background-attachment: fixed;
       min-height: 100vh;
       margin: 0;
+      background-color: #f8f9fa; /* Fallback background color */
     }
 
     .nav-brand {
@@ -23,179 +24,214 @@
     }
 
     header h1, header p {
-        text-shadow: 1px 1px 3px rgba(0,0,0,0.3); /* Optional: adds readability */
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+        color: #ffffff; /* Make header text white for better contrast on image */
     }
+    header p {
+        color: #e9ecef; /* Slightly muted white for subtitle */
+    }
+
     .card {
-        background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent cards */
-        backdrop-filter: blur(5px); /* Optional: adds blur effect */
+        background-color: rgba(255, 255, 255, 0.92); /* Slightly less transparent cards */
+        backdrop-filter: blur(5px);
     }
 
     /* Style for validation feedback */
-    .form-control.is-invalid::placeholder { /* Style placeholder when invalid */
+    .form-control.is-invalid::placeholder {
         color: var(--bs-danger);
-        opacity: 0.8; /* Make it slightly less prominent than normal text */
+        opacity: 0.8;
     }
+
      /* Style Select2 when invalid */
     .select2-container--bootstrap-5 .select2-selection.is-invalid {
          border-color: var(--bs-danger) !important;
-         padding-right: calc(1.5em + 0.75rem) !important; /* Add space for possible icon */
+         padding-right: calc(1.5em + 0.75rem) !important;
          background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linecap='round' stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e") !important;
          background-repeat: no-repeat !important;
          background-position: right calc(0.375em + 0.1875rem) center !important;
          background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem) !important;
     }
 
-
      /* Adjust Select2 placeholder styles */
     .select2-container .select2-selection--single .select2-selection__placeholder {
-        color: #6c757d !important; /* Bootstrap muted text color */
+        color: #6c757d !important;
     }
+     /* Style Select2 to look more like an input box */
      .select2-container--bootstrap-5 .select2-selection {
-        padding-top: 0.55rem !important; /* Adjust padding for Bootstrap 5 form control height */
+        padding-top: 0.55rem !important;
         padding-bottom: 0.55rem !important;
+        min-height: calc(1.5em + 0.75rem + 2px); /* Match Bootstrap form-control height */
+        border: 1px solid #ced4da !important; /* Add standard bootstrap border */
+        border-radius: var(--bs-border-radius); /* Use bootstrap border radius */
      }
       .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow b {
-         top: 60% !important; /* Adjust arrow position */
+         top: 60% !important;
      }
 
      /* Loading Button State */
      .btn .spinner-border {
-        display: none; /* Hidden by default */
+        display: none;
         margin-right: .5rem;
      }
      .btn.loading .spinner-border {
         display: inline-block;
      }
      .btn.loading .button-text {
-        visibility: hidden; /* Hide text while loading */
+        visibility: hidden;
      }
+
+    /* Styling for Load List Cards */
+    #loadList .card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border-radius: 0.75rem !important; /* More pronounced rounding */
+        border: 1px solid #e9ecef; /* Subtle border */
+        background-color: rgba(255, 255, 255, 0.95);
+        height: 100%; /* Ensure cards in a row have same height */
+    }
+
+    #loadList .card:hover {
+        transform: translateY(-5px); /* Lift effect */
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1) !important; /* Enhanced shadow on hover */
+    }
+
+    #loadList .card-title {
+         color: #0a3d62; /* Use a color from the scheme */
+         font-weight: 600;
+    }
+
+    #loadList .card-text strong {
+        color: #343a40; /* Darker text for labels */
+    }
 
   </style>
 </head>
 <body class="bg-light">
-  <header class="py-4 mb-4 text-dark">
+
+  <header class="py-4 mb-4">
     <div class="container">
       <h1 class="text-center mb-2">
         <i class="fas fa-shipping-fast"></i>
         <span class="nav-brand">Eri Shipping Hub</span>
       </h1>
-      <p class="text-center text-secondary">Our community, our courier</p>
+      <p class="text-center">
+        Our community, our courier
+      </p>
     </div>
   </header>
-    <div class="container">
-         <div id="generalFeedback" class="alert alert-info alert-dismissible fade show d-none" role="alert">
-            <span id="generalFeedbackText"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    </div>
 
+  <div class="container">
+       <div id="generalFeedback" class="alert alert-info alert-dismissible fade show d-none" role="alert">
+          <span id="generalFeedbackText"></span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+  </div>
 
   <div class="container py-4">
-    <h3 class="text-center mb-4">📦 ዝርዝር ዝውሰድ ንብረታት</h3>
+    <h3 class="text-center mb-4 text-dark">📦 ዝርዝር ዝውሰድ ንብረታት</h3>
 
-    <section class="card mb-5">
+    <section class="card mb-5 shadow">
       <div class="card-body">
         <h4 class="card-title mb-3">📤 Post a New Load</h4>
-        <form id="loadForm" novalidate> <div class="row g-3">
-            <div class="col-md-4">
-                <label for="from" class="form-label visually-hidden">From Country</label>
-                <select id="from" class="form-select" required>
-                  <option value="" disabled selected>ካብ .... ዝከይድ ንብረት ኣለኒ</option>
-                   <option value="Ethiopia">🇪🇹 Ethiopia</option>
-                  <option value="Eritrea">🇪🇷 Eritrea</option>
-                  <option value="Uganda">🇺🇬 Uganda</option>
-                  <option value="Canada">🇨🇦 Canada</option>
-                  <option value="Turkey">🇹🇷 Turkey</option>
-                  <option value="Dubai">🇦🇪 Dubai</option>
-                  <option value="Kenya">🇰🇪 Kenya</option>
-                  <option value="Angola">🇦🇴 Angola</option>
-                  <option value="Switzerland">🇨🇭 Switzerland</option>
-                  <option value="Netherlands">🇳🇱 Netherlands</option>
-                  <option value="Belgium">🇧🇪 Belgium</option>
-                  <option value="Sweden">🇸🇪 Sweden</option>
-                  <option value="Germany">🇩🇪 Germany</option>
-                  <option value="USA">🇺🇸 USA</option>
-                  <option value="England">🇬🇧 England</option>
-                  <option value="Denmark">🇩🇰 Denmark</option>
-                  <option value="France">🇫🇷 France</option>
-                  <option value="Italy">🇮🇹 Italy</option>
-                  <option value="South Africa">🇿🇦 South Africa</option>
-                  <option value="Egypt">🇪🇬 Egypt</option>
-                </select>
+        <form id="loadForm" novalidate>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="from" class="form-label visually-hidden">From Country</label>
+                    <select id="from" class="form-select" required>
+                      <option value="" disabled selected>ካብ .... ዝከይድ ንብረት ኣለኒ</option>
+                       <option value="Ethiopia">🇪🇹 Ethiopia</option>
+                      <option value="Eritrea">🇪🇷 Eritrea</option>
+                      <option value="Uganda">🇺🇬 Uganda</option>
+                      <option value="Canada">🇨🇦 Canada</option>
+                      <option value="Turkey">🇹🇷 Turkey</option>
+                      <option value="Dubai">🇦🇪 Dubai</option>
+                      <option value="Kenya">🇰🇪 Kenya</option>
+                      <option value="Angola">🇦🇴 Angola</option>
+                      <option value="Switzerland">🇨🇭 Switzerland</option>
+                      <option value="Netherlands">🇳🇱 Netherlands</option>
+                      <option value="Belgium">🇧🇪 Belgium</option>
+                      <option value="Sweden">🇸🇪 Sweden</option>
+                      <option value="Germany">🇩🇪 Germany</option>
+                      <option value="USA">🇺🇸 USA</option>
+                      <option value="England">🇬🇧 England</option>
+                      <option value="Denmark">🇩🇰 Denmark</option>
+                      <option value="France">🇫🇷 France</option>
+                      <option value="Italy">🇮🇹 Italy</option>
+                      <option value="South Africa">🇿🇦 South Africa</option>
+                      <option value="Egypt">🇪🇬 Egypt</option>
+                    </select>
                  </div>
-            <div class="col-md-4">
-                 <label for="to" class="form-label visually-hidden">To Country</label>
-                <select id="to" class="form-select" required>
-                  <option value="" disabled selected>ናብ (ክበጽሓሉ ዝደለካዮ ቦታ)</option>
-                   <option value="Ethiopia">🇪🇹 Ethiopia</option>
-                  <option value="Eritrea">🇪🇷 Eritrea</option>
-                  <option value="Uganda">🇺🇬 Uganda</option>
-                  <option value="Canada">🇨🇦 Canada</option>
-                  <option value="Turkey">🇹🇷 Turkey</option>
-                  <option value="Dubai">🇦🇪 Dubai</option>
-                  <option value="Kenya">🇰🇪 Kenya</option>
-                  <option value="Angola">🇦🇴 Angola</option>
-                  <option value="Switzerland">🇨🇭 Switzerland</option>
-                  <option value="Netherlands">🇳🇱 Netherlands</option>
-                  <option value="Belgium">🇧🇪 Belgium</option>
-                  <option value="Sweden">🇸🇪 Sweden</option>
-                  <option value="Germany">🇩🇪 Germany</option>
-                  <option value="USA">🇺🇸 USA</option>
-                  <option value="England">🇬🇧 England</option>
-                  <option value="Denmark">🇩🇰 Denmark</option>
-                  <option value="France">🇫🇷 France</option>
-                  <option value="Italy">🇮🇹 Italy</option>
-                  <option value="South Africa">🇿🇦 South Africa</option>
-                  <option value="Egypt">🇪🇬 Egypt</option>
-                </select>
+                <div class="col-md-4">
+                     <label for="to" class="form-label visually-hidden">To Country</label>
+                    <select id="to" class="form-select" required>
+                      <option value="" disabled selected>ናብ (ክበጽሓሉ ዝደለካዮ ቦታ)</option>
+                       <option value="Ethiopia">🇪🇹 Ethiopia</option>
+                      <option value="Eritrea">🇪🇷 Eritrea</option>
+                      <option value="Uganda">🇺🇬 Uganda</option>
+                      <option value="Canada">🇨🇦 Canada</option>
+                      <option value="Turkey">🇹🇷 Turkey</option>
+                      <option value="Dubai">🇦🇪 Dubai</option>
+                      <option value="Kenya">🇰🇪 Kenya</option>
+                      <option value="Angola">🇦🇴 Angola</option>
+                      <option value="Switzerland">🇨🇭 Switzerland</option>
+                      <option value="Netherlands">🇳🇱 Netherlands</option>
+                      <option value="Belgium">🇧🇪 Belgium</option>
+                      <option value="Sweden">🇸🇪 Sweden</option>
+                      <option value="Germany">🇩🇪 Germany</option>
+                      <option value="USA">🇺🇸 USA</option>
+                      <option value="England">🇬🇧 England</option>
+                      <option value="Denmark">🇩🇰 Denmark</option>
+                      <option value="France">🇫🇷 France</option>
+                      <option value="Italy">🇮🇹 Italy</option>
+                      <option value="South Africa">🇿🇦 South Africa</option>
+                      <option value="Egypt">🇪🇬 Egypt</option>
+                    </select>
                  </div>
-            <div class="col-md-4">
-                 <label for="weight" class="form-label visually-hidden">Weight</label>
-              <input type="text" id="weight" class="form-control" placeholder="ኪሎ(ክብደት)" required />
-               </div>
-            <div class="col-md-6">
-                 <label for="deadline" class="form-label visually-hidden">Deadline Date</label>
-              <input type="date" id="deadline" class="form-control" placeholder="enter deadline" required />
-               </div>
-            <div class="col-md-6">
-                 <label for="phone" class="form-label visually-hidden">Phone Number</label>
-              <input type="tel" id="phone" class="form-control" placeholder="ቴሌ" required />
-               </div>
-            <div class="col-12">
-                 <label for="comment" class="form-label visually-hidden">Comment (Optional)</label>
-              <textarea id="comment" class="form-control" placeholder=" ተወሳኪ ሓበሬታ (optional)"></textarea>
+                <div class="col-md-4">
+                     <label for="weight" class="form-label visually-hidden">Weight</label>
+                  <input type="text" id="weight" class="form-control" placeholder="ኪሎ(ክብደት)" required />
+                   </div>
+                <div class="col-md-6">
+                     <label for="deadline" class="form-label visually-hidden">Deadline Date</label>
+                  <input type="date" id="deadline" class="form-control" placeholder="enter deadline" required />
+                   </div>
+                <div class="col-md-6">
+                     <label for="phone" class="form-label visually-hidden">Phone Number</label>
+                  <input type="tel" id="phone" class="form-control" placeholder="ቴሌ" required />
+                   </div>
+                <div class="col-12">
+                     <label for="comment" class="form-label visually-hidden">Comment (Optional)</label>
+                  <textarea id="comment" class="form-control" placeholder=" ተወሳኪ ሓበሬታ (optional)"></textarea>
+                  </div>
               </div>
-          </div>
 
-           <div class="form-check mt-3">
-              <input class="form-check-input" type="checkbox" value="" id="agreeToTermsCheckbox">
-              <label class="form-check-label" for="agreeToTermsCheckbox">
-                I agree to the <a href="terms.html" target="_blank">Terms & Conditions</a>
-              </label>
-            </div>
-           <button id="submitLoadBtn" class="btn btn-primary mt-3" type="submit">
-             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-             <span class="button-text">Post Load</span>
-          </button>
+               <div class="form-check mt-3">
+                  <input class="form-check-input" type="checkbox" value="" id="agreeToTermsCheckbox">
+                  <label class="form-check-label" for="agreeToTermsCheckbox">
+                    I agree to the <a href="terms.html" target="_blank">Terms & Conditions</a>
+                  </label>
+                </div>
+               <button id="submitLoadBtn" class="btn btn-primary mt-3" type="submit">
+                 <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                 <span class="button-text">Post Load</span>
+              </button>
         </form>
       </div>
     </section>
 
     <section>
       <h4 class="mb-3">
-      <span style="
-    background: #0a3d62;
-    color: white;
-    padding: 0.5rem 1.5rem;
-    border-radius: 1rem;
-    display: inline-block;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  ">
-   📋 ዝውሰድ ንብረት
-  </span>
-
+          <span style="
+            background: #0a3d62; /* Keep existing style */
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 1rem;
+            display: inline-block;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+          ">
+           📋 ዝውሰድ ንብረት
+          </span>
       </h4>
-      <div id="loadList" class="row gy-3">
+      <div id="loadList" class="row gy-4">
           </div>
     </section>
   </div>
@@ -205,15 +241,14 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-
   <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, doc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, doc, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 
-    // ACTUAL Firebase configuration provided by the user
+    // Replace with your actual Firebase configuration
     const firebaseConfig = {
-      apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ",
+      apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ", // IMPORTANT: Keep your API key secure
       authDomain: "erishipping-e4532.firebaseapp.com",
       projectId: "erishipping-e4532",
       storageBucket: "erishipping-e4532.appspot.com",
@@ -221,24 +256,33 @@
       appId: "1:388550131049:web:e9ac1784ab8e5fabc811f8"
     };
 
-    // Initialize Firebase ONLY if not already initialized
+    // Initialize Firebase
     const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
     const db = getFirestore(app);
     const auth = getAuth(app);
     const loadRef = collection(db, "loads");
 
+    // DOM Elements
     const form = document.getElementById("loadForm");
     const loadList = document.getElementById("loadList");
     const submitLoadBtn = document.getElementById("submitLoadBtn");
     const generalFeedback = document.getElementById("generalFeedback");
     const generalFeedbackText = document.getElementById("generalFeedbackText");
+    const agreeToTermsCheckbox = document.getElementById('agreeToTermsCheckbox');
 
-    let isAdmin = false; // State to track admin status
+    let isAdmin = false; // State to track admin status (client-side UI only)
+    let currentSnapshot = null; // Store the latest snapshot
 
-    // Store original placeholders for inputs
+    // Store original placeholders
     const originalPlaceholders = {};
     document.querySelectorAll('#loadForm input, #loadForm textarea').forEach(input => {
         originalPlaceholders[input.id] = input.placeholder;
+    });
+    document.querySelectorAll('#loadForm select').forEach(select => {
+        const selectedOption = select.querySelector('option[disabled][selected]');
+        if (selectedOption) {
+            originalPlaceholders[select.id] = selectedOption.textContent;
+        }
     });
 
     // --- UI Feedback Helpers ---
@@ -247,104 +291,90 @@
         generalFeedback.classList.add(`alert-${type}`, 'show');
         generalFeedbackText.textContent = message;
         generalFeedback.classList.remove('d-none');
+         setTimeout(() => hideGeneralFeedback(), 5000); // Auto-dismiss after 5 seconds
     }
 
     function hideGeneralFeedback() {
-        generalFeedback.classList.add('d-none');
+        generalFeedback.classList.remove('show');
+        setTimeout(() => generalFeedback.classList.add('d-none'), 150); // Delay to allow fade out
     }
 
     function setButtonLoadingState(button, isLoading) {
+        button.disabled = isLoading;
         if (isLoading) {
             button.classList.add('loading');
-            button.disabled = true;
         } else {
             button.classList.remove('loading');
-            button.disabled = false;
         }
     }
 
-    // Modified setValidationFeedback to use placeholders for standard inputs
     function setValidationFeedback(inputElement, message = '') {
-        // Apply is-invalid class to all invalid inputs/selects
+        const isSelect2 = inputElement.classList.contains('select2-hidden-accessible');
+        const targetElement = isSelect2 ? $(inputElement).next('.select2-container').find('.select2-selection') : $(inputElement);
+
         if (message) {
-            inputElement.classList.add('is-invalid');
-            // For standard inputs/textareas, set the placeholder to the message
-            if (inputElement.tagName === 'INPUT' || inputElement.tagName === 'TEXTAREA') {
+            targetElement.addClass('is-invalid');
+            if (!isSelect2 && (inputElement.tagName === 'INPUT' || inputElement.tagName === 'TEXTAREA')) {
                  inputElement.placeholder = message;
-                 // Select2 handles its own placeholder via JS config,
-                 // we just add the is-invalid class to the select element.
             }
         } else {
-            inputElement.classList.remove('is-invalid');
-            // For standard inputs/textareas, restore original placeholder
-            if (inputElement.tagName === 'INPUT' || inputElement.tagName === 'TEXTAREA') {
-                 inputElement.placeholder = originalPlaceholders[inputElement.id] || ''; // Restore or clear
+            targetElement.removeClass('is-invalid');
+            if (!isSelect2 && (inputElement.tagName === 'INPUT' || inputElement.tagName === 'TEXTAREA')) {
+                 inputElement.placeholder = originalPlaceholders[inputElement.id] || '';
             }
-            // Select2 just needs the class removed
         }
     }
 
     function clearAllValidationFeedback() {
         form.querySelectorAll('.form-control, .form-select').forEach(input => {
-            setValidationFeedback(input, ''); // Clear feedback for all fields
+            setValidationFeedback(input, '');
         });
+         $('.select2-selection').removeClass('is-invalid'); // Ensure Select2 styles are cleared
     }
 
     // --- Authentication State ---
-    // *** IMPORTANT SECURITY NOTE ***
-    // The isAdmin check below (isAdmin = !!user) is ONLY for controlling
-    // the visibility of UI elements client-side.
-    // This is NOT a secure way to control access to data operations (like delete).
-    // Secure admin checks for database operations MUST be done in your
-    // Firestore Security Rules using request.auth.token.admin == true.
-    // You need to set a custom claim 'admin: true' on the user's Authentication
-    // token on your backend (e.g., via Firebase Cloud Functions or Admin SDK)
-    // for request.auth.token.admin == true to work in rules.
+    // Controls UI visibility only. Real access control is via Firestore Rules.
     onAuthStateChanged(auth, (user) => {
-        // Client-side UI control only (NOT secure for data operations)
-         isAdmin = !!user; // For demo/UI: Any logged-in user is admin client-side
-         console.log("Admin status (client-side UI only):", isAdmin); // For debugging
-         // Note: Updating isAdmin here doesn't automatically re-render existing loads
-         // to show/hide the delete button unless the onSnapshot triggers a data change.
-         // If immediate UI update on login/logout is needed, you would need to re-run
-         // renderLoads with the current snapshot data if available, or re-attach listener.
-         // For simplicity in this example, UI update happens on data change or page reload.
-    });
+        const wasAdmin = isAdmin;
+        // TODO: Implement proper admin check (e.g., custom claims) if needed
+        // For now, any logged-in user is considered admin for UI purposes
+        isAdmin = !!user;
 
+        console.log("Admin status (client-side UI only):", isAdmin);
+
+        // Re-render list if admin status changed to update UI controls (like delete button)
+        if (isAdmin !== wasAdmin && currentSnapshot) {
+            console.log("Admin status changed, re-rendering list.");
+            renderLoads(currentSnapshot);
+        }
+    });
 
     // --- Form Submission ---
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        // --- ADDED: Check Terms & Conditions checkbox ---
-        const agreeToTermsCheckbox = document.getElementById('agreeToTermsCheckbox');
         if (!agreeToTermsCheckbox.checked) {
-            showGeneralFeedback("Please read and agree to the Terms & Conditions before posting a load.", "warning");
-            // Apply validation feedback to the checkbox or its container if desired
-            // agreeToTermsCheckbox.classList.add('is-invalid'); // Bootstrap doesn't style checkboxes with is-invalid well by default
-            return; // Stop the function execution
+            showGeneralFeedback("Please read and agree to the Terms & Conditions before posting.", "warning");
+            return;
         }
-        // --- END ADDED: Check Terms & Conditions checkbox ---
 
+        hideGeneralFeedback();
+        clearAllValidationFeedback();
 
-        hideGeneralFeedback(); // Hide any previous general message
-        clearAllValidationFeedback(); // Clear previous validation errors and restore placeholders
-
-        const from = form.from.value.trim();
-        const to = form.to.value.trim();
+        const from = $('#from').val();
+        const to = $('#to').val();
         const weight = form.weight.value.trim();
         const deadline = form.deadline.value;
         const phone = form.phone.value.trim();
         const comment = form.comment.value.trim();
 
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Compare dates only, ignore time
-        const selectedDate = new Date(deadline);
+        today.setHours(0, 0, 0, 0);
+        const selectedDate = new Date(deadline + 'T00:00:00');
 
         let isValid = true;
-        let errorMessages = [];
 
-        // Basic Client-Side Validation (Server-side is needed for security!)
+        // --- Client-Side Validation ---
         if (!from) { setValidationFeedback(form.from, "Please select origin."); isValid = false; }
         if (!to) { setValidationFeedback(form.to, "Please select destination."); isValid = false; }
 
@@ -354,31 +384,30 @@
         }
 
         if (!deadline) {
-             setValidationFeedback(form.deadline, "Deadline req'd."); isValid = false;
+             setValidationFeedback(form.deadline, "Deadline date is required."); isValid = false;
         } else if (selectedDate < today) {
-            setValidationFeedback(form.deadline, "Future date req'd."); isValid = false;
+            setValidationFeedback(form.deadline, "Deadline must be today or a future date."); isValid = false;
         }
 
-        // Basic phone validation (at least 7 digits, allows +, -, spaces)
+        // Basic phone validation (allows +, -, spaces, min 7 digits)
         if (!phone || !/^\+?[0-9\s-]{7,}$/.test(phone)) {
-             setValidationFeedback(form.phone, "Valid phone req'd (min 7 digits)."); isValid = false;
+             setValidationFeedback(form.phone, "Valid phone number required (min 7 digits)."); isValid = false;
         }
 
-        // Simple comment validation
-         if (/http|www|@|%/.test(comment)) {
-             setValidationFeedback(form.comment, "Invalid chars in comment."); isValid = false;
+        // Prevent potentially harmful characters/links in comments
+         if (/http|www|@|%|tel:|mailto:/.test(comment)) {
+             setValidationFeedback(form.comment, "Comment contains invalid characters."); isValid = false;
          }
-
+        // --- End Validation ---
 
         if (!isValid) {
-            showGeneralFeedback("Please fix the errors in the form.", "warning");
-            return; // Stop submission if client-side validation fails
+            showGeneralFeedback("Please fix the errors highlighted in the form.", "warning");
+            return;
         }
 
-        // Cooldown Check
+        // Cooldown Check (Client-side, Admins bypass)
         const lastPostTime = localStorage.getItem("lastLoadPostTime");
         const cooldownDuration = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
-        // Admins bypass cooldown check client-side for UI/testing simplicity (NOT SECURE)
         if (!isAdmin && lastPostTime && (Date.now() - parseInt(lastPostTime) < cooldownDuration)) {
              const remainingTime = cooldownDuration - (Date.now() - parseInt(lastPostTime));
              const minutes = Math.ceil(remainingTime / (60 * 1000));
@@ -386,27 +415,27 @@
             return;
         }
 
-        setButtonLoadingState(submitLoadBtn, true); // Show loading state
+        setButtonLoadingState(submitLoadBtn, true);
 
         try {
-            // Duplicate Check
+            // Duplicate Check (Based on key fields)
             const duplicateLoadQuery = query(
                 loadRef,
                 where("from", "==", from),
                 where("to", "==", to),
                 where("deadline", "==", deadline),
                 where("phone", "==", phone)
+                // Consider adding weight or other fields if needed for uniqueness
             );
-             // *** This next line performs the READ operation for duplicate check ***
             const existingLoads = await getDocs(duplicateLoadQuery);
 
             if (!existingLoads.empty) {
-                showGeneralFeedback("⚠️ This load is already registered.", "warning");
-                 setButtonLoadingState(submitLoadBtn, false);
+                showGeneralFeedback("⚠️ This exact load (origin, destination, deadline, phone) seems to be already registered.", "warning");
+                setButtonLoadingState(submitLoadBtn, false);
                 return;
             }
 
-            // Add Load to Firestore
+            // Add Load Data to Firestore
             const loadData = {
                 from,
                 to,
@@ -414,81 +443,74 @@
                 deadline,
                 phone,
                 comment,
-                createdAt: serverTimestamp()
-                // Consider adding user UID here if you want to associate loads with users
+                createdAt: serverTimestamp(),
+                // Uncomment to associate load with logged-in user
                 // userId: auth.currentUser ? auth.currentUser.uid : null,
             };
 
             await addDoc(loadRef, loadData);
-            localStorage.setItem("lastLoadPostTime", Date.now()); // Update cooldown time
-            form.reset(); // Reset form on success
-            // Reset Select2 placeholders manually after form reset
-            $('#from').val(null).trigger('change');
-            $('#to').val(null).trigger('change');
-            clearAllValidationFeedback(); // Ensure placeholders are restored after reset
-            agreeToTermsCheckbox.checked = false; // Uncheck T&C after successful post
 
+            if (!isAdmin) { // Set cooldown only for non-admins
+                 localStorage.setItem("lastLoadPostTime", Date.now());
+            }
+            form.reset();
+            $('#from').val(null).trigger('change'); // Reset Select2 fields
+            $('#to').val(null).trigger('change');
+            clearAllValidationFeedback();
+            agreeToTermsCheckbox.checked = false; // Uncheck terms checkbox
 
             showGeneralFeedback("✅ Load posted successfully!", "success");
 
         } catch (error) {
             console.error("Error posting load:", error);
-            showGeneralFeedback(`❌ Failed to post load: ${error.message}`, "danger");
+            showGeneralFeedback(`❌ Failed to post load: ${error.message}. Please try again.`, "danger");
         } finally {
-            setButtonLoadingState(submitLoadBtn, false); // Hide loading state
+            setButtonLoadingState(submitLoadBtn, false);
         }
     });
 
     // --- Displaying Loads ---
-    // Added a function to render loads, called initially and on snapshot updates
     function renderLoads(loadsSnapshot) {
+         currentSnapshot = loadsSnapshot; // Store snapshot for potential re-renders
          loadList.innerHTML = ""; // Clear current list
-        const now = new Date();
-         let hasLoadsToDisplay = false; // Track if any non-expired loads exist
+         const now = new Date();
+         now.setHours(0, 0, 0, 0); // Use start of today for comparison
+         let hasLoadsToDisplay = false;
 
         if (loadsSnapshot.empty) {
-             loadList.innerHTML = `
-                <div class="text-center text-muted mt-4 w-100">
-                  <p class="fw-bold">📭 No loads available at the moment</p>
-                </div>
-              `;
-             return; // No loads at all in the snapshot
+             loadList.innerHTML = `<div class="col-12 text-center text-muted mt-4"><p class="fw-bold fs-5">📭 No loads available right now.</p></div>`;
+             return;
         }
-
 
         loadsSnapshot.forEach(docSnap => {
             const load = docSnap.data();
-            // Ensure deadline is treated as a date string if it came from Firestore
-            // (Firebase Timestamps handle date comparisons better in queries)
-            // Assuming load.deadline is a "YYYY-MM-DD" string from the input type="date"
-            const deadlineDate = new Date(load.deadline + 'T00:00:00'); // Adding T00:00:00 to avoid timezone issues
+            const deadlineDate = new Date(load.deadline + 'T00:00:00'); // Interpret date string correctly
 
-
-            // Filter expired loads client-side before displaying
-            // Use <= now to hide loads whose deadline is today or in the past
-            if (deadlineDate <= now) {
-                 // IMPORTANT: Do NOT rely on client-side filtering for SECURITY.
-                 // Implement server-side checks (e.g., Cloud Functions) to handle expired data cleanup securely.
-                return; // Skip displaying expired load in the UI
+            // Filter expired loads (deadline is before today)
+            if (deadlineDate < now) {
+                // Optionally, implement deletion of expired loads via Cloud Functions
+                return; // Skip rendering expired load
             }
 
-            hasLoadsToDisplay = true; // Found a non-expired load
+            hasLoadsToDisplay = true; // Found a valid load to display
 
             const div = document.createElement("div");
-            div.className = "col-md-4"; // Use Bootstrap grid column
+            div.className = "col-lg-4 col-md-6 mb-4"; // Responsive columns with margin
             div.innerHTML = `
-              <div class="card border-0 shadow-sm h-100">
+              <div class="card h-100">
                 <div class="card-body d-flex flex-column">
-                  <h5 class="card-title">${load.from} → ${load.to}</h5>
-                  <p class="card-text"><strong>Weight:</strong> ${load.weight} kg</p>
-                  <p class="card-text"><strong>Deadline:</strong> ${load.deadline}</p>
-                  <p class="card-text"><strong>Contact:</strong> <a href="tel:${load.phone}">${load.phone}</a></p>
-                  <p class="card-text flex-grow-1"><strong>Note:</strong> ${load.comment || "N/A"}</p>
-                  ${isAdmin ? // This check controls UI visibility only (NOT secure)
-                    `<button class="btn btn-sm btn-danger mt-2 delete-load-btn" data-id="${docSnap.id}">
-                                  <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                  <span class="button-text">Delete</span>
-                               </button>`
+                  <h5 class="card-title">${load.from} <i class="fas fa-arrow-right mx-1"></i> ${load.to}</h5>
+                  <p class="card-text mb-1"><small class="text-muted">Posted: ${load.createdAt?.toDate().toLocaleDateString() || 'N/A'}</small></p>
+                  <hr class="my-2">
+                  <p class="card-text mb-1"><strong>Weight:</strong> ${load.weight} kg</p>
+                  <p class="card-text mb-1"><strong>Deadline:</strong> ${load.deadline}</p>
+                  <p class="card-text mb-1"><strong>Contact:</strong> <a href="tel:${load.phone}">${load.phone}</a></p>
+                  <p class="card-text flex-grow-1 mb-3"><strong>Note:</strong> ${load.comment || "<i>No additional notes.</i>"}</p>
+                  ${isAdmin ? // Delete button only shown if isAdmin is true (client-side check)
+                    `<button class="btn btn-sm btn-outline-danger mt-auto delete-load-btn" data-id="${docSnap.id}">
+                       <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                       <span class="button-text"><i class="fas fa-trash-alt me-1"></i>Delete</span>
+                    </button>`
                     : ""}
                 </div>
               </div>
@@ -496,99 +518,76 @@
             loadList.appendChild(div);
         });
 
-         // Display "No loads" message if all loads were filtered out or if snapshot was initially empty
+         // Show message if all loads were filtered out (i.e., all were expired)
          if (!hasLoadsToDisplay && !loadsSnapshot.empty) {
-             loadList.innerHTML = `
-                <div class="text-center text-muted mt-4 w-100">
-                  <p class="fw-bold">📭 No loads available at the moment (All available loads have expired)</p>
-                </div>
-              `;
-         } else if (!hasLoadsToDisplay && loadsSnapshot.empty) {
-              loadList.innerHTML = `
-                <div class="text-center text-muted mt-4 w-100">
-                  <p class="fw-bold">📭 No loads available at the moment</p>
-                </div>
-              `;
+             loadList.innerHTML = `<div class="col-12 text-center text-muted mt-4"><p class="fw-bold fs-5">📭 No current loads found (any previous loads may have expired).</p></div>`;
          }
-
     }
 
-
-    // Listen for real-time updates to the loads collection
-    onSnapshot(loadRef, (snapshot) => {
-        renderLoads(snapshot); // Call the render function whenever data changes
+    // --- Firestore Listener ---
+    // Listen for real-time updates, order by creation date descending (newest first)
+    const loadsQuery = query(loadRef, orderBy("createdAt", "desc"));
+    onSnapshot(loadsQuery, (snapshot) => {
+        renderLoads(snapshot); // Re-render the list when data changes
     }, (error) => {
         console.error("Error fetching loads:", error);
         showGeneralFeedback(`Error loading loads: ${error.message}`, "danger");
-         loadList.innerHTML = `
-            <div class="text-center text-danger mt-4 w-100">
-              <p>❌ Failed to load available loads.</p>
-            </div>
-          `;
+        loadList.innerHTML = `<div class="col-12 text-center text-danger mt-4"><p>❌ Failed to load available loads.</p></div>`;
     });
 
     // --- Delete Functionality (Admin UI Only) ---
-    // Use event delegation to handle clicks on delete buttons
     loadList.addEventListener('click', async (event) => {
-        const deleteButton = event.target.closest('.delete-load-btn'); // Find the nearest delete button ancestor
-        // Only proceed if a delete button was clicked and it's not disabled
-        if (!deleteButton || deleteButton.disabled) return;
+        const deleteButton = event.target.closest('.delete-load-btn');
+        if (!deleteButton || deleteButton.disabled) return; // Ignore clicks not on the button or if disabled
 
         const loadId = deleteButton.dataset.id;
 
-        // --- IMPORTANT SECURITY NOTE ---
-        // This client-side isAdmin check is ONLY for hiding the button in the UI.
-        // The actual security check MUST happen in your Firestore Security Rules
-        // to prevent unauthorized users from deleting data even if they bypass the UI.
-        // The rule `allow delete: if isAdmin();` is where the real security is enforced.
+        // --- SECURITY REMINDER ---
+        // This client-side check is for UX only.
+        // Firestore Rules MUST enforce that only authorized admins can delete.
         if (!isAdmin) {
-             // This client-side check is redundant if security rules are correct,
-             // but provides immediate UI feedback. The security rule is the real gatekeeper.
              showGeneralFeedback("You do not have permission to delete loads.", "danger");
             return;
         }
+        // --- END SECURITY REMINDER ---
 
-        if (!confirm("Are you sure you want to delete this load? This cannot be undone.")) {
-            return; // User cancelled deletion
+        if (!confirm("Are you sure you want to permanently delete this load? This cannot be undone.")) {
+            return; // User cancelled
         }
 
-        setButtonLoadingState(deleteButton, true); // Show loading state on delete button
+        setButtonLoadingState(deleteButton, true);
 
         try {
             await deleteDoc(doc(loadRef, loadId));
-            // onSnapshot listener will automatically update the list when deleted
+            // List will update automatically via onSnapshot listener
             showGeneralFeedback("🗑️ Load deleted successfully!", "success");
+            // Button is removed by renderLoads, no need to reset state here
         } catch (error) {
             console.error("Error deleting load:", error);
-             // Check if the error is a permission denied error from security rules
             if (error.code === 'permission-denied') {
-                 showGeneralFeedback("❌ You do not have permission to delete this load. (Security rules blocked the action)", "danger");
+                 showGeneralFeedback("❌ Permission Denied. You might not have the necessary rights to delete this load.", "danger");
             } else {
                  showGeneralFeedback(`❌ Failed to delete load: ${error.message}`, "danger");
             }
-             setButtonLoadingState(deleteButton, false); // Hide loading state on error
+             // Only reset button state if deletion failed and button might still exist
+             setButtonLoadingState(deleteButton, false);
         }
     });
 
-
     // --- Initialize Select2 ---
      $(document).ready(function() {
-        // Store initial placeholders for Select2 elements too, though they are handled differently
-         document.querySelectorAll('#loadForm select').forEach(select => {
-             const selectedOption = select.querySelector('option[disabled][selected]');
-             if (selectedOption) {
-                originalPlaceholders[select.id] = selectedOption.textContent;
-             }
-         });
+        $('#from').select2({
+            placeholder: originalPlaceholders['from'] || 'Select From Country',
+            theme: 'bootstrap-5'
+        });
+        $('#to').select2({
+            placeholder: originalPlaceholders['to'] || 'Select Destination Country',
+            theme: 'bootstrap-5'
+        });
 
-        $('#from').select2({ placeholder: originalPlaceholders['from'] || 'Select From Country', theme: 'bootstrap-5' });
-        $('#to').select2({ placeholder: originalPlaceholders['to'] || 'Select Destination Country', theme: 'bootstrap-5' });
-
-         // Watch Select2 changes to remove is-invalid class
+         // Clear validation styling on Select2 change
          $('#from, #to').on('change', function() {
-             if ($(this).val()) {
-                 $(this).removeClass('is-invalid');
-             }
+            setValidationFeedback(this, '');
          });
       });
 
