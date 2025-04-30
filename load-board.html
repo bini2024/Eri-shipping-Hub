@@ -314,29 +314,45 @@
     let feedbackHideTimeout = null; // To manage the timeout for hiding feedback
 
     function showGeneralFeedback(message, type = 'info', duration = 7000) { // Added duration parameter
-        console.log("Showing feedback:", message, type); // Debug log
+        console.log(`[Feedback] Showing: "${message}" (Type: ${type}, Duration: ${duration}ms) at ${new Date().toLocaleTimeString()}`); // Debug log with timestamp
+
         // Clear any existing hide timeout before showing a new message
         if (feedbackHideTimeout) {
             clearTimeout(feedbackHideTimeout);
+            console.log("[Feedback] Cleared previous hide timeout.");
         }
 
         generalFeedback.classList.remove('alert-info', 'alert-success', 'alert-warning', 'alert-danger', 'd-none');
         generalFeedback.classList.add(`alert-${type}`);
         generalFeedbackText.textContent = message;
-        generalFeedback.classList.add('show'); // Trigger fade in
+
+        // Ensure 'show' class is added to trigger the fade-in transition
+        // Removing and re-adding can help if the element was somehow stuck
+        generalFeedback.classList.remove('show');
+        // Use a small delay to ensure the class removal registers before adding it back
+        setTimeout(() => {
+             generalFeedback.classList.add('show');
+             console.log("[Feedback] Added 'show' class.");
+        }, 50); // Small delay to re-trigger transition
+
 
          // Set new hide timeout
-         feedbackHideTimeout = setTimeout(() => hideGeneralFeedback(), duration); // Use dynamic duration
+         feedbackHideTimeout = setTimeout(() => {
+             console.log(`[Feedback] Timeout finished (${duration}ms). Calling hideGeneralFeedback.`);
+             hideGeneralFeedback();
+            }, duration); // Use dynamic duration
+         console.log(`[Feedback] Set new hide timeout.`);
     }
 
     function hideGeneralFeedback() {
-        console.log("Hiding feedback"); // Debug log
+        console.log(`[Feedback] Hiding at ${new Date().toLocaleTimeString()}`); // Debug log with timestamp
         generalFeedback.classList.remove('show');
         // Use a timeout matching the Bootstrap fade transition duration before adding d-none
         setTimeout(() => {
             generalFeedback.classList.add('d-none');
             feedbackHideTimeout = null; // Clear the timeout variable
-        }, 200); // Adjust timing if Bootstrap transition duration is different
+            console.log("[Feedback] Added 'd-none' class and cleared timeout variable.");
+        }, 300); // Increased delay slightly to ensure fade out completes
     }
 
 
@@ -421,7 +437,7 @@
         let isValid = true;
 
         if (!agreeToTermsCheckbox.checked) {
-            showGeneralFeedback("Please read and agree to the Terms & Conditions before posting.", "warning");
+            showGeneralFeedback("Please read and agree to the Terms & Conditions before posting.", "warning", 10000); // Warning duration 10s
             isValid = false;
         }
 
@@ -467,16 +483,17 @@
 
         try {
             // --- Cooldown Check ---
-            console.log("Checking cooldown. isAdmin:", isAdmin); // Debug log
+            console.log("Checking cooldown. isAdmin (client-side UI):", isAdmin); // Debug log
             const lastPostTime = localStorage.getItem("lastLoadPostTime");
             const cooldownDuration = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
             const currentTime = Date.now();
 
+            // Cooldown applies if user is NOT considered 'admin' by the client-side UI logic (i.e., not logged in)
             if (!isAdmin && lastPostTime && (currentTime - parseInt(lastPostTime) < cooldownDuration)) {
                  const remainingTime = cooldownDuration - (currentTime - parseInt(lastPostTime));
                  const minutes = Math.ceil(remainingTime / (60 * 1000));
-                 console.log(`Cooldown active. ${minutes} minutes remaining.`); // Debug log
-                 showGeneralFeedback(`Please wait ${minutes} more minute(s) before posting again.`, "warning", 10000); // Show for 10 seconds
+                 console.log(`Cooldown active for non-admin user. ${minutes} minutes remaining.`); // Debug log
+                 showGeneralFeedback(`Please wait ${minutes} more minute(s) before posting again.`, "warning", 15000); // Increased duration to 15s
                  setButtonLoadingState(submitLoadBtn, false);
                  return; // Block submission
             }
@@ -499,7 +516,7 @@
 
             if (!existingLoads.empty) {
                 console.log("Duplicate found!"); // Debug log
-                showGeneralFeedback("⚠️ This exact load (origin, destination, deadline, phone) seems to be already registered.", "warning", 10000); // Show for 10 seconds
+                showGeneralFeedback("⚠️ This exact load (origin, destination, deadline, phone) seems to be already registered.", "warning", 15000); // Increased duration to 15s
                 setButtonLoadingState(submitLoadBtn, false);
                 return; // Block submission
             }
@@ -522,10 +539,10 @@
             await addDoc(loadRef, loadData);
             console.log("Document added successfully."); // Debug log
 
-            // Set cooldown timestamp only for non-admins
-            if (!isAdmin) { // isAdmin here means *not* logged in according to the previous logic. This should be !auth.currentUser
+            // Set cooldown timestamp only for non-admins (logged-out users in this client-side logic)
+            if (!isAdmin) { // If the user is NOT logged in based on client-side UI flag
                  localStorage.setItem("lastLoadPostTime", currentTime);
-                 console.log("Cooldown timestamp set for non-admin."); // Debug log
+                 console.log("Cooldown timestamp set in localStorage for logged-out user."); // Debug log
             }
 
             // Reset form and validation feedback
@@ -535,17 +552,11 @@
             clearAllValidationFeedback();
             agreeToTermsCheckbox.checked = false;
 
-            // Re-fetch loads to ensure the new one appears immediately
-            // Note: onSnapshot should handle this automatically, but a manual fetch might be needed in some complex scenarios
-            // or if the listener hasn't fully initialized. Relying on onSnapshot is generally preferred.
-            // However, if the list doesn't update instantly, you might consider a small delay before showing success
-            // or trusting the onSnapshot listener. For now, we trust onSnapshot.
-
-            showGeneralFeedback("✅ Load posted successfully!", "success", 7000); // Show success for 7 seconds
+            showGeneralFeedback("✅ Load posted successfully!", "success", 7000); // Success duration 7s
 
         } catch (error) {
             console.error("Error during Firestore operation:", error); // Log the actual error
-            showGeneralFeedback(`❌ Failed to post load: ${error.message}. Please check console for details.`, "danger", 10000); // Show error for 10 seconds
+            showGeneralFeedback(`❌ Failed to post load: ${error.message}. Please check console for details.`, "danger", 15000); // Increased duration to 15s
         } finally {
             setButtonLoadingState(submitLoadBtn, false); // Ensure button is re-enabled
         }
@@ -621,7 +632,7 @@
         renderLoads(snapshot);
     }, (error) => {
         console.error("Error fetching loads:", error);
-        showGeneralFeedback(`Error loading loads: ${error.message}`, "danger", 10000); // Show error for 10 seconds
+        showGeneralFeedback(`Error loading loads: ${error.message}`, "danger", 15000); // Increased duration to 15s
         loadList.innerHTML = `<div class="col-12 text-center text-danger mt-4"><p>❌ Failed to load available loads.</p></div>`;
     });
 
@@ -631,11 +642,11 @@
         if (!deleteButton || deleteButton.disabled) return;
 
         const loadId = deleteButton.dataset.id;
-        console.log(`Delete button clicked for load ID: ${loadId}. isAdmin: ${isAdmin}`); // Debug log
+        console.log(`Delete button clicked for load ID: ${loadId}. isAdmin (client-side UI): ${isAdmin}`); // Debug log
 
         // This is a client-side UI check. Real permission check must be in Firestore Security Rules.
         if (!isAdmin) { // isAdmin here is based on `!!auth.currentUser`
-             showGeneralFeedback("You do not have permission to delete loads.", "danger");
+             showGeneralFeedback("You do not have permission to delete loads.", "danger", 10000); // Duration 10s
             return;
         }
 
@@ -651,13 +662,13 @@
             await deleteDoc(doc(loadRef, loadId));
             console.log(`Document ${loadId} deleted successfully.`); // Debug log
             // List updates via onSnapshot listener automatically
-            showGeneralFeedback("🗑️ Load deleted successfully!", "success");
+            showGeneralFeedback("🗑️ Load deleted successfully!", "success", 7000); // Duration 7s
         } catch (error) {
             console.error(`Error deleting load ${loadId}:`, error); // Log the actual error
             if (error.code === 'permission-denied') {
-                 showGeneralFeedback("❌ Permission Denied. You might not have the necessary rights to delete this load. Ensure your Firestore Security Rules allow this operation for authenticated users.", "danger", 10000); // More specific message and duration
+                 showGeneralFeedback("❌ Permission Denied. You might not have the necessary rights to delete this load. Ensure your Firestore Security Rules allow this operation for authenticated users.", "danger", 15000); // Increased duration to 15s
             } else {
-                 showGeneralFeedback(`❌ Failed to delete load: ${error.message}`, "danger", 10000); // Show error for 10 seconds
+                 showGeneralFeedback(`❌ Failed to delete load: ${error.message}`, "danger", 15000); // Increased duration to 15s
             }
              setButtonLoadingState(deleteButton, false); // Reset button state on error only
         }
