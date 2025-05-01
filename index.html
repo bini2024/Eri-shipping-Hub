@@ -422,6 +422,44 @@
     const searchCourierBtn = document.getElementById("searchCourierBtn");
     const courierResultsDiv = document.getElementById("courierResults");
 
+    // Helper function to parse date strings
+const parseDateString = (dateString) => {
+    if (!dateString) return null;
+
+    // Try impenetrable-MM-DD first
+    const partsYYYYMMDD = dateString.split('-');
+    if (partsYYYYMMDD.length === 3) {
+        const year = parseInt(partsYYYYMMDD[0], 10);
+        const month = parseInt(partsYYYYMMDD[1], 10) - 1; // Month is 0-indexed
+        const day = parseInt(partsYYYYMMDD[2], 10);
+        if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+             const date = new Date(year, month, day);
+             if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
+                  date.setHours(0, 0, 0, 0);
+                 return date;
+             }
+        }
+    }
+
+    // If impenetrable-MM-DD failed, try DD/MM/YYYY
+    const partsDDMMYYYY = dateString.split('/');
+    if (partsDDMMYYYY.length === 3) {
+         const day = parseInt(partsDDMMYYYY[0], 10);
+         const month = parseInt(partsDDMMYYYY[1], 10) - 1; // Month is 0-indexed
+         const year = parseInt(partsDDMMYYYY[2], 10);
+         if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+             const date = new Date(year, month, day);
+             if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
+                  date.setHours(0, 0, 0, 0);
+                 return date;
+             }
+        }
+    }
+
+    console.error("Could not parse date string:", dateString);
+    return null;
+};
+
 
     // --- UI Feedback Helpers (Consistent with other pages) ---
      function showGeneralFeedback(message, type = 'info') {
@@ -493,6 +531,9 @@
       packageForm.classList.remove('was-validated'); // Reset validation styles on success
       setButtonLoadingState(searchCourierBtn, true); // Show loading state
 
+
+      
+
       try {
         // --- FETCH ALL AND FILTER CLIENT-SIDE ---
         // Get ALL courier documents from Firestore (does not require composite index)
@@ -509,7 +550,10 @@
         querySnapshot.forEach((doc) => {
             const data = doc.data();
              // Check if courier matches route AND is not expired
-            if (data.from === fromCountry && data.to === toCountry && data.date && data.date >= todayISO) {
+            // --- Use the robust date parsing helper ---
+         const courierDate = parseDateString(data.date);
+             // Check if courier matches route AND date is valid and in the future or today
+         if (courierDate && data.from === fromCountry && data.to === toCountry && courierDate >= now) {
                  matchingCouriers.push({...data, id: doc.id}); // Add matching courier data
             }
         });
@@ -534,6 +578,9 @@
           matchingCouriers.forEach((data) => {
             const card = document.createElement('div');
             card.className = 'card courier-card mb-3';
+            // Add these two lines inside the loop body:
+            card.dataset.contact = data.contact;
+            card.id = `courier-${data.id}`; // Assign a unique ID for easier lookup
             card.innerHTML = `
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -541,9 +588,13 @@
                   <small class="text-muted">${data.date}</small>
                 </div>
                 <p class="card-text"><i class="fas fa-route me-2"></i>${data.from} → ${data.to}</p>
-                <a href="tel:${data.contact}" class="btn btn-sm btn-outline-primary">
-                  <i class="fas fa-phone me-2"></i>Contact: ${data.contact}
-                </a>
+                <div class="contact-area">
+                <button class="btn btn-sm btn-outline-primary show-contact-btn">
+                    <i class="fas fa-phone me-2"></i>Show Contact
+                </button>
+                <span class="revealed-contact" style="display: none;"></span>
+            </div>
+            ```
                 <small class="text-muted mt-2 d-block">${data.comments  || 'No comments provided'}</small>
               </div>
             `;
@@ -571,7 +622,64 @@
       }
     });
 
+// --- Handle Show Contact Button Click (Event Delegation) ---
+// Use event delegation on the results container
+courierResultsDiv.addEventListener('click', (event) => {
+    // Check if the clicked element or its parent is the button with class 'show-contact-btn'
+    const showContactBtn = event.target.closest('.show-contact-btn');
 
+    // If a show contact button was clicked
+    if (showContactBtn) {
+        // Find the closest parent card element
+        const card = showContactBtn.closest('.courier-card');
+        // Check if the card was found and has the contact data attribute
+        if (card && card.dataset.contact) {
+            // Store the clicked card's ID so we know which one to update later
+            courierResultsDiv.dataset.currentClickedCardId = card.id;
+
+            // Show the safety tips modal
+            const safetyTipsModal = new bootstrap.Modal(document.getElementById('safetyTipsModal'));
+            safetyTipsModal.show();
+        }
+    }
+});
+
+// --- Handle Safety Tips Modal Acknowledge Button ---
+// Get the "I Understand and Agree" button from the modal footer
+const acknowledgeSafetyTipsBtn = document.getElementById('acknowledgeSafetyTips');
+// Add a click event listener to this button
+acknowledgeSafetyTipsBtn.addEventListener('click', () => {
+    // Retrieve the ID of the card that was clicked *before* the modal opened
+    const clickedCardId = courierResultsDiv.dataset.currentClickedCardId;
+    // Find that specific card element using its ID
+    const clickedCard = document.getElementById(clickedCardId);
+
+    // Check if the clicked card element was found and still has the contact data
+    if (clickedCard && clickedCard.dataset.contact) {
+        const contact = clickedCard.dataset.contact; // Get the contact number from the data attribute
+        // Find the specific elements within this clicked card to update
+        const contactArea = clickedCard.querySelector('.contact-area');
+        const showContactBtn = clickedCard.querySelector('.show-contact-btn');
+        const revealedContactSpan = clickedCard.querySelector('.revealed-contact');
+
+        // If all necessary elements are found
+        if (contactArea && showContactBtn && revealedContactSpan) {
+            // Hide the original "Show Contact" button
+            showContactBtn.style.display = 'none';
+
+            // Populate the placeholder span with the actual phone link and make it visible
+            // Reusing original Bootstrap classes (btn-sm btn-outline-primary) for consistent styling
+            revealedContactSpan.innerHTML = `
+                <a href="tel:${contact}" class="btn btn-sm btn-outline-primary">
+                   <i class="fas fa-phone me-2"></i>Contact: ${contact}
+                </a>
+            `;
+            revealedContactSpan.style.display = 'inline-block'; // Or 'block', depending on desired layout
+        }
+    }
+    // Clean up the stored clicked card ID after handling
+    delete courierResultsDiv.dataset.currentClickedCardId;
+});
     // --- Initialize Select2 ---
      $(document).ready(function() {
         // Store initial placeholders for Select2 elements
@@ -700,6 +808,29 @@ window.addEventListener('appinstalled', () => {
       document.getElementById("year").textContent = new Date().getFullYear();
     </script>
 
-
+<div class="modal fade" id="safetyTipsModal" tabindex="-1" aria-labelledby="safetyTipsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="safetyTipsModalLabel">🔒 Safety Tips</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Please keep these safety tips in mind when arranging delivery:</p>
+        <ul>
+          <li>Avoid paying the full amount in advance.</li>
+          <li>Arrange to meet in a public, safe location.</li>
+          <li>Carefully inspect the package and its contents (if possible/appropriate) before handing it over or paying.</li>
+          <li>Ensure the courier's identity matches any information they provided.</li>
+          <li>Only pay the courier after the package has been successfully and safely delivered to the recipient.</li>
+        </ul>
+        <p class="fw-bold text-danger">Eri Shipping Hub facilitates connections but is not responsible for the transaction or safety. Proceed with caution.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="acknowledgeSafetyTips" data-bs-dismiss="modal">I Understand and Agree</button>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
