@@ -1,445 +1,706 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bulk Courier Uploader - Eri Shipping Hub (Enhanced with Name/Comment)</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    /* Basic styling for feedback messages */
-    .feedback-section p {
-      margin-bottom: 0.25rem; /* Tighter spacing for list items */
-      padding: 0.2rem 0;
-    }
-    .feedback-section h5 {
-        margin-top: 1rem;
-        margin-bottom: 0.5rem;
-    }
-    .spinner-border {
-        display: inline-block;
-        width: 1.5rem;
-        height: 1.5rem;
-        vertical-align: middle;
-        margin-right: 0.5rem;
-    }
-    pre {
-        white-space: pre-wrap; /* Allow example text to wrap */
-        word-wrap: break-word;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Eri Shipping Hub</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      /* Define your app colors consistently */
+       --app-primary: #0a3d62; /* Your dark blue */
+       --app-secondary: #1e90ff; /* Your hover blue */
+
+       /* Use your app colors for Bootstrap variables */
+       --bs-primary: var(--app-primary);
+       --bs-secondary: var(--app-secondary);
+       --bs-dark: var(--app-primary);
+       --bs-heading-color: var(--app-primary);
+       --bs-border-color: #ced4da; /* Standard border color */
+    }
+
+    body {
+      background-color: #f8f9fa;
+      color: #212529;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    }
+
+    .container {
+      max-width: 1200px;
+    }
+
+    .card {
+      border-radius: 0.75rem;
+      border: 1px solid rgba(0, 0, 0, 0.125);
+      background-color: #ffffff;
+    }
+
+    .card-header {
+      background-color: var(--app-primary);
+      color: white;
+      border-top-left-radius: 0.75rem;
+      border-top-right-radius: 0.75rem;
+      font-weight: bold;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--bs-heading-color);
+    }
+
+    .table {
+      margin-bottom: 1rem;
+    }
+
+    .table th {
+      cursor: pointer; /* Indicate sortable columns */
+      user-select: none;
+    }
+    .table th:hover {
+      background-color: #e9ecef;
+    }
+
+    .table th i.fa-sort,
+    .table th i.fa-sort-up,
+    .table th i.fa-sort-down {
+      margin-left: 5px;
+    }
+
+    .btn .spinner-border {
+      display: none;
+      margin-right: .5rem;
+    }
+    .btn.loading .spinner-border {
+      display: inline-block;
+    }
+    .btn.loading .button-text {
+      visibility: hidden;
+    }
+
+    /* Styles for login page layout */
+    .login-container {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-image: url('https://raw.githubusercontent.com/bini2024/Eri-shipping-Hub/refs/heads/main/Erishipping.jpg'); /* Use your background */
+      background-size: cover;
+      background-position: center center;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      padding: 2rem;
+      background-color: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(5px);
+      border-radius: 1rem;
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    .login-card h2 {
+      text-align: center;
+      color: var(--app-primary);
+      margin-bottom: 1.5rem;
+    }
+
+    /* Hide admin content until authenticated */
+    #adminContent {
+      display: none;
+    }
+  </style>
 </head>
-<body class="bg-light">
-  <div class="container py-5">
-    <h3 class="text-center mb-4">📦 Bulk Courier Uploader (Enhanced)</h3>
+<body>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">Instructions for Pasting Data:</h5>
-            <p class="card-text">Paste your courier entries below. Each entry should be grouped together and include the following lines. Order within a group is flexible, but each line must start with the correct indicator:</p>
-            <ul>
-                <li>📅 **Date:** Must be on a line starting with '📅 ' followed by the date in `DD/MM/YYYY` format (e.g., `📅 27/04/2025`). This line signals the start of a new courier group.</li>
-                <li>🛣️ **Route:** Must be on a line containing 'መንገዲ:' or '→' or 'to', specifying the route like `መንገዲ: From → To` or `From to To`.</li>
-                <li>📞 **Contact(s):** Must be on a line starting with '📞 ' or 'ስልኪ' or 'Phone', followed by one or more phone numbers separated by `/` or `,`. Each phone number will create a separate courier entry with the same date/route/name/comment. (e.g., `📞 0910111030 / 0944406293`).</li>
-                 <li>👤 **Name / ስም (Optional):** Must be on a line starting with 'name:' or 'ስም:'. (e.g., `name: John Doe`). If not provided, a default name like '0050', '0051', etc., will be assigned.</li>
-                <li>📝 **Comment / ንብረት (Optional):** Must be on a line starting with 'comment:' or 'ንብረት:'. (e.g., `comment: 2 boxes, clothes`).</li>
-            </ul>
-            <p class="card-text fw-bold">Example:</p>
-            <pre class="bg-light p-2 border rounded">
-📅 27/04/2025
-name: John Doe
-መንገዲ: Canada → Eritrea
-📞 0910111030 / 0944406293
-comment: Suitcase with gifts
+    <div id="loginPage" class="login-container">
+    <div class="login-card">
+      <h2>Admin Login</h2>
+      <div id="loginFeedback" class="alert alert-danger d-none" role="alert"></div>
+      <form id="loginForm">
+        <div class="mb-3">
+          <label for="adminEmail" class="form-label">Email address</label>
+          <input type="email" class="form-control" id="adminEmail" required>
+        </div>
+        <div class="mb-3">
+          <label for="adminPassword" class="form-label">Password</label>
+          <input type="password" class="form-control" id="adminPassword" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100" id="loginBtn">
+          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          <span class="button-text">Login</span>
+        </button>
+      </form>
+    </div>
+  </div>
 
-📅 28/04/2025
-From to Ethiopia
-📞 0912345678
-# No name provided for this entry, a default will be assigned
-comment: Small package</pre>
-             <p class="card-text text-muted"><small>**Duplicate entries (same date, from, to, and contact) will be skipped, regardless of the name.**</small></p>
-        </div>
-    </div>
+    <div id="adminContent" class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1>Admin Dashboard</h1>
+      <button id="logoutBtn" class="btn btn-outline-secondary"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
+    </div>
 
-
-    <div class="mb-3">
-      <label for="bulkInput" class="form-label">Paste entries below:</label>
-      <textarea id="bulkInput" class="form-control" rows="12" placeholder="Paste your structured data here following the instructions above..."></textarea>
-    </div>
-
-    <button id="submitBulk" class="btn btn-primary">
-        <span id="buttonText">🚀 Add All Couriers</span>
-        <span id="loadingSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
-    </button>
-    <p id="overallResult" class="mt-3 fw-bold"></p>
-
-    <div class="feedback-section mt-4">
-        <div id="addedList"></div>
-        <div id="skippedList"></div>
-        <div id="errorList"></div>
-    </div>
-
-  </div>
-
-  <script type="module">
-    // IMPORTANT: Replace with your actual Firebase configuration
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY", // Replace with your apiKey
-      authDomain: "YOUR_AUTH_DOMAIN", // Replace with your authDomain
-      projectId: "YOUR_PROJECT_ID", // Replace with your projectId
-      storageBucket: "YOUR_STORAGE_BUCKET", // Replace with your storageBucket
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // Replace with your messagingSenderId
-      appId: "YOUR_APP_ID" // Replace with your appId
-    };
-
-    // Initialize Firebase ONLY if not already initialized (important in some frameworks)
-    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
-
-    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-    const db = getFirestore(app);
-    const courierRef = collection(db, "couriers");
-
-    const bulkInput = document.getElementById("bulkInput");
-    const overallResult = document.getElementById("overallResult");
-    const addedList = document.getElementById("addedList");
-    const skippedList = document.getElementById("skippedList");
-    const errorList = document.getElementById("errorList");
-    const submitBtn = document.getElementById("submitBulk");
-    const buttonText = document.getElementById("buttonText");
-    const loadingSpinner = document.getElementById("loadingSpinner");
+        <div class="alert alert-danger" role="alert">
+      <strong>SECURITY WARNING:</strong> This client-side code is for UI control only. You MUST configure Firestore Security Rules to protect your data and prevent unauthorized access or modification. Ensure only authenticated admin users can read and write sensitive data.
+    </div>
+    <div class="alert alert-info" role="alert">
+      <strong>NOTE on Visitor Analytics:</strong> This dashboard displays data from your Firestore database (couriers, loads). Comprehensive website visitor tracking (unique visits, traffic sources, user behavior) requires dedicated analytics tools like Google Analytics and is not included here.
+    </div>
 
 
-    const normalizeCountry = (place) => {
-      const map = {
-        "ኣዲስ": "Ethiopia",
-        "ኡጋንዳ": "Uganda",
-        "ኣስመራ": "Eritrea",
-        "ካናዳ": "Canada",
-        "ኤርትራ": "Eritrea",
-        "ቶሮንቶ": "Canada",
-        "ካምፓላ": "Uganda",
-        "ኢቲዮፕያ": "Ethiopia",
-        "ኣመሪካ": "USA",
-        "ስዊዘርላንድ": "Switzerland",
-        "ቱርኪ": "Turkey",
-        "እንግሊዝ": "England",
-        "ደንማርክ": "Denmark",
-        "ገርመን": "Germany",
-        "ፈረንሳ": "France",
-        "ኢታልያ": "Italy",
-        "ደቡብ ኣፍሪቃ": "South Africa",
-        "እግፕት": "Egypt"
-      };
-      const trimmedPlace = place.trim();
-      return map[trimmedPlace] || trimmedPlace;
-    };
-
-    // Basic date validation DD/MM/YYYY
-    const isValidDate = (dateStr) => {
-        if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) return false;
-        const [day, month, year] = dateStr.split('/').map(Number);
-        const date = new Date(year, month - 1, day);
-        return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
-    };
-
-    // isDuplicateEntry function no longer includes 'name' parameter or check
-    async function isDuplicateEntry(date, from, to, contact) {
-        // Basic validation before querying
-        if (!date || !from || !to || !contact || contact.length < 6) return false;
-
-        const q = query(
-            courierRef,
-            where("date", "==", date),
-            where("from", "==", from),
-            where("to", "==", to),
-            where("contact", "==", contact)
-            // Removed where("name", "==", name)
-        );
-        const querySnapshot = await getDocs(q);
-        return !querySnapshot.empty;
-    }
-
-    submitBtn.addEventListener("click", async () => {
-        // Reset feedback areas
-        overallResult.textContent = "";
-        addedList.innerHTML = "";
-        skippedList.innerHTML = "";
-        errorList.innerHTML = "";
-        overallResult.className = "mt-3 fw-bold"; // Reset class
-
-        // Show loading spinner
-        submitBtn.disabled = true;
-        buttonText.style.display = 'none';
-        loadingSpinner.style.display = 'inline-block';
-
-        const lines = bulkInput.value.trim().split("\n");
-        // Added name and comment to currentBlock structure
-        let currentBlock = { date: '', from: '', to: '', phones: [], name: '', comment: '', lineNumber: -1 };
-        const entriesToProcess = [];
-        const errors = [];
-        let currentLineNumber = 0;
-
-        // --- Step 1: Parse the input and group data ---
-        for (let line of lines) {
-            currentLineNumber++;
-            const trimmedLine = line.trim();
-            if (!trimmedLine || trimmedLine.startsWith('#')) continue; // Skip empty lines or comment lines starting with #
-
-            if (trimmedLine.startsWith('📅')) {
-                // Start of a new block, push the previous one if valid
-                if (currentBlock.date || currentBlock.from || currentBlock.to || currentBlock.phones.length > 0 || currentBlock.name || currentBlock.comment) {
-                     // Validate and push the completed block
-                    entriesToProcess.push({...currentBlock}); // Push a copy
-                }
-                // Start a new block
-                const dateMatch = trimmedLine.match(/\d{2}\/\d{2}\/\d{4}/);
-                if (dateMatch && isValidDate(dateMatch[0])) {
-                    // Reset all fields for the new block
-                    currentBlock = { date: dateMatch[0], from: '', to: '', phones: [], name: '', comment: '', lineNumber: currentLineNumber };
-                } else {
-                    // Invalid date format or missing date after symbol
-                     errors.push({ originalText: line, reason: "Invalid or missing date format (DD/MM/YYYY) after 📅 symbol.", lineNumber: currentLineNumber });
-                     // Still reset block but indicate error context
-                     currentBlock = { date: '', from: '', to: '', phones: [], name: '', comment: '', lineNumber: currentLineNumber };
-                }
-
-            } else if (/መንገዲ\:|→|to/i.test(trimmedLine)) {
-                if (!currentBlock.date) {
-                     errors.push({ originalText: line, reason: "Route found before a valid Date (📅 DD/MM/YYYY).", lineNumber: currentLineNumber });
-                     continue;
-                }
-                 // Allow updating route if found later in block? Or flag duplicate? Flag duplicate is safer.
-                if (currentBlock.from || currentBlock.to) {
-                     errors.push({ originalText: line, reason: "Duplicate Route line within the same entry block.", lineNumber: currentLineNumber });
-                     continue;
-                }
-                let parts = trimmedLine.split(/→|to/i);
-                if (parts.length === 2) {
-                    currentBlock.from = parts[0].replace(/መንገዲ\:/i, "").trim();
-                    currentBlock.to = parts[1].trim();
-                } else {
-                    errors.push({ originalText: line, reason: "Could not parse route. Expected format like 'From → To' or 'From to To'.", lineNumber: currentLineNumber });
-                }
-
-            } else if (/📞|ስልኪ|Phone/i.test(trimmedLine)) {
-                 if (!currentBlock.date) {
-                     errors.push({ originalText: line, reason: "Contact found before a valid Date (📅 DD/MM/YYYY).", lineNumber: currentLineNumber });
-                     continue;
-                }
-                 // Allow adding multiple phone lines to the same block
-                const phonePart = trimmedLine.replace(/.*(📞|ስልኪ|Phone)[:\s]?/i, '').trim();
-                if (phonePart) {
-                    const phones = phonePart.split(/[\/|,]/).map(p => p.trim()).filter(p => p.length >= 6);
-                    if (phones.length > 0) {
-                       currentBlock.phones.push(...phones);
-                    } else {
-                       errors.push({ originalText: line, reason: "No valid phone numbers found (min 6 digits required after trimming).", lineNumber: currentLineNumber });
-                    }
-                } else {
-                    errors.push({ originalText: line, reason: "Contact line found but no phone numbers provided after symbol.", lineNumber: currentLineNumber });
-                }
-            } else if (/name\:|ስም\:/i.test(trimmedLine)) { // Check for Name
-                 if (!currentBlock.date) {
-                     errors.push({ originalText: line, reason: "Name found before a valid Date (📅 DD/MM/YYYY).", lineNumber: currentLineNumber });
-                     continue;
-                }
-                 // Overwrite name if multiple lines found (take the last one)
-                 currentBlock.name = trimmedLine.replace(/.*(name|ስም)[:\s]?/i, '').trim();
-
-            } else if (/comment\:|ንብረት\:/i.test(trimmedLine)) { // Check for Comment
-                 if (!currentBlock.date) {
-                     errors.push({ originalText: line, reason: "Comment found before a valid Date (📅 DD/MM/YYYY).", lineNumber: currentLineNumber });
-                     continue;
-                }
-                 // Overwrite comment if multiple lines found (take the last one)
-                 currentBlock.comment = trimmedLine.replace(/.*(comment|ንብረት)[:\s]?/i, '').trim();
-
-            }
-            else {
-                // Line didn't match any expected pattern
-                errors.push({ originalText: line, reason: "Line did not match any expected format (Date, Route, Contact, Name, or Comment).", lineNumber: currentLineNumber });
-            }
-        }
-
-        // Push the last block after the loop finishes
-         if (currentBlock.date || currentBlock.from || currentBlock.to || currentBlock.phones.length > 0 || currentBlock.name || currentBlock.comment) {
-             entriesToProcess.push({...currentBlock}); // Push the last copy
-         }
+        <div class="row mb-4 g-3">
+      <div class="col-md-4">
+        <div class="card text-center">
+          <div class="card-body">
+            <h5 class="card-title"><i class="fas fa-users me-2"></i>Total Couriers</h5>
+            <p class="card-text fs-3" id="totalCouriers">0</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card text-center">
+          <div class="card-body">
+            <h5 class="card-title"><i class="fas fa-box me-2"></i>Total Active Loads</h5>
+            <p class="card-text fs-3" id="totalLoads">0</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card text-center">
+          <div class="card-body">
+            <h5 class="card-title"><i class="fas fa-route me-2"></i>Loads by Destination</h5>
+                        <canvas id="loadsByDestinationChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
 
 
-        // --- Step 2: Validate and prepare entries from parsed blocks ---
-        const finalEntries = [];
-        const processingErrors = [];
-        let defaultNameCounter = 50; // Initialize default name counter
+        <div class="card mb-4">
+      <div class="card-header">
+        <h4 class="mb-0"><i class="fas fa-users me-2"></i>Couriers (<span id="courierCount">0</span>)</h4>
+      </div>
+      <div class="card-body">
+                <div class="mb-3">
+          <input type="text" id="searchCouriers" class="form-control" placeholder="Search couriers...">
+        </div>
+        <div class="table-responsive">
+          <table class="table table-striped table-hover" id="couriersTable">
+            <thead>
+              <tr>
+                <th data-sort="name">Name <i class="fas fa-sort"></i></th>
+                <th data-sort="phone">Phone <i class="fas fa-sort"></i></th>
+                <th data-sort="routeFrom">From <i class="fas fa-sort"></i></th>
+                <th data-sort="routeTo">To <i class="fas fa-sort"></i></th>
+                <th data-sort="dateAvailable">Available <i class="fas fa-sort"></i></th>
+                <th data-sort="comment">Comment <i class="fas fa-sort"></i></th>
+                <th data-sort="createdAt">Registered <i class="fas fa-sort"></i></th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="couriersTableBody">
+                          </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
 
-        entriesToProcess.forEach(block => {
-             // Basic block validation (date, route, phones are essential)
-             if (!block.date) {
-                 processingErrors.push({ originalText: `Block starting line ${block.lineNumber}`, reason: "Missing or invalid Date for the block.", lineNumber: block.lineNumber });
-                 return;
-             }
-             if (!block.from || !block.to) {
-                 processingErrors.push({ originalText: `Block starting line ${block.lineNumber}`, reason: `Missing 'From' or 'To' in the route information.` }); // Removed line number here as it refers to block start
-                 return;
-             }
-             if (block.phones.length === 0) {
-                 processingErrors.push({ originalText: `Block starting line ${block.lineNumber}`, reason: "No valid contact phone numbers found for this entry.", lineNumber: block.lineNumber });
-                 return;
-             }
+        <div class="card mb-4">
+      <div class="card-header">
+        <h4 class="mb-0"><i class="fas fa-box me-2"></i>Loads (<span id="loadCount">0</span>)</h4>
+      </div>
+      <div class="card-body">
+                <div class="mb-3">
+          <input type="text" id="searchLoads" class="form-control" placeholder="Search loads...">
+        </div>
+        <div class="table-responsive">
+          <table class="table table-striped table-hover" id="loadsTable">
+            <thead>
+              <tr>
+                <th data-sort="from">From <i class="fas fa-sort"></i></th>
+                <th data-sort="to">To <i class="fas fa-sort"></i></th>
+                <th data-sort="weight">Weight <i class="fas fa-sort"></i></th>
+                <th data-sort="deadline">Deadline <i class="fas fa-sort"></i></th>
+                <th data-sort="phone">Phone <i class="fas fa-sort"></i></th>
+                <th data-sort="comment">Comment <i class="fas fa-sort"></i></th>
+                <th data-sort="createdAt">Posted <i class="fas fa-sort"></i></th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="loadsTableBody">
+                          </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
 
-             // If block is valid, create individual entries for each phone number
-             const nFrom = normalizeCountry(block.from);
-             const nTo = normalizeCountry(block.to);
+  </div>   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-             block.phones.forEach(phone => {
-                 let entryName = block.name || ''; // Get name from block, default to empty string
+    <script type="module">
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 
-                 // Assign default name if empty
-                 if (!entryName) {
-                     entryName = String(defaultNameCounter++).padStart(4, '0');
-                 }
+    // Replace with your actual Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ", // IMPORTANT: Keep your API key secure
+      authDomain: "erishipping-e4532.firebaseapp.com",
+      projectId: "erishipping-e4532",
+      storageBucket: "erishipping-e4532.appspot.com",
+      messagingSenderId: "388550131049",
+      appId: "1:388550131049:web:e9ac1784ab8e5fabc811f8"
+    };
 
-                 finalEntries.push({
-                     date: block.date,
-                     from: nFrom,
-                     to: nTo,
-                     contact: phone,
-                     name: entryName, // Add assigned name
-                     comment: block.comment || '', // Add comment, default to empty string
-                     lineNumber: block.lineNumber // Associate entry with block start line
-                 });
-             });
-        });
+    // Initialize Firebase
+    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-        // Combine initial parsing errors with block processing errors
-        errors.push(...processingErrors);
+    // Firebase Collections
+    const couriersRef = collection(db, "couriers");
+    const loadsRef = collection(db, "loads"); // Assuming your loads collection is named "loads"
 
-        // --- Step 3: Process valid entries (Check duplicates and add to Firestore) ---
-        let addedCount = 0;
-        let skippedCount = 0;
-        let failedCount = 0; // For errors during DB add
-        const addedDetails = [];
-        const skippedDetails = [];
-        const addErrors = [];
+    // DOM Elements
+    const loginPage = document.getElementById('loginPage');
+    const adminContent = document.getElementById('adminContent');
+    const loginForm = document.getElementById('loginForm');
+    const loginFeedback = document.getElementById('loginFeedback');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
 
-        // Use a map to track duplicates within the current batch before checking DB
-        // Duplicate key no longer includes name
-        const batchDuplicates = new Set();
+    const totalCouriersElement = document.getElementById('totalCouriers');
+    const totalLoadsElement = document.getElementById('totalLoads');
+    const courierCountElement = document.getElementById('courierCount');
+    const loadCountElement = document.getElementById('loadCount');
+    const couriersTableBody = document.getElementById('couriersTableBody');
+    const loadsTableBody = document.getElementById('loadsTableBody');
+    const searchCouriersInput = document.getElementById('searchCouriers');
+    const searchLoadsInput = document.getElementById('searchLoads');
+    const couriersTable = document.getElementById('couriersTable');
+    const loadsTable = document.getElementById('loadsTable');
+    const loadsByDestinationChartCanvas = document.getElementById('loadsByDestinationChart');
 
-        for (const entry of finalEntries) {
-            // Duplicate check key no longer includes name
-            const duplicateKey = `${entry.date}-${entry.from}-${entry.to}-${entry.contact}`;
+    // Variables to store original data for client-side filtering/sorting
+    let allCouriers = [];
+    let allLoads = [];
+    let loadsByDestinationChart = null; // To hold the Chart.js instance
 
-            if (batchDuplicates.has(duplicateKey)) {
-                 // Duplicate within the current batch
-                 skippedCount++;
-                 skippedDetails.push({ entry: entry, reason: "Duplicate within the pasted list." });
-                 continue;
-            }
+    // --- Authentication State Listener ---
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            // User is signed in. Check if they are an admin (requires additional logic, e.g., custom claim or checking an 'admins' collection)
+            // For simplicity in this client-side example, we'll assume ANY logged-in user is an admin for UI purposes.
+            // *** IMPORTANT *** Implement proper admin role checking using Firebase Auth Custom Claims or a separate 'admins' collection
+            // and Firestore Security Rules for production.
 
-            batchDuplicates.add(duplicateKey); // Add to batch check set
+            console.log("User is logged in:", user.email);
+            loginPage.style.display = 'none';
+            adminContent.style.display = 'block';
 
-            // Check against database
-            try {
-                // Duplicate check in DB no longer includes name - Removed entry.name from the call
-                const isDup = await isDuplicateEntry(entry.date, entry.from, entry.to, entry.contact);
-                if (isDup) {
-                    skippedCount++;
-                    skippedDetails.push({ entry: entry, reason: "Duplicate found in existing records (Date, Route, Contact match)." }); // Updated reason
-                } else {
-                    // Add all fields to Firestore document
-                    await addDoc(courierRef, {
-                        date: entry.date,
-                        from: entry.from,
-                        to: entry.to,
-                        contact: entry.contact,
-                        name: entry.name, // Name is saved as data
-                        comment: entry.comment, // Comment is saved as data
-                        createdAt: serverTimestamp()
-                    });
-                    addedCount++;
-                    addedDetails.push({ entry: entry });
-                }
-            } catch (err) {
-                failedCount++;
-                addErrors.push({ entry: entry, reason: `Database add failed: ${err.message}` });
-            }
-        }
+            // Fetch and display data
+            fetchDataAndRender();
 
-        // --- Step 4: Display Results ---
+        } else {
+            // User is signed out.
+            console.log("No user logged in.");
+            loginPage.style.display = 'flex'; // Show login page
+            adminContent.style.display = 'none'; // Hide admin content
+            // Clear data displays if needed
+            couriersTableBody.innerHTML = '';
+            loadsTableBody.innerHTML = '';
+            totalCouriersElement.textContent = '0';
+            totalLoadsElement.textContent = '0';
+            courierCountElement.textContent = '0';
+            loadCountElement.textContent = '0';
+            // Destroy chart if it exists
+            if (loadsByDestinationChart) {
+                loadsByDestinationChart.destroy();
+                loadsByDestinationChart = null;
+            }
+        }
+    });
 
-        // Overall Summary
-        overallResult.textContent = `Process Complete: ${addedCount} added, ${skippedCount} skipped, ${errors.length + failedCount} failed/errors.`;
-        if (addedCount > 0) overallResult.className = "mt-3 fw-bold text-success";
-        else if (errors.length + failedCount > 0) overallResult.className = "mt-3 fw-bold text-danger";
-        else if (skippedCount > 0) overallResult.className = "mt-3 fw-bold text-warning"; // Warning if only skips
-        else overallResult.className = "mt-3 fw-bold text-secondary"; // Neutral if nothing happened
+    // --- Login/Logout ---
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('adminEmail').value;
+        const password = document.getElementById('adminPassword').value;
+
+        setButtonLoadingState(loginBtn, true);
+        loginFeedback.classList.add('d-none'); // Hide previous feedback
+
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            // User is signed in, onAuthStateChanged listener will handle UI update
+            console.log("Login successful:", userCredential.user.email);
+            loginForm.reset(); // Clear form
+        } catch (error) {
+            console.error("Login failed:", error);
+            loginFeedback.textContent = `Login failed: ${error.message}`;
+            loginFeedback.classList.remove('d-none'); // Show error
+        } finally {
+            setButtonLoadingState(loginBtn, false);
+        }
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+        try {
+            await signOut(auth);
+            // User is signed out, onAuthStateChanged listener will handle UI update
+            console.log("Logout successful.");
+        } catch (error) {
+            console.error("Logout failed:", error);
+            // Optionally show feedback for logout failure
+            alert("Logout failed: " + error.message); // Simple alert for admin
+        }
+    });
+
+    // --- Fetch and Render Data ---
+    async function fetchDataAndRender() {
+        try {
+            // Fetch Couriers
+            console.log("Fetching couriers...");
+            const courierSnapshot = await getDocs(query(couriersRef, orderBy('createdAt', 'desc'))); // Order by creation date
+            allCouriers = courierSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            console.log("Couriers fetched:", allCouriers.length);
+            renderCouriersTable(allCouriers);
+            updateCourierStats(allCouriers.length);
+
+            // Fetch Loads
+            console.log("Fetching loads...");
+            const loadSnapshot = await getDocs(query(loadsRef, orderBy('createdAt', 'desc'))); // Order by creation date
+            // Filter out loads with past deadlines for active count and display
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            allLoads = loadSnapshot.docs
+                .map(doc => ({ id: doc.id, ...doc.data() }))
+                .filter(load => {
+                    // Check if deadline is valid and in the future/today
+                    const deadlineDate = load.deadline ? new Date(load.deadline + 'T00:00:00') : null;
+                    return deadlineDate && deadlineDate >= now;
+                });
+            console.log("Loads fetched (active/future):", allLoads.length);
+            renderLoadsTable(allLoads);
+            updateLoadStats(allLoads);
+
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            // Display error message on the admin page
+            alert("Error fetching data: " + error.message); // Simple alert for admin
+        }
+    }
+
+    function renderCouriersTable(couriers) {
+        couriersTableBody.innerHTML = ''; // Clear table
+        if (couriers.length === 0) {
+            couriersTableBody.innerHTML = `<tr><td colspan="8" class="text-center">No couriers found.</td></tr>`;
+            return;
+        }
+
+        couriers.forEach(courier => {
+            const row = couriersTableBody.insertRow();
+            row.innerHTML = `
+              <td>${courier.name || 'N/A'}</td>
+              <td>${courier.phone || 'N/A'}</td>
+              <td>${courier.routeFrom || 'N/A'}</td>
+              <td>${courier.routeTo || 'N/A'}</td>
+              <td>${courier.dateAvailable || 'N/A'}</td>
+              <td>${courier.comment || '<i>None</i>'}</td>
+              <td>${courier.createdAt?.toDate().toLocaleDateString() || 'N/A'}</td>
+              <td>
+                <button class="btn btn-danger btn-sm delete-btn" data-id="${courier.id}" data-type="courier">Delete</button>
+              </td>
+            `;
+        });
+    }
+
+    function renderLoadsTable(loads) {
+        loadsTableBody.innerHTML = ''; // Clear table
+        if (loads.length === 0) {
+            loadsTableBody.innerHTML = `<tr><td colspan="8" class="text-center">No loads found.</td></tr>`;
+            return;
+        }
+
+        loads.forEach(load => {
+            const row = loadsTableBody.insertRow();
+            row.innerHTML = `
+              <td>${load.from || 'N/A'}</td>
+              <td>${load.to || 'N/A'}</td>
+              <td>${load.weight || 'N/A'} kg</td>
+              <td>${load.deadline || 'N/A'}</td>
+              <td>${load.phone || 'N/A'}</td>
+              <td>${load.comment || '<i>None</i>'}</td>
+              <td>${load.createdAt?.toDate().toLocaleDateString() || 'N/A'}</td>
+              <td>
+                <button class="btn btn-danger btn-sm delete-btn" data-id="${load.id}" data-type="load">Delete</button>
+              </td>
+            `;
+        });
+    }
+
+    function updateCourierStats(count) {
+        totalCouriersElement.textContent = count;
+        courierCountElement.textContent = count;
+    }
+
+    function updateLoadStats(loads) {
+        totalLoadsElement.textContent = loads.length;
+        loadCountElement.textContent = loads.length;
+
+        // Calculate loads per destination for the chart
+        const loadsByDestination = loads.reduce((acc, load) => {
+            const destination = load.to || 'Unknown';
+            acc[destination] = (acc[destination] || 0) + 1;
+            return acc;
+        }, {});
+
+        renderLoadsByDestinationChart(loadsByDestination);
+    }
+
+    function renderLoadsByDestinationChart(data) {
+        // Destroy previous chart instance if it exists
+        if (loadsByDestinationChart) {
+            loadsByDestinationChart.destroy();
+        }
+
+        const labels = Object.keys(data);
+        const counts = Object.values(data);
+
+        loadsByDestinationChart = new Chart(loadsByDestinationChartCanvas, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '# of Loads',
+                    data: counts,
+                    backgroundColor: 'rgba(10, 61, 98, 0.8)', // Using your primary color with alpha
+                    borderColor: 'rgba(10, 61, 98, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // Allow chart to resize freely
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            // Ensure ticks are integers
+                            callback: function(value) { if (Number.isInteger(value)) { return value; } },
+                            stepSize: 1 // Ensure steps are by 1
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false // Hide legend
+                    },
+                    title: {
+                        display: true,
+                        text: 'Loads by Destination Country'
+                    }
+                }
+            }
+        });
+    }
 
 
-        // Helper to format entry details for display
-        const formatEntryDisplay = (entry) => {
-            let text = `${entry.name} (${entry.from} → ${entry.to}) - ${entry.contact}`;
-            if (entry.comment) {
-                text += ` [${entry.comment}]`;
-            }
-            return text;
-        };
+    // --- Client-Side Table Filtering ---
+    function filterTable(tableBody, data, searchTerm) {
+        tableBody.innerHTML = ''; // Clear table body
+        const lowerCaseSearchTerm = searchTerm.toLowerCase();
+        const filteredData = data.filter(item =>
+            Object.values(item).some(value =>
+                String(value).toLowerCase().includes(lowerCaseSearchTerm)
+            )
+        );
 
-        // Added List
-        if (addedDetails.length > 0) {
-            addedList.innerHTML = '<h5>✅ Successfully Added:</h5>';
-            addedDetails.forEach(item => {
-                const p = document.createElement("p");
-                p.className = "text-success";
-                p.innerText = formatEntryDisplay(item.entry);
-                addedList.appendChild(p);
-            });
-        }
+        if (filteredData.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="${tableBody.previousElementSibling.querySelector('th').length}" class="text-center">No matching records found.</td></tr>`;
+        } else {
+            if (tableBody.id === 'couriersTableBody') {
+                renderCouriersTable(filteredData);
+            } else if (tableBody.id === 'loadsTableBody') {
+                renderLoadsTable(filteredData);
+            }
+        }
+    }
 
-        // Skipped List
-        if (skippedDetails.length > 0) {
-            skippedList.innerHTML = '<h5>⏭️ Skipped Entries:</h5>';
-             skippedDetails.forEach(item => {
-                const p = document.createElement("p");
-                p.className = "text-warning";
-                p.innerText = `${formatEntryDisplay(item.entry)} (Reason: ${item.reason})`;
-                skippedList.appendChild(p);
-            });
-        }
+    searchCouriersInput.addEventListener('input', (e) => {
+        filterTable(couriersTableBody, allCouriers, e.target.value);
+    });
 
-        // Error List (Parsing + Processing + DB Add Errors)
-        const allErrors = [...errors, ...addErrors];
-        if (allErrors.length > 0) {
-            errorList.innerHTML = '<h5>❌ Errors Detected:</h5>';
-            allErrors.forEach(err => {
-                const p = document.createElement("p");
-                p.className = "text-danger";
-                let errorText = `Line ${err.lineNumber || 'N/A'}: ${err.reason}`;
-                if (err.originalText) {
-                    // Limit original text length for display
-                    errorText += ` (Original: "${err.originalText.substring(0, 100)}${err.originalText.length > 100 ? '...' : ''}")`;
-                } else if (err.entry) {
-                    // Display entry details for DB errors
-                     errorText += ` (Entry: ${formatEntryDisplay(err.entry)})`;
-                }
-                p.innerText = errorText;
-                errorList.appendChild(p);
-            });
-        }
+    searchLoadsInput.addEventListener('input', (e) => {
+        filterTable(loadsTableBody, allLoads, e.target.value);
+    });
 
 
-        // Clear input only on significant success, or maybe leave it? User preference.
-        // For now, let's clear it if everything added without errors
-        if (addedCount > 0 && errors.length === 0 && failedCount === 0) { // Only clear if everything added without errors
-             bulkInput.value = "";
-        }
+    // --- Client-Side Table Sorting ---
+    function sortTable(tableBody, data, key, order) {
+        const sortedData = [...data].sort((a, b) => {
+            const valueA = a[key];
+            const valueB = b[key];
+
+            if (valueA === valueB) return 0;
+
+            // Handle date sorting (assuming YYYY-MM-DD string or Firebase Timestamp)
+            if (key === 'dateAvailable' || key === 'deadline') {
+                const dateA = valueA ? new Date(valueA) : null;
+                const dateB = valueB ? new Date(valueB) : null;
+                if (!dateA && !dateB) return 0;
+                if (!dateA) return order === 'asc' ? -1 : 1;
+                if (!dateB) return order === 'asc' ? 1 : -1;
+                return order === 'asc' ? dateA.getTime() - dateB.getTime() : dateB.getTime() - dateA.getTime();
+            }
+
+            // Handle number sorting (e.g., weight)
+            if (typeof valueA === 'number' && typeof valueB === 'number') {
+                return order === 'asc' ? valueA - valueB : valueB - valueA;
+            }
+
+            // Handle Firebase Timestamp sorting
+            if (valueA?.toDate && valueB?.toDate) {
+                const timeA = valueA.toDate().getTime();
+                const timeB = valueB.toDate().getTime();
+                return order === 'asc' ? timeA - timeB : timeB - timeA;
+            }
 
 
-        // Hide loading spinner
-        submitBtn.disabled = false;
-        buttonText.style.display = 'inline-block';
-        loadingSpinner.style.display = 'none';
-    });
-  </script>
+            // Default: Locale-aware string comparison
+            const stringA = String(valueA || '').toLowerCase();
+            const stringB = String(valueB || '').toLowerCase();
+            if (stringA < stringB) return order === 'asc' ? -1 : 1;
+            if (stringA > stringB) return order === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        // Re-render the table with sorted data
+        if (tableBody.id === 'couriersTableBody') {
+            renderCouriersTable(sortedData);
+        } else if (tableBody.id === 'loadsTableBody') {
+            renderLoadsTable(sortedData);
+        }
+    }
+
+    // Add click listeners to table headers for sorting (using event delegation)
+    couriersTable.addEventListener('click', (e) => handleTableSort(e, 'courier'));
+    loadsTable.addEventListener('click', (e) => handleTableSort(e, 'load'));
+
+
+    function handleTableSort(event, type) {
+        const th = event.target.closest('th');
+        if (!th || !th.dataset.sort) return; // Not a sortable header
+
+        const table = th.closest('table');
+        const tableBody = table.querySelector('tbody');
+        const key = th.dataset.sort;
+
+        // Determine the current sort order (asc, desc, or initial)
+        let order = th.dataset.order || 'asc'; // Default to ascending
+
+        // Cycle through sort states: asc -> desc -> initial (no sorting)
+        if (th.dataset.order === 'asc') {
+            order = 'desc';
+        } else if (th.dataset.order === 'desc') {
+            order = ''; // Reset to initial state
+        } else {
+            order = 'asc'; // Start with ascending
+        }
+
+        // Reset icons and data-order for all headers in this table
+        table.querySelectorAll('th i.fas').forEach(icon => {
+            icon.classList.remove('fa-sort-up', 'fa-sort-down');
+            icon.classList.add('fa-sort');
+            icon.closest('th').dataset.order = '';
+        });
+
+        // Update the clicked header's icon and data-order if not resetting
+        if (order) {
+            const icon = th.querySelector('i.fas');
+            icon.classList.remove('fa-sort');
+            icon.classList.add(order === 'asc' ? 'fa-sort-up' : 'fa-sort-down');
+            th.dataset.order = order;
+        }
+
+        // Perform sorting or revert to original data
+        const dataToSort = type === 'courier' ? allCouriers : allLoads;
+        if (order) {
+            sortTable(tableBody, dataToSort, key, order);
+        } else {
+            // If resetting sort, re-render the original fetched data
+            if (type === 'courier') {
+                renderCouriersTable(allCouriers);
+            } else {
+                renderLoadsTable(allLoads);
+            }
+        }
+    }
+
+
+    // --- Delete Action (Event Delegation) ---
+    document.addEventListener('click', async (e) => {
+        const deleteBtn = e.target.closest('.delete-btn');
+        if (deleteBtn) {
+            const itemId = deleteBtn.dataset.id;
+            const itemType = deleteBtn.dataset.type; // 'courier' or 'load'
+            const collectionName = itemType === 'courier' ? 'couriers' : 'loads';
+
+            console.log(`Delete button clicked for ${itemType} ID: ${itemId}`);
+
+            // Client-side check (reinforce security rules needed)
+            if (!auth.currentUser) {
+                alert("You must be logged in to delete items.");
+                return;
+            }
+            // *** Add a check here if the logged-in user has admin privileges (based on custom claim or 'admins' collection) ***
+            // If not authorized, return here.
+
+            if (confirm(`Are you sure you want to delete this ${itemType}? This action cannot be undone.`)) {
+                setButtonLoadingState(deleteBtn, true);
+                try {
+                    await deleteDoc(doc(db, collectionName, itemId));
+                    console.log(`${itemType} deleted successfully: ${itemId}`);
+                    // Re-fetch and render data after deletion
+                    fetchDataAndRender();
+                    alert(`${itemType} deleted successfully.`);
+                } catch (error) {
+                    console.error(`Error deleting ${itemType}:`, itemId, error);
+                    alert(`Failed to delete ${itemType}: ${error.message}`);
+                } finally {
+                    setButtonLoadingState(deleteBtn, false);
+                }
+            }
+        }
+    });
+
+
+    // --- Utility function for loading state (can be shared) ---
+    function setButtonLoadingState(button, isLoading) {
+        button.disabled = isLoading;
+        const spinner = button.querySelector('.spinner-border');
+        const buttonText = button.querySelector('.button-text');
+        if (isLoading) {
+            if (spinner) spinner.style.display = 'inline-block';
+            if (buttonText) buttonText.style.visibility = 'hidden';
+        } else {
+            if (spinner) spinner.style.display = 'none';
+            if (buttonText) buttonText.style.visibility = 'visible';
+        }
+    }
+
+    // --- Initial setup ---
+    $(document).ready(function() {
+        console.log("Admin page ready.");
+        // onAuthStateChanged listener handles initial data fetch if logged in
+    });
+
+  </script>
+
+  <script>
+    // Footer year script
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
