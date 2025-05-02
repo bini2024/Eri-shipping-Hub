@@ -1,884 +1,768 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Load Board - Eri Shipping Hub</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body {
-            background-image: url('https://raw.githubusercontent.com/bini2024/Eri-shipping-Hub/refs/heads/main/Erishipping.jpg');
-            background-size: cover;
-            background-position: center center;
-            background-attachment: fixed;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #f8f9fa; /* Fallback background color */
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Load Board - Eri Shipping Hub</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+     body {
+      background-image: url('https://raw.githubusercontent.com/bini2024/Eri-shipping-Hub/refs/heads/main/Erishipping.jpg');
+      background-size: cover;
+      background-position: center center;
+      background-attachment: fixed;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f8f9fa; /* Fallback background color */
+    }
 
-        .nav-brand {
-            font-weight: 700;
-            color: var(--bs-primary) !important; /* Use Bootstrap variable */
-        }
+    .nav-brand {
+      font-weight: 700;
+      color: var(--bs-primary) !important; /* Use Bootstrap variable */
+    }
 
-        header h1, header p {
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
-            color: #ffffff; /* Make header text white for better contrast on image */
-        }
-        header p {
-            color: #e9ecef; /* Slightly muted white for subtitle */
-        }
+    header h1, header p {
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+        color: #ffffff; /* Make header text white for better contrast on image */
+    }
+    header p {
+        color: #e9ecef; /* Slightly muted white for subtitle */
+    }
 
-        .card {
-            background-color: rgba(255, 255, 255, 0.92); /* Slightly less transparent cards */
-            backdrop-filter: blur(5px);
-        }
+    .card {
+        background-color: rgba(255, 255, 255, 0.92); /* Slightly less transparent cards */
+        backdrop-filter: blur(5px);
+    }
 
-        /* Style for validation feedback */
-        /* Note: Placeholder color change is removed as we are using invalid-feedback divs */
-        .form-control.is-invalid,
-        .form-select.is-invalid + .select2-container .select2-selection {
-             border-color: var(--bs-danger) !important;
-        }
+    /* Style for validation feedback */
+    .form-control.is-invalid::placeholder {
+        color: var(--bs-danger);
+        opacity: 0.8;
+    }
 
-        /* Style Select2 when invalid */
-        .select2-container--bootstrap-5 .select2-selection.is-invalid {
-            border-color: var(--bs-danger) !important;
-            padding-right: calc(1.5em + 0.75rem) !important;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linecap='round' stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e") !important;
-            background-repeat: no-repeat !important;
-            background-position: right calc(0.375em + 0.1875rem) center !important;
-            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem) !important;
-        }
+     /* Style Select2 when invalid */
+    .select2-container--bootstrap-5 .select2-selection.is-invalid {
+         border-color: var(--bs-danger) !important;
+         padding-right: calc(1.5em + 0.75rem) !important;
+         background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linecap='round' stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e") !important;
+         background-repeat: no-repeat !important;
+         background-position: right calc(0.375em + 0.1875rem) center !important;
+         background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem) !important;
+    }
 
-        /* Adjust Select2 placeholder styles */
-        .select2-container .select2-selection--single .select2-selection__placeholder {
-            color: #6c757d !important;
-            /* Match line height with input - slightly adjusted for Select2 */
-            line-height: calc(1.5em + 0.75rem + 2px);
-        }
+     /* Adjust Select2 placeholder styles */
+    .select2-container .select2-selection--single .select2-selection__placeholder {
+        color: #6c757d !important;
+        line-height: calc(1.5em + 0.75rem + 2px); /* Match line height with input */
+    }
 
-        /* Style Select2 to look more like an input box */
-        .select2-container--bootstrap-5 .select2-selection {
-            padding-top: 0.375rem !important; /* Adjust padding */
-            padding-bottom: 0.375rem !important; /* Adjust padding */
-            min-height: calc(1.5em + 0.75rem + 2px); /* Match Bootstrap form-control height */
-            border: 1px solid #ced4da !important; /* Add standard bootstrap border */
-            border-radius: var(--bs-border-radius); /* Use bootstrap border radius */
-            display: flex; /* Use flexbox for alignment */
-            align-items: center; /* Center vertically */
-        }
+    /* Style Select2 to look more like an input box */
+    .select2-container--bootstrap-5 .select2-selection {
+        padding-top: 0.375rem !important; /* Adjust padding */
+        padding-bottom: 0.375rem !important; /* Adjust padding */
+        min-height: calc(1.5em + 0.75rem + 2px); /* Match Bootstrap form-control height */
+        border: 1px solid #ced4da !important; /* Add standard bootstrap border */
+        border-radius: var(--bs-border-radius); /* Use bootstrap border radius */
+        display: flex; /* Use flexbox for alignment */
+        align-items: center; /* Center vertically */
+    }
 
-        .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
-            padding-left: 0.75rem !important; /* Standard bootstrap input padding-left */
-            padding-right: 2.5rem !important; /* Make space for the arrow/clear */
-            line-height: calc(1.5em + 0.75rem) !important; /* Adjust line height */
-            color: #212529; /* Standard input text color */
-            flex-grow: 1; /* Allow text to take available space */
-            overflow: hidden; /* Hide overflowing text */
-            text-overflow: ellipsis; /* Add ellipsis for overflow */
-            white-space: nowrap; /* Prevent wrapping */
-        }
+    .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+         padding-left: 0.75rem !important; /* Standard bootstrap input padding-left */
+         padding-right: 2.5rem !important; /* Make space for the arrow/clear */
+         line-height: calc(1.5em + 0.75rem) !important; /* Adjust line height */
+         color: #212529; /* Standard input text color */
+         flex-grow: 1; /* Allow text to take available space */
+         overflow: hidden; /* Hide overflowing text */
+         text-overflow: ellipsis; /* Add ellipsis for overflow */
+         white-space: nowrap; /* Prevent wrapping */
+    }
 
-        .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow {
-            height: 100%; /* Match parent height */
-            right: 0.75rem !important; /* Position correctly */
-            top: 0 !important; /* Align to top */
-            display: flex; /* Use flexbox */
-            align-items: center; /* Center vertically */
-        }
+      .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow {
+         height: 100%; /* Match parent height */
+         right: 0.75rem !important; /* Position correctly */
+         top: 0 !important; /* Align to top */
+         display: flex; /* Use flexbox */
+         align-items: center; /* Center vertically */
+      }
 
-        .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow b {
-            border-top-color: #888; /* Standard arrow color */
-            border-width: 5px 4px 0 4px !important; /* Standard arrow size */
-        }
+     .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow b {
+         border-top-color: #888; /* Standard arrow color */
+         border-width: 5px 4px 0 4px !important; /* Standard arrow size */
+     }
 
-        /* Loading Button State */
-        .btn .spinner-border {
-            display: none;
-            margin-right: .5rem;
-        }
-        .btn.loading .spinner-border {
-            display: inline-block;
-        }
-        .btn.loading .button-text {
-            visibility: hidden;
-        }
+     /* Loading Button State */
+     .btn .spinner-border {
+        display: none;
+        margin-right: .5rem;
+     }
+     .btn.loading .spinner-border {
+        display: inline-block;
+     }
+     .btn.loading .button-text {
+        visibility: hidden;
+     }
 
-        /* Styling for Load List Cards */
-        #loadList .card {
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            border-radius: 0.75rem !important; /* More pronounced rounding */
-            border: 1px solid #e9ecef; /* Subtle border */
-            background-color: rgba(255, 255, 255, 0.95);
-            height: 100%; /* Ensure cards in a row have same height */
-        }
+    /* Styling for Load List Cards */
+    #loadList .card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border-radius: 0.75rem !important; /* More pronounced rounding */
+        border: 1px solid #e9ecef; /* Subtle border */
+        background-color: rgba(255, 255, 255, 0.95);
+        height: 100%; /* Ensure cards in a row have same height */
+    }
 
-        #loadList .card:hover {
-            transform: translateY(-5px); /* Lift effect */
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1) !important; /* Enhanced shadow on hover */
-        }
+    #loadList .card:hover {
+        transform: translateY(-5px); /* Lift effect */
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1) !important; /* Enhanced shadow on hover */
+    }
 
-        #loadList .card-title {
-            color: #0a3d62; /* Use a color from the scheme */
-            font-weight: 600;
-        }
+    #loadList .card-title {
+         color: #0a3d62; /* Use a color from the scheme */
+         font-weight: 600;
+    }
 
-        #loadList .card-text strong {
-            color: #343a40; /* Darker text for labels */
-        }
+    #loadList .card-text strong {
+        color: #343a40; /* Darker text for labels */
+    }
 
-         /* Styling for loading message */
-        #loadingMessage {
-            text-align: center;
-            padding: 20px;
-            color: #6c757d; /* Muted text color */
-            font-size: 1.2rem;
-        }
-
-         /* Styling for empty state message */
-        #emptyListMessage {
-            text-align: center;
-            padding: 20px;
-            color: #6c757d; /* Muted text color */
-            font-size: 1.2rem;
-        }
-
-
-    </style>
+  </style>
 </head>
 <body class="bg-light">
 
-    <header class="py-4 mb-4">
-        <div class="container">
-            <h1 class="text-center mb-2">
-                <i class="fas fa-shipping-fast"></i>
-                <span class="nav-brand">Eri Shipping Hub</span>
-            </h1>
-            <p class="text-center">
-                Our community, our courier
-            </p>
-        </div>
-    </header>
-
+  <header class="py-4 mb-4">
     <div class="container">
-        <div id="generalFeedback" class="alert alert-info alert-dismissible fade d-none" role="alert">
-            <span id="generalFeedbackText"></span>
-            <button type="button" class="btn-close" aria-label="Close"></button>
-        </div>
+      <h1 class="text-center mb-2">
+        <i class="fas fa-shipping-fast"></i>
+        <span class="nav-brand">Eri Shipping Hub</span>
+      </h1>
+      <p class="text-center">
+        Our community, our courier
+      </p>
     </div>
+  </header>
 
-    <div class="container py-4">
-        <h3 class="text-center mb-4 text-dark">📦 ዝርዝር ዝውሰድ ንብረታት</h3>
+  <div class="container">
+       <div id="generalFeedback" class="alert alert-info alert-dismissible fade d-none" role="alert">
+          <span id="generalFeedbackText"></span>
+          <button type="button" class="btn-close" aria-label="Close"></button>
+      </div>
+  </div>
 
-        <section class="card mb-5 shadow">
-            <div class="card-body">
-                <h4 class="card-title mb-3">📤 Post a New Load</h4>
-                <form id="loadForm" novalidate>
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label for="from" class="form-label visually-hidden">From Country</label>
-                            <select id="from" class="form-select" required data-placeholder="ካብ .... ዝከይድ ንብረት ኣለኒ">
-                                <option value=""></option> <option value="Ethiopia">🇪🇹 Ethiopia</option>
-                                <option value="Eritrea">🇪🇷 Eritrea</option>
-                                <option value="Uganda">🇺🇬 Uganda</option>
-                                <option value="Canada">🇨🇦 Canada</option>
-                                <option value="Turkey">🇹🇷 Turkey</option>
-                                <option value="Dubai">🇦🇪 Dubai</option>
-                                <option value="Kenya">🇰🇪 Kenya</option>
-                                <option value="Angola">🇦🇴 Angola</option>
-                                <option value="Switzerland">🇨🇭 Switzerland</option>
-                                <option value="Netherlands">🇳🇱 Netherlands</option>
-                                <option value="Belgium">🇧🇪 Belgium</option>
-                                <option value="Sweden">🇸🇪 Sweden</option>
-                                <option value="Germany">🇩🇪 Germany</option>
-                                <option value="USA">🇺🇸 USA</option>
-                                <option value="England">🇬🇧 England</option>
-                                <option value="Denmark">🇩🇰 Denmark</option>
-                                <option value="France">🇫🇷 France</option>
-                                <option value="Italy">🇮🇹 Italy</option>
-                                <option value="South Africa">🇿🇦 South Africa</option>
-                                <option value="Egypt">🇪🇬 Egypt</option>
-                            </select>
-                             <div class="invalid-feedback"></div>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="to" class="form-label visually-hidden">To Country</label>
-                            <select id="to" class="form-select" required data-placeholder="ናብ (ክበጽሓሉ ዝደለካዮ ቦታ)">
-                                <option value=""></option> <option value="Ethiopia">🇪🇹 Ethiopia</option>
-                                <option value="Eritrea">🇪🇷 Eritrea</option>
-                                <option value="Uganda">🇺🇬 Uganda</option>
-                                <option value="Canada">🇨🇦 Canada</option>
-                                <option value="Turkey">🇹🇷 Turkey</option>
-                                <option value="Dubai">🇦🇪 Dubai</option>
-                                <option value="Kenya">🇰🇪 Kenya</option>
-                                <option value="Angola">🇦🇴 Angola</option>
-                                <option value="Switzerland">🇨🇭 Switzerland</option>
-                                <option value="Netherlands">🇳🇱 Netherlands</option>
-                                <option value="Belgium">🇧🇪 Belgium</option>
-                                <option value="Sweden">🇸🇪 Sweden</option>
-                                <option value="Germany">🇩🇪 Germany</option>
-                                <option value="USA">🇺🇸 USA</option>
-                                <option value="England">🇬🇧 England</option>
-                                <option value="Denmark">🇩🇰 Denmark</option>
-                                <option value="France">🇫🇷 France</option>
-                                <option value="Italy">🇮🇹 Italy</option>
-                                <option value="South Africa">🇿🇦 South Africa</option>
-                                <option value="Egypt">🇪🇬 Egypt</option>
-                            </select>
-                            <div class="invalid-feedback"></div>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="weight" class="form-label visually-hidden">Weight</label>
-                            <input type="text" id="weight" class="form-control" placeholder="ኪሎ(ክብደት)" required />
-                             <div class="invalid-feedback"></div>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="deadline" class="form-label visually-hidden">Deadline Date</label>
-                            <input type="date" id="deadline" class="form-control" placeholder="enter deadline" required />
-                             <div class="invalid-feedback"></div>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="phone" class="form-label visually-hidden">Phone Number</label>
-                            <input type="tel" id="phone" class="form-control" placeholder="ቴሌ" required />
-                             <div class="invalid-feedback"></div>
-                        </div>
-                        <div class="col-12">
-                            <label for="comment" class="form-label visually-hidden">Comment (Optional)</label>
-                            <textarea id="comment" class="form-control" placeholder=" ተወሳኪ ሓበሬታ (optional)"></textarea>
-                             <div class="invalid-feedback"></div>
-                         </div>
-                    </div>
+  <div class="container py-4">
+    <h3 class="text-center mb-4 text-dark">📦 ዝርዝር ዝውሰድ ንብረታት</h3>
 
-                    <div class="form-check mt-3">
-                        <input class="form-check-input" type="checkbox" value="" id="agreeToTermsCheckbox">
-                        <label class="form-check-label" for="agreeToTermsCheckbox">
-                            I agree to the <a href="terms.html" target="_blank">Terms & Conditions</a>
-                        </label>
-                    </div>
-                    <button id="submitLoadBtn" class="btn btn-primary mt-3" type="submit">
-                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                        <span class="button-text">Post Load</span>
-                    </button>
-                </form>
-            </div>
-        </section>
+    <section class="card mb-5 shadow">
+      <div class="card-body">
+        <h4 class="card-title mb-3">📤 Post a New Load</h4>
+        <form id="loadForm" novalidate>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="from" class="form-label visually-hidden">From Country</label>
+                    <select id="from" class="form-select" required>
+                      <option value="" disabled selected>ካብ .... ዝከይድ ንብረት ኣለኒ</option>
+                       <option value="Ethiopia">🇪🇹 Ethiopia</option>
+                      <option value="Eritrea">🇪🇷 Eritrea</option>
+                      <option value="Uganda">🇺🇬 Uganda</option>
+                      <option value="Canada">🇨🇦 Canada</option>
+                      <option value="Turkey">🇹🇷 Turkey</option>
+                      <option value="Dubai">🇦🇪 Dubai</option>
+                      <option value="Kenya">🇰🇪 Kenya</option>
+                      <option value="Angola">🇦🇴 Angola</option>
+                      <option value="Switzerland">🇨🇭 Switzerland</option>
+                      <option value="Netherlands">🇳🇱 Netherlands</option>
+                      <option value="Belgium">🇧🇪 Belgium</option>
+                      <option value="Sweden">🇸🇪 Sweden</option>
+                      <option value="Germany">🇩🇪 Germany</option>
+                      <option value="USA">🇺🇸 USA</option>
+                      <option value="England">🇬🇧 England</option>
+                      <option value="Denmark">🇩🇰 Denmark</option>
+                      <option value="France">🇫🇷 France</option>
+                      <option value="Italy">🇮🇹 Italy</option>
+                      <option value="South Africa">🇿🇦 South Africa</option>
+                      <option value="Egypt">🇪🇬 Egypt</option>
+                    </select>
+                 </div>
+                <div class="col-md-4">
+                     <label for="to" class="form-label visually-hidden">To Country</label>
+                    <select id="to" class="form-select" required>
+                      <option value="" disabled selected>ናብ (ክበጽሓሉ ዝደለካዮ ቦታ)</option>
+                       <option value="Ethiopia">🇪🇹 Ethiopia</option>
+                      <option value="Eritrea">🇪🇷 Eritrea</option>
+                      <option value="Uganda">🇺🇬 Uganda</option>
+                      <option value="Canada">🇨🇦 Canada</option>
+                      <option value="Turkey">🇹🇷 Turkey</option>
+                      <option value="Dubai">🇦🇪 Dubai</option>
+                      <option value="Kenya">🇰🇪 Kenya</option>
+                      <option value="Angola">🇦🇴 Angola</option>
+                      <option value="Switzerland">🇨🇭 Switzerland</option>
+                      <option value="Netherlands">🇳🇱 Netherlands</option>
+                      <option value="Belgium">🇧🇪 Belgium</option>
+                      <option value="Sweden">🇸🇪 Sweden</option>
+                      <option value="Germany">🇩🇪 Germany</option>
+                      <option value="USA">🇺🇸 USA</option>
+                      <option value="England">🇬🇧 England</option>
+                      <option value="Denmark">🇩🇰 Denmark</option>
+                      <option value="France">🇫🇷 France</option>
+                      <option value="Italy">🇮🇹 Italy</option>
+                      <option value="South Africa">🇿🇦 South Africa</option>
+                      <option value="Egypt">🇪🇬 Egypt</option>
+                    </select>
+                 </div>
+                <div class="col-md-4">
+                     <label for="weight" class="form-label visually-hidden">Weight</label>
+                  <input type="text" id="weight" class="form-control" placeholder="ኪሎ(ክብደት)" required />
+                   </div>
+                <div class="col-md-6">
+                     <label for="deadline" class="form-label visually-hidden">Deadline Date</label>
+                  <input type="date" id="deadline" class="form-control" placeholder="enter deadline" required />
+                   </div>
+                <div class="col-md-6">
+                     <label for="phone" class="form-label visually-hidden">Phone Number</label>
+                  <input type="tel" id="phone" class="form-control" placeholder="ቴሌ" required />
+                   </div>
+                <div class="col-12">
+                     <label for="comment" class="form-label visually-hidden">Comment (Optional)</label>
+                  <textarea id="comment" class="form-control" placeholder=" ተወሳኪ ሓበሬታ (optional)"></textarea>
+                  </div>
+              </div>
 
-        <section>
-             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 class="mb-0">
-                    <span style="
-                        background: #0a3d62; /* Keep existing style */
-                        color: white;
-                        padding: 0.5rem 1.5rem;
-                        border-radius: 1rem;
-                        display: inline-block;
-                        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-                    ">
-                        📋 ዝውሰድ ንብረት
-                    </span>
-                </h4>
-                <div class="d-flex align-items-center">
-                    <div class="me-2">
-                         <label for="filterFrom" class="form-label visually-hidden">Filter From</label>
-                         <select id="filterFrom" class="form-select form-select-sm" data-placeholder="Filter From">
-                             <option value=""></option> <option value="Ethiopia">🇪🇹 Ethiopia</option>
-                             <option value="Eritrea">🇪🇷 Eritrea</option>
-                             <option value="Uganda">🇺🇬 Uganda</option>
-                             <option value="Canada">🇨🇦 Canada</option>
-                             <option value="Turkey">🇹🇷 Turkey</option>
-                             <option value="Dubai">🇦🇪 Dubai</option>
-                             <option value="Kenya">🇰🇪 Kenya</option>
-                             <option value="Angola">🇦🇴 Angola</option>
-                             <option value="Switzerland">🇨🇭 Switzerland</option>
-                             <option value="Netherlands">🇳🇱 Netherlands</option>
-                             <option value="Belgium">🇧🇪 Belgium</option>
-                             <option value="Sweden">🇸🇪 Sweden</option>
-                             <option value="Germany">🇩🇪 Germany</option>
-                             <option value="USA">🇺🇸 USA</option>
-                             <option value="England">🇬🇧 England</option>
-                             <option value="Denmark">🇩🇰 Denmark</option>
-                             <option value="France">🇫🇷 France</option>
-                             <option value="Italy">🇮🇹 Italy</option>
-                             <option value="South Africa">🇿🇦 South Africa</option>
-                             <option value="Egypt">🇪🇬 Egypt</option>
-                         </select>
-                    </div>
-                    <div class="me-2">
-                         <label for="filterTo" class="form-label visually-hidden">Filter To</label>
-                         <select id="filterTo" class="form-select form-select-sm" data-placeholder="Filter To">
-                             <option value=""></option> <option value="Ethiopia">🇪🇹 Ethiopia</option>
-                             <option value="Eritrea">🇪🇷 Eritrea</option>
-                             <option value="Uganda">🇺🇬 Uganda</option>
-                             <option value="Canada">🇨🇦 Canada</option>
-                             <option value="Turkey">🇹🇷 Turkey</option>
-                             <option value="Dubai">🇦🇪 Dubai</option>
-                             <option value="Kenya">🇰🇪 Kenya</option>
-                             <option value="Angola">🇦🇴 Angola</option>
-                             <option value="Switzerland">🇨🇭 Switzerland</option>
-                             <option value="Netherlands">🇳🇱 Netherlands</option>
-                             <option value="Belgium">🇧🇪 Belgium</option>
-                             <option value="Sweden">🇸🇪 Sweden</option>
-                             <option value="Germany">🇩🇪 Germany</option>
-                             <option value="USA">🇺🇸 USA</option>
-                             <option value="England">🇬🇧 England</option>
-                             <option value="Denmark">🇩🇰 Denmark</option>
-                             <option value="France">🇫🇷 France</option>
-                             <option value="Italy">🇮🇹 Italy</option>
-                             <option value="South Africa">🇿🇦 South Africa</option>
-                             <option value="Egypt">🇪🇬 Egypt</option>
-                         </select>
-                    </div>
-                     <div class="me-2">
-                        <label for="sortBy" class="form-label visually-hidden">Sort By</label>
-                        <select id="sortBy" class="form-select form-select-sm">
-                            <option value="createdAt_desc">Newest First</option>
-                            <option value="createdAt_asc">Oldest First</option>
-                            <option value="deadline_asc">Deadline Soonest</option>
-                            </select>
-                     </div>
-                     <button id="clearFiltersBtn" class="btn btn-outline-secondary btn-sm"><i class="fas fa-times me-1"></i>Clear</button>
+               <div class="form-check mt-3">
+                  <input class="form-check-input" type="checkbox" value="" id="agreeToTermsCheckbox">
+                  <label class="form-check-label" for="agreeToTermsCheckbox">
+                    I agree to the <a href="terms.html" target="_blank">Terms & Conditions</a>
+                  </label>
                 </div>
-             </div>
-             <div id="loadingMessage" class="d-none">Loading loads... <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span></div>
-             <div id="emptyListMessage" class="d-none"><p class="fw-bold fs-5">📭 No loads available right now matching your criteria.</p></div>
+               <button id="submitLoadBtn" class="btn btn-primary mt-3" type="submit">
+                 <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                 <span class="button-text">Post Load</span>
+              </button>
+        </form>
+      </div>
+    </section>
 
-            <div id="loadList" class="row gy-4">
-            </div>
-        </section>
-    </div>
+    <section>
+      <h4 class="mb-3">
+          <span style="
+            background: #0a3d62; /* Keep existing style */
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 1rem;
+            display: inline-block;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+          ">
+           📋 ዝውሰድ ንብረት
+          </span>
+      </h4>
+      <div id="loadList" class="row gy-4">
+          </div>
+    </section>
+  </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-    <script type="module">
-        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, doc, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+  <script type="module">
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, doc, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 
-        // Replace with your actual Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ", // IMPORTANT: Keep your API key secure
-            authDomain: "erishipping-e4532.firebaseapp.com",
-            projectId: "erishipping-e4532",
-            storageBucket: "erishipping-e4532.appspot.com",
-            messagingSenderId: "388550131049",
-            appId: "1:388550131049:web:e9ac1784ab8e5fabc811f8"
-        };
+    // Replace with your actual Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ", // IMPORTANT: Keep your API key secure
+      authDomain: "erishipping-e4532.firebaseapp.com",
+      projectId: "erishipping-e4532",
+      storageBucket: "erishipping-e4532.appspot.com",
+      messagingSenderId: "388550131049",
+      appId: "1:388550131049:web:e9ac1784ab8e5fabc811f8"
+    };
 
-        // Initialize Firebase
-        const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        const loadRef = collection(db, "loads");
+    // Initialize Firebase
+    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const loadRef = collection(db, "loads");
 
-        // DOM Elements
-        const form = document.getElementById("loadForm");
-        const loadList = document.getElementById("loadList");
-        const submitLoadBtn = document.getElementById("submitLoadBtn");
-        const generalFeedback = document.getElementById("generalFeedback");
-        const generalFeedbackText = document.getElementById("generalFeedbackText");
-        const agreeToTermsCheckbox = document.getElementById('agreeToTermsCheckbox');
-        const feedbackCloseButton = generalFeedback.querySelector('.btn-close');
-        const filterFromSelect = document.getElementById('filterFrom');
-        const filterToSelect = document.getElementById('filterTo');
-        const sortBySelect = document.getElementById('sortBy');
-        const clearFiltersBtn = document.getElementById('clearFiltersBtn');
-        const loadingMessage = document.getElementById('loadingMessage');
-        const emptyListMessage = document.getElementById('emptyListMessage');
+    // DOM Elements
+    const form = document.getElementById("loadForm");
+    const loadList = document.getElementById("loadList");
+    const submitLoadBtn = document.getElementById("submitLoadBtn");
+    const generalFeedback = document.getElementById("generalFeedback");
+    const generalFeedbackText = document.getElementById("generalFeedbackText");
+    const agreeToTermsCheckbox = document.getElementById('agreeToTermsCheckbox');
+    // Get the close button element
+    const feedbackCloseButton = generalFeedback.querySelector('.btn-close');
 
 
-        let isAdmin = false; // State to track admin status (client-side UI only) - **Note: This is for UI only. Real admin checks must be done using Firestore Security Rules.**
-        let currentSnapshot = null; // Store the latest snapshot
-        let unsubscribeFromLoads = null; // To store the unsubscribe function for the snapshot listener
+    let isAdmin = false; // State to track admin status (client-side UI only) - **Note: This is for UI only. Real admin checks must be done using Firestore Security Rules.**
+    let currentSnapshot = null; // Store the latest snapshot
 
-        // Store original placeholders (no longer used for validation messages)
-        const originalPlaceholders = {};
-        document.querySelectorAll('#loadForm input:not([type="date"]), #loadForm textarea').forEach(input => {
-             originalPlaceholders[input.id] = input.placeholder;
+    // Store original placeholders
+    const originalPlaceholders = {};
+    document.querySelectorAll('#loadForm input, #loadForm textarea').forEach(input => {
+        originalPlaceholders[input.id] = input.placeholder;
+    });
+    document.querySelectorAll('#loadForm select').forEach(select => {
+        const selectedOption = select.querySelector('option[disabled][selected]');
+        if (selectedOption) {
+            originalPlaceholders[select.id] = selectedOption.textContent;
+        }
+    });
+
+    // --- UI Feedback Helpers ---
+    let feedbackHideTimeout = null; // To manage the timeout for hiding feedback
+
+    function showGeneralFeedback(message, type = 'info', duration = 7000) { // Added duration parameter
+        console.log(`[Feedback|SHOW] Showing: "${message}" (Type: ${type}, Duration: ${duration}ms) at ${new Date().toLocaleTimeString()}`);
+
+        if (feedbackHideTimeout) {
+            console.log(`[Feedback|SHOW] Clearing existing timeout ID: ${feedbackHideTimeout}`);
+            clearTimeout(feedbackHideTimeout);
+            feedbackHideTimeout = null; // Ensure it's null after clearing
+            console.log("[Feedback|SHOW] Cleared previous hide timeout, variable is now null.");
+        }
+
+        // Remove d-none immediately to make the alert element visible for transitions
+        generalFeedback.classList.remove('d-none');
+        generalFeedback.classList.remove('alert-info', 'alert-success', 'alert-warning', 'alert-danger');
+        generalFeedback.classList.add(`alert-${type}`);
+        generalFeedbackText.textContent = message;
+
+        // Force a reflow to ensure the removal of d-none is processed by the browser
+        // before adding the 'show' class to trigger the fade-in.
+        generalFeedback.offsetHeight; // Accessing offsetHeight forces a reflow
+        console.log("[Feedback|SHOW] Forced reflow.");
+
+
+        // Add 'show' class to trigger the fade-in transition
+        generalFeedback.classList.add('show');
+        console.log("[Feedback|SHOW] Added 'show' class.");
+
+
+         // Set new hide timeout for automatic dismissal
+         feedbackHideTimeout = setTimeout(() => {
+             console.log(`[Feedback|TIMEOUT] Main timeout finished (${duration}ms). Calling hideGeneralFeedback.`);
+             hideGeneralFeedback();
+            }, duration); // Use dynamic duration
+         console.log(`[Feedback|SHOW] Set new timeout ID: ${feedbackHideTimeout} for ${duration}ms.`);
+    }
+
+    function hideGeneralFeedback() {
+        console.log(`[Feedback|HIDE] Hiding process started at ${new Date().toLocaleTimeString()}`);
+        // Remove 'show' class to trigger the fade-out transition
+        generalFeedback.classList.remove('show');
+        console.log("[Feedback|HIDE] Removed 'show' class.");
+
+        // After the fade-out transition duration, add the 'd-none' class to fully hide
+        // and clear the timeout variable.
+        setTimeout(() => {
+            console.log("[Feedback|HIDE|INNER_TIMEOUT] Adding 'd-none'.");
+            generalFeedback.classList.add('d-none');
+            // The main timeout handler or manual close handler clears feedbackHideTimeout.
+            // We don't clear it here to avoid race conditions if hide is called multiple times.
+            // Let's rely on the main timeout handler to clear it.
+            // If hide is called directly (e.g., by button), the button handler clears it.
+            // feedbackHideTimeout = null; // Removed this line from inner timeout
+            console.log("[Feedback|HIDE|INNER_TIMEOUT] Added 'd-none'.");
+        }, 300); // This duration should match Bootstrap's fade transition time
+        console.log("[Feedback|HIDE] Set inner 300ms timeout for d-none.");
+    }
+
+    // Manually handle click on the close button
+    feedbackCloseButton.addEventListener('click', () => {
+         console.log("[Feedback|CLOSE_BTN] Close button clicked.");
+         // Clear the automatic hide timeout if it exists before hiding manually
+         if (feedbackHideTimeout) {
+            console.log(`[Feedback|CLOSE_BTN] Clearing automatic timeout ID: ${feedbackHideTimeout}`);
+            clearTimeout(feedbackHideTimeout);
+            feedbackHideTimeout = null; // Ensure it's null after clearing
+            console.log("[Feedback|CLOSE_BTN] Cleared automatic timeout, variable is now null.");
+         }
+         hideGeneralFeedback(); // Call our hide function
+         console.log("[Feedback|CLOSE_BTN] Called hideGeneralFeedback.");
+    });
+
+
+    function setButtonLoadingState(button, isLoading) {
+        button.disabled = isLoading;
+        if (isLoading) {
+            button.classList.add('loading');
+        } else {
+            button.classList.remove('loading');
+        }
+    }
+
+    function setValidationFeedback(inputElement, message = '') {
+        const isSelect2 = $(inputElement).hasClass('select2-hidden-accessible');
+        const targetElement = isSelect2 ? $(inputElement).next('.select2-container').find('.select2-selection') : $(inputElement);
+
+        if (message) {
+            targetElement.addClass('is-invalid');
+            if (!isSelect2 && (inputElement.tagName === 'INPUT' || inputElement.tagName === 'TEXTAREA')) {
+                 inputElement.placeholder = message;
+            }
+        } else {
+            targetElement.removeClass('is-invalid');
+            if (!isSelect2 && (inputElement.tagName === 'INPUT' || inputElement.tagName === 'TEXTAREA')) {
+                 inputElement.placeholder = originalPlaceholders[inputElement.id] || '';
+            }
+        }
+    }
+
+    function clearAllValidationFeedback() {
+        form.querySelectorAll('.form-control, .form-select').forEach(input => {
+            setValidationFeedback(input, '');
         });
-         // Select elements need special handling if you want to store default text, but with Select2 placeholder option, it's less necessary.
+         $('.select2-selection').removeClass('is-invalid'); // Ensure Select2 styles are cleared
+    }
 
-        // --- UI Feedback Helpers ---
-        let feedbackHideTimeout = null;
+    // --- Authentication State ---
+    // Controls UI visibility only. Real access control is via Firestore Rules.
+    // To implement true admin roles, you would need a backend check (e.g., custom claims, or checking an 'admins' collection).
+    // This client-side 'isAdmin' flag is purely for showing/hiding UI elements based on ANY logged-in user vs non-logged-in.
+    // It DOES NOT provide security.
+    onAuthStateChanged(auth, (user) => {
+        const wasAdmin = isAdmin;
+        // For the purpose of *this client-side UI*, isAdmin is true if *any* user is logged in.
+        // **IMPORTANT:** This does NOT mean the user is an actual administrator with elevated privileges in your database.
+        // Implement proper admin checks (Firestore Security Rules) for real security.
+        isAdmin = !!user;
 
-        function showGeneralFeedback(message, type = 'info', duration = 7000) {
-            if (feedbackHideTimeout) {
-                clearTimeout(feedbackHideTimeout);
-                feedbackHideTimeout = null;
-            }
+        console.log("Auth state changed. User:", user, "isAdmin (client-side UI):", isAdmin); // Debug log
 
-            generalFeedback.classList.remove('d-none', 'alert-info', 'alert-success', 'alert-warning', 'alert-danger');
-            generalFeedback.classList.add(`alert-${type}`);
-            generalFeedbackText.textContent = message;
+        // Re-render list if admin status changed to update UI controls (like delete button visibility)
+        if (isAdmin !== wasAdmin && currentSnapshot) {
+            console.log("Admin status changed, re-rendering list.");
+            renderLoads(currentSnapshot);
+        } else if (isAdmin && !wasAdmin && currentSnapshot) {
+             // If a user just logged in (became "admin" from client-side UI perspective)
+             renderLoads(currentSnapshot);
+        } else if (!isAdmin && wasAdmin && currentSnapshot) {
+             // If a user just logged out (ceased being "admin" from client-side UI perspective)
+              renderLoads(currentSnapshot);
+        }
+    });
 
-            // Force a reflow
-            generalFeedback.offsetHeight;
+    // --- Form Submission ---
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        console.log("Form submitted."); // Debug log
 
-            generalFeedback.classList.add('show');
+        // Removed the initial hideGeneralFeedback() call here
+        // hideGeneralFeedback(); // Removed
 
-            feedbackHideTimeout = setTimeout(() => {
-                hideGeneralFeedback();
-            }, duration);
+        clearAllValidationFeedback();
+
+        const from = $('#from').val();
+        const to = $('#to').val();
+        const weight = form.weight.value.trim();
+        const deadline = form.deadline.value;
+        const phone = form.phone.value.trim();
+        const comment = form.comment.value.trim();
+
+        console.log("Form Data:", { from, to, weight, deadline, phone, comment }); // Debug log
+
+        // --- Client-Side Validation ---
+        let isValid = true;
+
+        if (!agreeToTermsCheckbox.checked) {
+            showGeneralFeedback("Please read and agree to the Terms & Conditions before posting.", "warning", 10000); // Warning duration 10s
+            isValid = false;
         }
 
-        function hideGeneralFeedback() {
-            generalFeedback.classList.remove('show');
-             setTimeout(() => {
-                generalFeedback.classList.add('d-none');
-                 // We don't clear the main feedbackHideTimeout here, it's done when setting a new message or clicking close.
-             }, 300); // Match Bootstrap fade transition
+        if (!from) { setValidationFeedback(form.from, "Select origin country."); isValid = false; }
+        if (!to) { setValidationFeedback(form.to, "Select destination country."); isValid = false; }
+
+        const weightValue = parseFloat(weight);
+        if (weight === "" || isNaN(weightValue) || weightValue <= 0 || weightValue >= 1000) {
+             setValidationFeedback(form.weight, "Valid weight required (>0, <1000 kg)."); isValid = false;
         }
 
-        // Manually handle click on the close button
-        feedbackCloseButton.addEventListener('click', () => {
-            if (feedbackHideTimeout) {
-                clearTimeout(feedbackHideTimeout);
-                feedbackHideTimeout = null;
-            }
-            hideGeneralFeedback();
-        });
-
-
-        function setButtonLoadingState(button, isLoading) {
-            button.disabled = isLoading;
-            if (isLoading) {
-                button.classList.add('loading');
-            } else {
-                button.classList.remove('loading');
-            }
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        let selectedDate = null;
+        if (deadline) {
+            selectedDate = new Date(deadline + 'T00:00:00');
         }
 
-        // Updated setValidationFeedback to use invalid-feedback divs
-        function setValidationFeedback(inputElement, message = '') {
-            const isSelect2 = $(inputElement).hasClass('select2-hidden-accessible');
-            let targetElement = $(inputElement);
-            const feedbackElement = targetElement.next('.invalid-feedback'); // Look for the feedback div
-
-            // Handle Select2 case to add is-invalid to the visible Select2 element
-            if (isSelect2) {
-                 targetElement = $(inputElement).next('.select2-container').find('.select2-selection');
-            } else {
-                 // For non-Select2 elements, ensure target is the input itself
-                 targetElement = $(inputElement);
-            }
-
-
-            if (message) {
-                targetElement.addClass('is-invalid');
-                 if (feedbackElement.length) {
-                     feedbackElement.text(message);
-                 }
-                // No longer changing placeholder text
-            } else {
-                targetElement.removeClass('is-invalid');
-                 if (feedbackElement.length) {
-                     feedbackElement.text(''); // Clear the message
-                 }
-                // Restore original placeholder if needed (optional, not doing for now)
-            }
+        if (!deadline) {
+             setValidationFeedback(form.deadline, "Deadline date is required."); isValid = false;
+        } else if (selectedDate < today) {
+            setValidationFeedback(form.deadline, "Deadline must be today or a future date."); isValid = false;
         }
 
-        function clearAllValidationFeedback() {
-            form.querySelectorAll('.form-control, .form-select').forEach(input => {
-                setValidationFeedback(input, '');
-            });
-             $('.select2-selection').removeClass('is-invalid'); // Ensure Select2 styles are cleared
+        if (!phone || !/^\+?[0-9\s-]{7,}$/.test(phone)) {
+             setValidationFeedback(form.phone, "Valid phone number required (min 7 digits)."); isValid = false;
         }
 
+         if (/http|www|@|%|tel:|mailto:/.test(comment)) {
+             setValidationFeedback(form.comment, "Comment contains invalid characters."); isValid = false;
+         }
+        // --- End Client-Side Validation ---
 
-        // --- Authentication State ---
-        onAuthStateChanged(auth, (user) => {
-            const wasAdmin = isAdmin;
-            isAdmin = !!user; // client-side UI flag only
-
-            console.log("Auth state changed. User:", user, "isAdmin (client-side UI):", isAdmin);
-
-            // Re-subscribe to loads to update UI controls based on admin status
-             // This ensures the delete button appears/disappears without manual refresh
-            subscribeToLoads();
-        });
+        if (!isValid) {
+            console.log("Form validation failed."); // Debug log
+            setButtonLoadingState(submitLoadBtn, false); // Re-enable button if it was clicked while disabled
+            return;
+        }
+        console.log("Form validation passed."); // Debug log
 
 
-        // --- Form Submission ---
-        form.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            console.log("Form submitted.");
+        setButtonLoadingState(submitLoadBtn, true);
 
-            clearAllValidationFeedback(); // Clear feedback from previous attempts
+        try {
+            // --- Cooldown Check ---
+            console.log("Checking cooldown. isAdmin (client-side UI):", isAdmin); // Debug log
+            const lastPostTime = localStorage.getItem("lastLoadPostTime");
+            const cooldownDuration = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+            const currentTime = Date.now();
 
-            const from = $('#from').val(); // Get value from Select2
-            const to = $('#to').val(); // Get value from Select2
-            const weight = form.weight.value.trim();
-            const deadline = form.deadline.value;
-            const phone = form.phone.value.trim();
-            const comment = form.comment.value.trim();
-
-            console.log("Form Data:", { from, to, weight, deadline, phone, comment });
-
-            // --- Client-Side Validation ---
-            let isValid = true;
-
-            if (!agreeToTermsCheckbox.checked) {
-                showGeneralFeedback("Please read and agree to the Terms & Conditions before posting.", "warning", 10000);
-                isValid = false;
+            // Cooldown applies if user is NOT considered 'admin' by the client-side UI logic (i.e., not logged in)
+            if (!isAdmin && lastPostTime && (currentTime - parseInt(lastPostTime) < cooldownDuration)) {
+                 const remainingTime = cooldownDuration - (currentTime - parseInt(lastPostTime));
+                 const minutes = Math.ceil(remainingTime / (60 * 1000));
+                 console.log(`Cooldown active for non-admin user. ${minutes} minutes remaining.`); // Debug log
+                 showGeneralFeedback(`Please wait ${minutes} more minute(s) before posting again.`, "warning", 15000); // Increased duration to 15s
+                 setButtonLoadingState(submitLoadBtn, false);
+                 return; // Block submission
             }
+            console.log("Cooldown check passed or bypassed."); // Debug log
+            // --- End Cooldown Check ---
 
-            if (!from) { setValidationFeedback(form.from, "Select origin country."); isValid = false; }
-            if (!to) { setValidationFeedback(form.to, "Select destination country."); isValid = false; }
 
-            const weightValue = parseFloat(weight);
-            if (weight === "" || isNaN(weightValue) || weightValue <= 0 || weightValue >= 1000) {
-                 setValidationFeedback(form.weight, "Valid weight required (>0, <1000 kg)."); isValid = false;
-            }
+            // --- Duplicate Check ---
+            console.log("Checking for duplicates..."); // Debug log
+            // Ensure 'deadline' is treated as a string for exact match in query
+            const duplicateLoadQuery = query(
+                loadRef,
+                where("from", "==", from),
+                where("to", "==", to),
+                where("deadline", "==", deadline), // Use string format for query
+                where("phone", "==", phone)
+            );
+            const existingLoads = await getDocs(duplicateLoadQuery);
+            console.log("Duplicate query result:", existingLoads.size, "documents found."); // Debug log
 
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            let selectedDate = null;
-            if (deadline) {
-                selectedDate = new Date(deadline + 'T00:00:00');
-            }
-
-            if (!deadline) {
-                 setValidationFeedback(form.deadline, "Deadline date is required."); isValid = false;
-            } else if (selectedDate < today) {
-                setValidationFeedback(form.deadline, "Deadline must be today or a future date."); isValid = false;
-            }
-
-            // Basic phone validation (more robust server-side needed)
-            if (!phone || !/^[+\s-]*(?:\d[\s-]*){7,}$/.test(phone)) {
-                 setValidationFeedback(form.phone, "Valid phone number required (min 7 digits, allows +, -, spaces)."); isValid = false;
-            }
-
-            // Simple check for potentially harmful characters in comment (more robust server-side needed)
-            if (/http|www|@|%|<|>|script|tel:|mailto:/.test(comment.toLowerCase())) {
-                 setValidationFeedback(form.comment, "Comment contains potentially invalid content."); isValid = false;
-            }
-            // --- End Client-Side Validation ---
-
-            if (!isValid) {
-                console.log("Form validation failed.");
+            if (!existingLoads.empty) {
+                console.log("Duplicate found!"); // Debug log
+                showGeneralFeedback("⚠️ This exact load (origin, destination, deadline, phone) seems to be already registered.", "warning", 15000); // Increased duration to 15s
                 setButtonLoadingState(submitLoadBtn, false);
+                return; // Block submission
+            }
+            console.log("No duplicate found."); // Debug log
+            // --- End Duplicate Check ---
+
+            // Add Load Data to Firestore
+            console.log("Adding document to Firestore..."); // Debug log
+            const loadData = {
+                from,
+                to,
+                weight: weightValue,
+                deadline, // Store as string (YYYY-MM-DD)
+                phone,
+                comment,
+                createdAt: serverTimestamp(),
+                // userId: auth.currentUser ? auth.currentUser.uid : null, // Optional: if you want to link loads to users
+            };
+
+            await addDoc(loadRef, loadData);
+            console.log("Document added successfully."); // Debug log
+
+            // Set cooldown timestamp only for non-admins (logged-out users in this client-side logic)
+            if (!isAdmin) { // If the user is NOT logged in based on client-side UI flag
+                 localStorage.setItem("lastLoadPostTime", currentTime);
+                 console.log("Cooldown timestamp set in localStorage for logged-out user."); // Debug log
+            }
+
+            // Reset form and validation feedback
+            form.reset();
+            $('#from').val(null).trigger('change'); // Reset Select2
+            $('#to').val(null).trigger('change'); // Reset Select2
+            clearAllValidationFeedback();
+            agreeToTermsCheckbox.checked = false;
+
+            showGeneralFeedback("✅ Load posted successfully!", "success", 7000); // Success duration 7s
+
+        } catch (error) {
+            console.error("Error during Firestore operation:", error); // Log the actual error
+            showGeneralFeedback(`❌ Failed to post load: ${error.message}. Please check console for details.`, "danger", 15000); // Increased duration to 15s
+        } finally {
+            setButtonLoadingState(submitLoadBtn, false); // Ensure button is re-enabled
+        }
+    });
+
+    // --- Displaying Loads ---
+    function renderLoads(loadsSnapshot) {
+         currentSnapshot = loadsSnapshot;
+         loadList.innerHTML = "";
+         const now = new Date();
+         now.setHours(0, 0, 0, 0);
+         let hasLoadsToDisplay = false;
+
+         console.log("Rendering loads. Snapshot size:", loadsSnapshot.size); // Debug log
+
+        if (loadsSnapshot.empty) {
+             loadList.innerHTML = `<div class="col-12 text-center text-muted mt-4"><p class="fw-bold fs-5">📭 No loads available right now.</p></div>`;
+             return;
+        }
+
+        loadsSnapshot.forEach(docSnap => {
+            const load = docSnap.data();
+            // Check if deadline is a valid string before creating Date object
+            const deadlineDate = load.deadline ? new Date(load.deadline + 'T00:00:00') : null;
+
+            // Skip if deadline is in the past or invalid
+            if (!deadlineDate || deadlineDate < now) {
+                // console.log("Skipping expired or invalid load:", docSnap.id, load.deadline); // Debug log (optional)
                 return;
             }
-            console.log("Form validation passed.");
 
+            hasLoadsToDisplay = true;
 
-            setButtonLoadingState(submitLoadBtn, true);
-
-            try {
-                // --- Client-Side Cooldown Check (Easily Bypassed, Rely on Security Rules/Functions) ---
-                const lastPostTime = localStorage.getItem("lastLoadPostTime");
-                const cooldownDuration = 2 * 60 * 60 * 1000; // 2 hours
-                const currentTime = Date.now();
-
-                // Cooldown applies if user is NOT considered 'admin' by the client-side UI logic (i.e., not logged in)
-                if (!isAdmin && lastPostTime && (currentTime - parseInt(lastPostTime) < cooldownDuration)) {
-                     const remainingTime = cooldownDuration - (currentTime - parseInt(lastPostTime));
-                     const minutes = Math.ceil(remainingTime / (60 * 1000));
-                     showGeneralFeedback(`Please wait ${minutes} more minute(s) before posting again.`, "warning", 15000);
-                     setButtonLoadingState(submitLoadBtn, false);
-                     return; // Block submission
-                }
-                // --- End Client-Side Cooldown Check ---
-
-                // --- Client-Side Duplicate Check (Easily Bypassed, Rely on Security Rules/Functions) ---
-                console.log("Checking for duplicates...");
-                 // Note: Firestore queries are case-sensitive for strings unless specifically handled server-side.
-                const duplicateLoadQuery = query(
-                    loadRef,
-                    where("from", "==", from),
-                    where("to", "==", to),
-                    where("deadline", "==", deadline), // Use string format for query
-                    where("phone", "==", phone)
-                );
-                const existingLoads = await getDocs(duplicateLoadQuery);
-                console.log("Duplicate query result:", existingLoads.size, "documents found.");
-
-                if (!existingLoads.empty) {
-                     showGeneralFeedback("⚠️ This exact load (origin, destination, deadline, phone) seems to be already registered.", "warning", 15000);
-                     setButtonLoadingState(submitLoadBtn, false);
-                     return; // Block submission
-                }
-                console.log("No duplicate found.");
-                // --- End Client-Side Duplicate Check ---
-
-
-                // Add Load Data to Firestore
-                console.log("Adding document to Firestore...");
-                const loadData = {
-                    from,
-                    to,
-                    weight: weightValue,
-                    deadline, // Store as string (YYYY-MM-DD)
-                    phone,
-                    comment,
-                    createdAt: serverTimestamp(),
-                    // userId: auth.currentUser ? auth.currentUser.uid : null, // Optional: if you want to link loads to users
-                };
-
-                await addDoc(loadRef, loadData);
-                console.log("Document added successfully.");
-
-                // Set cooldown timestamp only for non-admins (logged-out users in this client-side logic)
-                if (!isAdmin) {
-                     localStorage.setItem("lastLoadPostTime", currentTime);
-                }
-
-                // Reset form and validation feedback
-                form.reset();
-                $('#from').val(null).trigger('change'); // Reset Select2
-                $('#to').val(null).trigger('change'); // Reset Select2
-                clearAllValidationFeedback();
-                agreeToTermsCheckbox.checked = false;
-
-                showGeneralFeedback("✅ Load posted successfully!", "success", 7000);
-
-            } catch (error) {
-                console.error("Error during Firestore operation:", error);
-                 showGeneralFeedback(`❌ Failed to post load: ${error.message}. Please check console for details.`, "danger", 15000);
-            } finally {
-                setButtonLoadingState(submitLoadBtn, false); // Ensure button is re-enabled
-            }
+            const div = document.createElement("div");
+            div.className = "col-lg-4 col-md-6 mb-4";
+            div.innerHTML = `
+              <div class="card h-100">
+                <div class="card-body d-flex flex-column">
+                  <h5 class="card-title">${load.from} <i class="fas fa-arrow-right mx-1"></i> ${load.to}</h5>
+                  <p class="card-text mb-1"><small class="text-muted">Posted: ${load.createdAt?.toDate().toLocaleDateString() || 'N/A'}</small></p>
+                  <hr class="my-2">
+                  <p class="card-text mb-1"><strong>Weight:</strong> ${load.weight} kg</p>
+                  <p class="card-text mb-1"><strong>Deadline:</strong> ${load.deadline}</p>
+                  <p class="card-text mb-1"><strong>Contact:</strong> <a href="tel:${load.phone}">${load.phone}</a></p>
+                  <p class="card-text flex-grow-1 mb-3"><strong>Note:</strong> ${load.comment || "<i>No additional notes.</i>"}</p>
+                  ${isAdmin ? // This controls UI visibility only. True admin check is needed in Security Rules.
+                    `<button class="btn btn-sm btn-outline-danger mt-auto delete-load-btn" data-id="${docSnap.id}">
+                       <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                       <span class="button-text"><i class="fas fa-trash-alt me-1"></i>Delete</span>
+                    </button>`
+                    : ""}
+                </div>
+              </div>
+            `;
+            loadList.appendChild(div);
         });
 
-        // --- Filter and Sort Change Listener ---
-        filterFromSelect.addEventListener('change', subscribeToLoads);
-        filterToSelect.addEventListener('change', subscribeToLoads);
-        sortBySelect.addEventListener('change', subscribeToLoads);
-        clearFiltersBtn.addEventListener('click', () => {
-             $('#filterFrom').val(null).trigger('change'); // Clear Select2 filter
-             $('#filterTo').val(null).trigger('change'); // Clear Select2 filter
-             // Sorting is not cleared, defaults to Newest First on page load/refresh
-             // subscribeToLoads is called by the filter change events
-        });
+         if (!hasLoadsToDisplay && !loadsSnapshot.empty) {
+              // This case might happen if all loads in the snapshot just expired
+             loadList.innerHTML = `<div class="col-12 text-center text-muted mt-4"><p class="fw-bold fs-5">📭 No current loads found (any previous loads may have expired).</p></div>`;
+         } else if (!hasLoadsToDisplay && loadsSnapshot.empty) {
+              // This case happens if the snapshot was initially empty
+             loadList.innerHTML = `<div class="col-12 text-center text-muted mt-4"><p class="fw-bold fs-5">📭 No loads available right now.</p></div>`;
+         }
+    }
 
+    // --- Firestore Listener ---
+    // Order by createdAt to show the newest loads first
+    const loadsQuery = query(loadRef, orderBy("createdAt", "desc"));
+    console.log("Setting up Firestore listener..."); // Debug log
+    onSnapshot(loadsQuery, (snapshot) => {
+        console.log("Firestore snapshot received."); // Debug log
+        renderLoads(snapshot);
+    }, (error) => {
+        console.error("Error fetching loads:", error);
+        showGeneralFeedback(`Error loading loads: ${error.message}`, "danger", 15000); // Increased duration to 15s
+        loadList.innerHTML = `<div class="col-12 text-center text-danger mt-4"><p>❌ Failed to load available loads.</p></div>`;
+    });
 
-        // --- Subscribe to Loads with Filters and Sorting ---
-        function subscribeToLoads() {
-             // Unsubscribe from the previous listener if it exists
-             if (unsubscribeFromLoads) {
-                 unsubscribeFromLoads();
-                 console.log("Unsubscribed from previous Firestore listener.");
-             }
+    // --- Delete Functionality (Admin UI Only) ---
+    loadList.addEventListener('click', async (event) => {
+        const deleteButton = event.target.closest('.delete-load-btn');
+        if (!deleteButton || deleteButton.disabled) return;
 
-            // Show loading message
-            showLoadingMessage();
+        const loadId = deleteButton.dataset.id;
+        console.log(`Delete button clicked for load ID: ${loadId}. isAdmin (client-side UI): ${isAdmin}`); // Debug log
 
-             const fromFilter = $('#filterFrom').val();
-             const toFilter = $('#filterTo').val();
-             const sortByValue = sortBySelect.value;
-
-             console.log("Applying Filters:", { from: fromFilter, to: toFilter, sortBy: sortByValue });
-
-             let currentQuery = loadRef;
-             const queryConstraints = [];
-
-            // Apply filters if selected
-             if (fromFilter) {
-                 queryConstraints.push(where("from", "==", fromFilter));
-             }
-             if (toFilter) {
-                 queryConstraints.push(where("to", "==", toFilter));
-             }
-
-            // Apply sorting
-             let orderByField, orderByDirection;
-             switch (sortByValue) {
-                 case 'createdAt_asc':
-                     orderByField = 'createdAt';
-                     orderByDirection = 'asc';
-                     break;
-                 case 'deadline_asc':
-                     orderByField = 'deadline'; // Note: Sorting string dates works lexicographically
-                     orderByDirection = 'asc';
-                     break;
-                 case 'createdAt_desc':
-                 default:
-                     orderByField = 'createdAt';
-                     orderByDirection = 'desc';
-                     break;
-             }
-
-            // Firestore Limitation Note: If you filter and sort by different fields, you will likely need
-            // compound indexes in Firestore. The Firebase console will usually warn you and provide the index link.
-            // Example: Filtering by 'from' and sorting by 'deadline' requires an index on `from, deadline`.
-            // Filtering by 'from' and 'to' and sorting by 'createdAt' requires an index on `from, to, createdAt`.
-            // Filtering by 'from' and 'to' and sorting by 'deadline' requires an index on `from, to, deadline`.
-
-            queryConstraints.push(orderBy(orderByField, orderByDirection));
-
-             currentQuery = query(loadRef, ...queryConstraints);
-
-
-             // Start listening for real-time updates
-             unsubscribeFromLoads = onSnapshot(currentQuery, (snapshot) => {
-                 console.log("Firestore snapshot received. Changes:", snapshot.docChanges().length, "Docs:", snapshot.docs.length);
-                 currentSnapshot = snapshot; // Store the latest snapshot
-
-                 // Hide loading message once data is received
-                 hideLoadingMessage();
-
-                 renderLoads(snapshot); // Render the loads based on the new snapshot
-             }, (error) => {
-                 console.error("Error fetching loads:", error);
-                 hideLoadingMessage();
-                 showGeneralFeedback(`Error fetching loads: ${error.message}`, "danger", 15000);
-                 loadList.innerHTML = ""; // Clear the list on error
-                 document.getElementById('emptyListMessage').classList.remove('d-none'); // Show empty message on error
-             });
-             console.log("Subscribed to new Firestore listener.");
+        // This is a client-side UI check. Real permission check must be in Firestore Security Rules.
+        if (!isAdmin) { // isAdmin here is based on `!!auth.currentUser`
+             showGeneralFeedback("You do not have permission to delete loads.", "danger", 10000); // Duration 10s
+            return;
         }
 
-        // --- Displaying Loads ---
-        function renderLoads(loadsSnapshot) {
-            loadList.innerHTML = ""; // Clear current list
-            emptyListMessage.classList.add('d-none'); // Hide empty message by default
+        if (!confirm("Are you sure you want to permanently delete this load? This cannot be undone.")) {
+             console.log("Deletion cancelled by user."); // Debug log
+            return;
+        }
 
-            const now = new Date();
-            now.setHours(0, 0, 0, 0);
-            let hasLoadsToDisplay = false;
+        setButtonLoadingState(deleteButton, true);
+        console.log(`Attempting to delete document: ${loadId}`); // Debug log
 
-            console.log("Rendering loads. Snapshot size:", loadsSnapshot.size);
-
-            if (loadsSnapshot.empty) {
-                 // If snapshot is empty, just show the empty message
-                 document.getElementById('emptyListMessage').classList.remove('d-none');
-                 return;
+        try {
+            await deleteDoc(doc(loadRef, loadId));
+            console.log(`Document ${loadId} deleted successfully.`); // Debug log
+            // List updates via onSnapshot listener automatically
+            showGeneralFeedback("🗑️ Load deleted successfully!", "success", 7000); // Duration 7s
+        } catch (error) {
+            console.error(`Error deleting load ${loadId}:`, error); // Log the actual error
+            if (error.code === 'permission-denied') {
+                 showGeneralFeedback("❌ Permission Denied. You might not have the necessary rights to delete this load. Ensure your Firestore Security Rules allow this operation for authenticated users.", "danger", 15000); // Increased duration to 15s
+            } else {
+                 showGeneralFeedback(`❌ Failed to delete load: ${error.message}`, "danger", 15000); // Increased duration to 15s
             }
+             setButtonLoadingState(deleteButton, false); // Reset button state on error only
+        }
+    });
 
-            loadsSnapshot.forEach(docSnap => {
-                const load = docSnap.data();
-                // Check if deadline is a valid string before creating Date object
-                const deadlineDate = load.deadline ? new Date(load.deadline + 'T00:00:00') : null;
-
-                // Filter out loads with past or invalid deadlines (client-side filtering after query)
-                // Ideally, expired loads would be archived or deleted server-side.
-                // If Firestore query could filter by date comparison easily without indexes,
-                // we could do it there, but string comparison or separate date field is needed.
-                // Keeping client-side filter for past dates based on your original logic.
-                if (!deadlineDate || deadlineDate < now) {
-                    return; // Skip expired or invalid loads
+    // --- Initialize Select2 ---
+     $(document).ready(function() {
+        console.log("Document ready. Initializing Select2..."); // Debug log
+        $('#from').select2({
+            placeholder: originalPlaceholders['from'] || 'Select From Country',
+            theme: 'bootstrap-5',
+            allowClear: true, // Optional: adds a clear button
+            // Add custom template for displaying selected options with flags if needed
+            templateSelection: function (state) {
+                if (!state.id) {
+                    return state.text;
                 }
-
-                hasLoadsToDisplay = true;
-
-                const div = document.createElement("div");
-                div.className = "col-lg-4 col-md-6 mb-4";
-                div.innerHTML = `
-                    <div class="card h-100">
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">${load.from} <i class="fas fa-arrow-right mx-1"></i> ${load.to}</h5>
-                            <p class="card-text mb-1"><small class="text-muted">Posted: ${load.createdAt?.toDate().toLocaleDateString() || 'N/A'}</small></p>
-                            <hr class="my-2">
-                            <p class="card-text mb-1"><strong>Weight:</strong> ${load.weight} kg</p>
-                            <p class="card-text mb-1"><strong>Deadline:</strong> ${load.deadline}</p>
-                            <p class="card-text mb-1"><strong>Contact:</strong> <a href="tel:${load.phone}">${load.phone}</a></p>
-                            <p class="card-text flex-grow-1 mb-3"><strong>Note:</strong> ${load.comment ? load.comment.replace(/\n/g, '<br>') : "<i>No additional notes.</i>"}</p>
-                            ${isAdmin ? // This controls UI visibility only. True admin check is needed in Security Rules.
-                                `<button class="btn btn-sm btn-outline-danger mt-auto delete-load-btn" data-id="${docSnap.id}">
-                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                    <span class="button-text"><i class="fas fa-trash-alt me-1"></i>Delete</span>
-                                </button>`
-                                : ""}
-                        </div>
-                    </div>
-                `;
-                loadList.appendChild(div);
-            });
-
-             if (!hasLoadsToDisplay && loadsSnapshot.size > 0) {
-                  // This case might happen if all loads in the snapshot just expired after filtering
-                  document.getElementById('emptyListMessage').classList.remove('d-none');
-             } else if (!hasLoadsToDisplay && loadsSnapshot.size === 0) {
-                 // This case happens if the snapshot was initially empty or filters resulted in no matches
-                 document.getElementById('emptyListMessage').classList.remove('d-none');
-            }
-
-            // Add event listeners for delete buttons (using delegation)
-            loadList.querySelectorAll('.delete-load-btn').forEach(button => {
-                 // Remove existing listeners to prevent duplicates (important with onSnapshot)
-                 // A more robust way is to use event delegation on the parent #loadList
-                 // For simplicity here, we re-add listeners, but delegation is better practice.
-                 // Let's switch to delegation:
-                 button.removeEventListener('click', handleDelete); // Clean up old listeners if any
-                 button.addEventListener('click', handleDelete);
-            });
-            // Note: Removed the loop and added event delegation setup below renderLoads
-        }
-
-        // --- Event Delegation for Delete Button ---
-        loadList.addEventListener('click', (e) => {
-            if (e.target.classList.contains('delete-load-btn') || e.target.closest('.delete-load-btn')) {
-                 const deleteButton = e.target.closest('.delete-load-btn');
-                 handleDelete(deleteButton); // Call the handler with the actual button element
-            }
-        });
-
-        // --- Delete Load Function ---
-        async function handleDelete(button) {
-            const loadId = button.dataset.id;
-             console.log("Delete button clicked for ID:", loadId);
-
-             // Disable button and show spinner
-            setButtonLoadingState(button, true);
-
-            try {
-                 // Note: Firestore Security Rules must enforce who can delete documents.
-                 // The isAdmin check here is purely for UI visibility.
-                await deleteDoc(doc(db, "loads", loadId));
-                 console.log("Document successfully deleted:", loadId);
-                // The UI will automatically update because of the onSnapshot listener
-                 showGeneralFeedback("🗑️ Load deleted.", "success", 5000);
-            } catch (error) {
-                 console.error("Error removing document:", error);
-                 // Re-enable button on error
-                 setButtonLoadingState(button, false);
-                 showGeneralFeedback(`❌ Error deleting load: ${error.message}`, "danger", 10000);
-            }
-        }
-
-        // --- Loading Message Helpers ---
-        function showLoadingMessage() {
-             loadList.innerHTML = ""; // Clear the list content
-             emptyListMessage.classList.add('d-none'); // Hide empty message
-             loadingMessage.classList.remove('d-none'); // Show loading message
-        }
-
-        function hideLoadingMessage() {
-             loadingMessage.classList.add('d-none'); // Hide loading message
-        }
-
-
-        // --- Initialization ---
-        $(document).ready(function() {
-             // Initialize Select2 for form and filter dropdowns
-            $('.form-select').select2({
-                 theme: "bootstrap-5", // Use Bootstrap 5 theme
-                 width: $( this ).data( 'width' ) || $( this ).hasClass( 'w-100' ) ? '100%' : 'style',
-                 placeholder: $( this ).data( 'placeholder' ), // Use data-placeholder attribute
-                 allowClear: true // Allow clearing the selection for filters
-            });
-
-             // Initial load of data
-             subscribeToLoads(); // Start the snapshot listener
-        });
-
-
-         // Ensure listeners are cleaned up if navigating away (basic cleanup)
-         window.addEventListener('beforeunload', () => {
-             if (unsubscribeFromLoads) {
-                 unsubscribeFromLoads();
-                 console.log("Unsubscribed from Firestore listener on page unload.");
+                // Assuming the option value is the country name and text includes the flag
+                return $(`<span>${state.text}</span>`);
+            },
+             templateResult: function (state) {
+                 if (!state.id) {
+                     return state.text;
+                 }
+                  // Assuming the option text includes the flag
+                 return $(`<span>${state.text}</span>`);
              }
+        });
+        $('#to').select2({
+            placeholder: originalPlaceholders['to'] || 'Select Destination Country',
+            theme: 'bootstrap-5',
+            allowClear: true, // Optional: adds a clear button
+             templateSelection: function (state) {
+                if (!state.id) {
+                    return state.text;
+                }
+                 return $(`<span>${state.text}</span>`);
+            },
+             templateResult: function (state) {
+                 if (!state.id) {
+                     return state.text;
+                 }
+                 return $(`<span>${state.text}</span>`);
+             }
+        });
+
+         $('#from, #to').on('change', function() {
+            setValidationFeedback(this, ''); // Clear validation on change
          });
 
-    </script>
+        // Add input event listeners for instant validation feedback clearing
+        document.querySelectorAll('#loadForm input, #loadForm textarea').forEach(input => {
+            input.addEventListener('input', () => {
+                setValidationFeedback(input, '');
+            });
+        });
+
+         console.log("Select2 initialized."); // Debug log
+      });
+
+  </script>
 
 </body>
 </html>
