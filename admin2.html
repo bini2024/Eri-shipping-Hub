@@ -51,7 +51,7 @@
     }
 
     .table {
-      margin-bottom: 1rem;
+      margin-bottom: 0; /* Remove bottom margin from tables inside scroll container */
     }
 
     .table th {
@@ -109,6 +109,31 @@
     #adminContent {
       display: none;
     }
+
+    /* --- Styles for Scrollable Data Sections --- */
+    .table-scroll-container {
+      max-height: 400px; /* Adjust height as needed */
+      overflow-y: auto; /* Add vertical scrollbar */
+      border: 1px solid var(--bs-border-color); /* Optional: Add border */
+      border-radius: 0.5rem; /* Optional: Add border radius */
+    }
+
+    /* Make table header sticky when scrolling */
+    .table-scroll-container table thead th {
+      position: sticky;
+      top: 0;
+      background-color: #f8f9fa; /* Match body background or use a light color */
+      z-index: 10; /* Ensure it stays above scrolling content */
+      box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1); /* Optional: Add subtle shadow */
+    }
+
+    .chart-container {
+      height: 300px; /* Fixed height for the chart area */
+      position: relative; /* Needed for Chart.js responsive sizing */
+      margin-bottom: 1rem; /* Add space below the chart */
+    }
+
+
   </style>
 </head>
 <body>
@@ -150,26 +175,23 @@
 
         <div class="row mb-4 g-3">
       <div class="col-md-4">
-        <div class="card text-center">
-          <div class="card-body">
+        <div class="card text-center h-100">           <div class="card-body">
             <h5 class="card-title"><i class="fas fa-users me-2"></i>Total Couriers</h5>
             <p class="card-text fs-3" id="totalCouriers">0</p>
           </div>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="card text-center">
-          <div class="card-body">
+        <div class="card text-center h-100">           <div class="card-body">
             <h5 class="card-title"><i class="fas fa-box me-2"></i>Total Active Loads</h5>
             <p class="card-text fs-3" id="totalLoads">0</p>
           </div>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="card text-center">
-          <div class="card-body">
-            <h5 class="card-title"><i class="fas fa-route me-2"></i>Loads by Destination</h5>
-                        <canvas id="loadsByDestinationChart"></canvas>
+        <div class="card h-100">           <div class="card-body d-flex flex-column">             <h5 class="card-title text-center"><i class="fas fa-route me-2"></i>Loads by Destination</h5>
+                        <div class="chart-container flex-grow-1">                <canvas id="loadsByDestinationChart"></canvas>
+            </div>
           </div>
         </div>
       </div>
@@ -184,23 +206,24 @@
                 <div class="mb-3">
           <input type="text" id="searchCouriers" class="form-control" placeholder="Search couriers...">
         </div>
-        <div class="table-responsive">
-          <table class="table table-striped table-hover" id="couriersTable">
-            <thead>
-              <tr>
-                <th data-sort="name">Name <i class="fas fa-sort"></i></th>
-                <th data-sort="phone">Phone <i class="fas fa-sort"></i></th>
-                <th data-sort="routeFrom">From <i class="fas fa-sort"></i></th>
-                <th data-sort="routeTo">To <i class="fas fa-sort"></i></th>
-                <th data-sort="dateAvailable">Available <i class="fas fa-sort"></i></th>
-                <th data-sort="comment">Comment <i class="fas fa-sort"></i></th>
-                <th data-sort="createdAt">Registered <i class="fas fa-sort"></i></th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="couriersTableBody">
-                          </tbody>
-          </table>
+                <div class="table-scroll-container">
+          <div class="table-responsive">             <table class="table table-striped table-hover" id="couriersTable">
+              <thead>
+                <tr>
+                                     <th data-sort="name">Name <i class="fas fa-sort"></i></th>
+                  <th data-sort="phone">Phone <i class="fas fa-sort"></i></th>
+                  <th data-sort="routeFrom">From <i class="fas fa-sort"></i></th>
+                  <th data-sort="routeTo">To <i class="fas fa-sort"></i></th>
+                  <th data-sort="dateAvailable">Available <i class="fas fa-sort"></i></th>
+                  <th data-sort="comment">Comment <i class="fas fa-sort"></i></th>
+                  <th data-sort="createdAt">Registered <i class="fas fa-sort"></i></th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="couriersTableBody">
+                              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -213,23 +236,24 @@
                 <div class="mb-3">
           <input type="text" id="searchLoads" class="form-control" placeholder="Search loads...">
         </div>
-        <div class="table-responsive">
-          <table class="table table-striped table-hover" id="loadsTable">
-            <thead>
-              <tr>
-                <th data-sort="from">From <i class="fas fa-sort"></i></th>
-                <th data-sort="to">To <i class="fas fa-sort"></i></th>
-                <th data-sort="weight">Weight <i class="fas fa-sort"></i></th>
-                <th data-sort="deadline">Deadline <i class="fas fa-sort"></i></th>
-                <th data-sort="phone">Phone <i class="fas fa-sort"></i></th>
-                <th data-sort="comment">Comment <i class="fas fa-sort"></i></th>
-                <th data-sort="createdAt">Posted <i class="fas fa-sort"></i></th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="loadsTableBody">
-                          </tbody>
-          </table>
+                <div class="table-scroll-container">
+          <div class="table-responsive">             <table class="table table-striped table-hover" id="loadsTable">
+              <thead>
+                <tr>
+                                     <th data-sort="from">From <i class="fas fa-sort"></i></th>
+                  <th data-sort="to">To <i class="fas fa-sort"></i></th>
+                  <th data-sort="weight">Weight <i class="fas fa-sort"></i></th>
+                  <th data-sort="deadline">Deadline <i class="fas fa-sort"></i></th>
+                  <th data-sort="phone">Phone <i class="fas fa-sort"></i></th>
+                  <th data-sort="comment">Comment <i class="fas fa-sort"></i></th>
+                  <th data-sort="createdAt">Posted <i class="fas fa-sort"></i></th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="loadsTableBody">
+                              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -395,7 +419,9 @@
     function renderCouriersTable(couriers) {
         couriersTableBody.innerHTML = ''; // Clear table
         if (couriers.length === 0) {
-            couriersTableBody.innerHTML = `<tr><td colspan="8" class="text-center">No couriers found.</td></tr>`;
+            // Calculate colspan dynamically
+            const colSpan = couriersTable.querySelectorAll('thead th').length;
+            couriersTableBody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center">No couriers found.</td></tr>`;
             return;
         }
 
@@ -419,7 +445,9 @@
     function renderLoadsTable(loads) {
         loadsTableBody.innerHTML = ''; // Clear table
         if (loads.length === 0) {
-            loadsTableBody.innerHTML = `<tr><td colspan="8" class="text-center">No loads found.</td></tr>`;
+            // Calculate colspan dynamically
+            const colSpan = loadsTable.querySelectorAll('thead th').length;
+            loadsTableBody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center">No loads found.</td></tr>`;
             return;
         }
 
@@ -468,7 +496,10 @@
         const labels = Object.keys(data);
         const counts = Object.values(data);
 
-        loadsByDestinationChart = new Chart(loadsByDestinationChartCanvas, {
+        // Get the canvas context
+        const ctx = loadsByDestinationChartCanvas.getContext('2d');
+
+        loadsByDestinationChart = new Chart(ctx, { // Use the context here
             type: 'bar',
             data: {
                 labels: labels,
@@ -482,7 +513,7 @@
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false, // Allow chart to resize freely
+                maintainAspectRatio: false, // Allow chart to resize freely within its container
                 scales: {
                     y: {
                         beginAtZero: true,
@@ -518,7 +549,9 @@
         );
 
         if (filteredData.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="${tableBody.previousElementSibling.querySelector('th').length}" class="text-center">No matching records found.</td></tr>`;
+            // Calculate colspan dynamically
+            const colSpan = tableBody.previousElementSibling.querySelector('th').length;
+            tableBody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center">No matching records found.</td></tr>`;
         } else {
             if (tableBody.id === 'couriersTableBody') {
                 renderCouriersTable(filteredData);
@@ -545,7 +578,7 @@
 
             if (valueA === valueB) return 0;
 
-            // Handle date sorting (assuming YYYY-MM-DD string or Firebase Timestamp)
+            // Handle date sorting (assumingYYYY-MM-DD string or Firebase Timestamp)
             if (key === 'dateAvailable' || key === 'deadline') {
                 const dateA = valueA ? new Date(valueA) : null;
                 const dateB = valueB ? new Date(valueB) : null;
@@ -676,7 +709,7 @@
     });
 
 
-    // --- Utility function for loading state (can be shared) ---
+    // --- Utility function for loading state ---
     function setButtonLoadingState(button, isLoading) {
         button.disabled = isLoading;
         const spinner = button.querySelector('.spinner-border');
@@ -693,14 +726,11 @@
     // --- Initial setup ---
     $(document).ready(function() {
         console.log("Admin page ready.");
+        // Update footer year
+        document.getElementById("year").textContent = new Date().getFullYear();
         // onAuthStateChanged listener handles initial data fetch if logged in
     });
 
-  </script>
-
-  <script>
-    // Footer year script
-    document.getElementById("year").textContent = new Date().getFullYear();
   </script>
 </body>
 </html>
