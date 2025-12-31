@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cargo Service | Canada to Eritrea</title>
+  <link rel="icon" href="android-chrome-512x512.png" type="image/png">
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+  <style>
+    :root {
+       --app-primary: #0a3d62; /* Dark Blue */
+       --app-secondary: #1e90ff; /* Light Blue */
+       --app-gold: #ffc107;
+    }
+
+    body {
+      background-image: url('https://raw.githubusercontent.com/bini2024/Eri-shipping-Hub/refs/heads/main/Erishipping.jpg');
+      background-size: cover;
+      background-position: center center;
+      background-attachment: fixed;
+      min-height: 100vh;
+      margin: 0;
+      padding-bottom: 80px;
+    }
+
+    /* --- Header --- */
+    header h1 .nav-brand { color: var(--app-secondary) !important; font-weight: 700; }
+    header h1, header p { text-shadow: 2px 2px 4px rgba(0,0,0,0.8); color: white !important; }
+    header { background: linear-gradient(to bottom, rgba(10,61,98,0.9), transparent); }
+
+    /* --- Hero Card --- */
+    .hero-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        margin-bottom: 30px;
+        border-top: 6px solid var(--app-primary);
+    }
+    
+    .route-badge {
+        background: var(--app-primary);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 50px;
+        font-weight: bold;
+        font-size: 1.1rem;
+        display: inline-block;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    /* --- Form Styles --- */
+    .form-control, .form-select {
+        border: 1px solid #adb5bd;
+        padding: 12px;
+        border-radius: 8px;
+    }
+    .form-control:focus {
+        border-color: var(--app-primary);
+        box-shadow: 0 0 0 0.25rem rgba(10, 61, 98, 0.25);
+    }
+    .btn-submit {
+        background: linear-gradient(45deg, var(--app-primary), #005b96);
+        color: white;
+        font-weight: bold;
+        padding: 15px;
+        border: none;
+        border-radius: 50px;
+        width: 100%;
+        font-size: 1.1rem;
+        transition: transform 0.2s;
+    }
+    .btn-submit:hover { transform: scale(1.02); color: white; }
+
+    /* --- Service Features --- */
+    .feature-box {
+        text-align: center;
+        padding: 20px;
+        background: rgba(255,255,255,0.9);
+        border-radius: 10px;
+        height: 100%;
+        border-bottom: 4px solid var(--app-gold);
+    }
+    .feature-icon {
+        font-size: 2.5rem;
+        color: var(--app-primary);
+        margin-bottom: 15px;
+    }
+
+    /* --- Loading State --- */
+    .btn .spinner-border { display: none; margin-right: 0.5rem; }
+    .btn.loading .spinner-border { display: inline-block; }
+    .btn.loading .button-text { display: none; }
+
+    /* --- Bottom Nav --- */
+    .bottom-nav {
+        position: fixed; bottom: 0; left: 0; width: 100%;
+        background-color: var(--app-primary);
+        display: flex; justify-content: space-around; align-items: center;
+        padding: 10px 0; z-index: 2000;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .bottom-nav a {
+        color: rgba(255,255,255,0.6); text-decoration: none;
+        text-align: center; font-size: 0.8rem;
+        display: flex; flex-direction: column; align-items: center;
+    }
+    .bottom-nav a.active { color: white; }
+    .bottom-nav a.active i { color: var(--app-secondary); }
+    
+    #siteLogo { position: fixed; top: 16px; left: 16px; width: 48px; height: auto; z-index: 1000; }
+  </style>
+</head>
+<body>
+
+  <header class="py-4">
+    <div class="container text-center">
+        <img id="siteLogo" src="1000072056-removebg-preview.png" alt="Logo">
+      <h1><span class="nav-brand">Eri Shipping Cargo</span></h1>
+      <p>Professional Freight Services</p>
+    </div>
+  </header>
+
+  <div class="container">
+      <div id="generalFeedback" class="alert alert-info d-none shadow-sm" role="alert">
+          <span id="generalFeedbackText"></span>
+      </div>
+
+      <div class="hero-card text-center">
+          <div class="route-badge">
+              🇨🇦 Canada <i class="fas fa-arrow-right mx-2"></i> 🇪🇷 Eritrea
+          </div>
+          <h2 class="mb-3" style="color: var(--app-primary); font-weight: 800;">Barrel & Container Shipping</h2>
+          <p class="text-muted mb-4">
+              Secure, reliable, and affordable shipping for your barrels and cargo. 
+              We handle the logistics so you can have peace of mind.
+          </p>
+
+          <div class="row g-3 mb-4">
+              <div class="col-4">
+                  <div class="feature-box">
+                      <i class="fas fa-ship feature-icon"></i>
+                      <h6 class="fw-bold">Sea Freight</h6>
+                      <small>Reliable Schedule</small>
+                  </div>
+              </div>
+              <div class="col-4">
+                  <div class="feature-box">
+                      <i class="fas fa-box-open feature-icon"></i>
+                      <h6 class="fw-bold">Barrels</h6>
+                      <small>Standard Size</small>
+                  </div>
+              </div>
+              <div class="col-4">
+                  <div class="feature-box">
+                      <i class="fas fa-shield-alt feature-icon"></i>
+                      <h6 class="fw-bold">Secure</h6>
+                      <small>Trusted Service</small>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      <div class="card shadow border-0 p-4 mb-5" style="background: rgba(255,255,255,0.95); border-radius: 15px;">
+          <h4 class="mb-4 text-center" style="color: var(--app-primary); font-weight: 700;">
+             <i class="fas fa-clipboard-list me-2"></i>Request Shipping
+          </h4>
+          <form id="cargoForm">
+              <div class="mb-3">
+                  <label class="form-label">Full Name (ስም)</label>
+                  <input type="text" id="name" class="form-control" placeholder="Your Name" required>
+              </div>
+              
+              <div class="row">
+                  <div class="col-md-6 mb-3">
+                      <label class="form-label">Phone Number (ቴሌፎን)</label>
+                      <input type="tel" id="phone" class="form-control" placeholder="+1..." required>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                      <label class="form-label">City in Canada (ከተማ)</label>
+                      <select id="city" class="form-select" required>
+                          <option value="" disabled selected>Select City</option>
+                          <option value="Toronto">Toronto</option>
+                          <option value="Ottawa">Ottawa</option>
+                          <option value="Calgary">Calgary</option>
+                          <option value="Edmonton">Edmonton</option>
+                          <option value="Vancouver">Vancouver</option>
+                          <option value="Winnipeg">Winnipeg</option>
+                          <option value="Other">Other</option>
+                      </select>
+                  </div>
+              </div>
+
+              <div class="row">
+                <div class="col-6 mb-3">
+                    <label class="form-label">Item Type</label>
+                    <select id="itemType" class="form-select">
+                        <option value="Barrel">Barrel (ፊስት)</option>
+                        <option value="Box">Box (ካርቶን)</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="col-6 mb-3">
+                    <label class="form-label">Quantity</label>
+                    <input type="number" id="quantity" class="form-control" value="1" min="1" required>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                  <label class="form-label">Receiver in Eritrea (Optional)</label>
+                  <input type="text" id="receiver" class="form-control" placeholder="Receiver Name / City">
+              </div>
+
+              <button type="submit" id="submitBtn" class="btn-submit">
+                  <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                  <span class="button-text"><i class="fab fa-whatsapp me-2"></i> Book via WhatsApp</span>
+              </button>
+              <small class="text-muted text-center d-block mt-2">This will open WhatsApp to send your details directly.</small>
+          </form>
+      </div>
+  </div>
+
+  <nav class="bottom-nav">
+      <a href="index.html">
+          <i class="fas fa-home"></i> Home
+      </a>
+      <a href="cargo.html" class="active">
+          <i class="fas fa-ship"></i> Cargo
+      </a>
+      <a href="register.html">
+          <i class="fas fa-plane-departure"></i> Post Trip
+      </a>
+      <a href="load-board.html">
+          <i class="fas fa-box-open"></i> Load Board
+      </a>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ", 
+      authDomain: "erishipping-e4532.firebaseapp.com",
+      projectId: "erishipping-e4532",
+      storageBucket: "erishipping-e4532.appspot.com",
+      messagingSenderId: "388550131049",
+      appId: "1:388550131049:web:e9ac1784ab8e5fabc811f8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const form = document.getElementById('cargoForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // 1. Get Values
+        const name = document.getElementById('name').value;
+        const phone = document.getElementById('phone').value;
+        const city = document.getElementById('city').value;
+        const itemType = document.getElementById('itemType').value;
+        const quantity = document.getElementById('quantity').value;
+        const receiver = document.getElementById('receiver').value;
+
+        // 2. Set Loading
+        submitBtn.disabled = true;
+        submitBtn.classList.add('loading');
+
+        try {
+            // 3. Save to Firebase (Optional - good for records)
+            await addDoc(collection(db, "cargo_requests"), {
+                name, phone, city, itemType, quantity, receiver,
+                route: "Canada-Eritrea",
+                createdAt: serverTimestamp()
+            });
+
+            // 4. Redirect to WhatsApp
+            // Replace '16474624710' with your actual business WhatsApp number
+            const adminPhone = "16474624710"; 
+            const text = `*New Cargo Request* %0A%0A👤 Name: ${name}%0A📞 Phone: ${phone}%0A📍 City: ${city}%0A📦 Item: ${quantity} x ${itemType}%0A🇪🇷 Receiver: ${receiver}`;
+            
+            window.location.href = `https://wa.me/${adminPhone}?text=${text}`;
+
+        } catch (error) {
+            console.error(error);
+            alert("Error sending request. Please try again.");
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('loading');
+        }
+    });
+  </script>
+</body>
+</html>
