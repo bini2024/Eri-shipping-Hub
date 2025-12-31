@@ -65,20 +65,6 @@
         color: var(--app-primary);
     }
 
-    .feature-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 10px;
-        margin-top: 20px;
-    }
-    .feature-item {
-        background: #f8f9fa;
-        padding: 10px;
-        border-radius: 8px;
-        font-size: 0.8rem;
-    }
-    .feature-item i { font-size: 1.5rem; color: var(--app-primary); margin-bottom: 5px; display: block; }
-
     /* --- Form Styling --- */
     .booking-form {
         background: rgba(255, 255, 255, 0.98);
@@ -108,6 +94,35 @@
         border-color: var(--app-primary);
         box-shadow: 0 0 0 3px rgba(10, 61, 98, 0.1);
     }
+
+    /* --- Live Price Card --- */
+    #priceDisplayCard {
+        background: #e3f2fd;
+        border-left: 5px solid var(--app-secondary);
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+    .price-label { font-size: 0.9rem; color: #0a3d62; font-weight: 600; }
+    .price-value { font-size: 1.5rem; color: #0a3d62; font-weight: 800; }
+
+    /* --- Info / Notes Section --- */
+    .info-card {
+        background: #fff3cd;
+        border: 1px solid #ffeeba;
+        color: #856404;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 25px;
+        font-size: 0.85rem;
+    }
+    .info-card h6 { font-weight: 700; margin-bottom: 10px; text-transform: uppercase; }
+    .info-card ul { padding-left: 20px; margin-bottom: 0; }
+    .info-card li { margin-bottom: 5px; }
 
     /* --- Submit Button --- */
     .btn-submit {
@@ -177,52 +192,60 @@
               <span>Eritrea 🇪🇷</span>
           </div>
           <h4 style="color: #333; font-weight: 700;">Barrel & Container Service</h4>
-          
-          <div class="feature-grid">
-              <div class="feature-item">
-                  <i class="fas fa-drum"></i>
-                  <strong>Barrels</strong>
-              </div>
-              <div class="feature-item">
-                  <i class="fas fa-box-open"></i>
-                  <strong>Boxes</strong>
-              </div>
-              <div class="feature-item">
-                  <i class="fas fa-dolly"></i>
-                  <strong>Door-to-Door</strong>
-              </div>
-          </div>
+          <p class="text-muted small mb-0">Select your city below to see shipping rates.</p>
       </div>
 
       <form id="cargoForm" class="booking-form" novalidate>
-          <div class="form-section-title">Sender Details</div>
           
+          <div id="priceDisplayCard">
+              <div>
+                  <div class="price-label">Estimated Rate (Barrel)</div>
+                  <div class="small text-muted" id="selectedCityLabel">Select a city</div>
+              </div>
+              <div class="price-value" id="priceValue">--</div>
+          </div>
+
+          <div class="form-section-title">Pickup Details</div>
+
           <div class="mb-3">
-              <label class="form-label visually-hidden">Full Name</label>
+              <label class="form-label">City / Region</label>
+              <select id="city" class="form-select" required>
+                  <option value="" disabled selected>Select Pickup City</option>
+                  <optgroup label="Ontario ($250)">
+                      <option value="Toronto">Toronto</option>
+                      <option value="Kitchener">Kitchener</option>
+                      <option value="Guelph">Guelph</option>
+                  </optgroup>
+                  <optgroup label="Western Canada ($300)">
+                      <option value="Calgary">Calgary</option>
+                      <option value="Edmonton">Edmonton</option>
+                      <option value="Winnipeg">Winnipeg</option>
+                      <option value="Saskatoon">Saskatoon</option>
+                  </optgroup>
+                  <optgroup label="Other Locations">
+                      <option value="Ottawa">Ottawa</option>
+                      <option value="Vancouver">Vancouver</option>
+                      <option value="Other">Other</option>
+                  </optgroup>
+              </select>
+          </div>
+
+          <div class="mb-3">
+              <label class="form-label">Pickup Address in Canada</label>
               <div class="input-group">
-                  <span class="input-group-text bg-light"><i class="fas fa-user"></i></span>
-                  <input type="text" id="name" class="form-control" placeholder="Full Name (ስም)" required>
+                  <span class="input-group-text bg-light"><i class="fas fa-map-pin"></i></span>
+                  <input type="text" id="address" class="form-control" placeholder="Street Address, Apt/Unit" required>
               </div>
           </div>
 
           <div class="row g-2 mb-3">
-              <div class="col-7">
-                  <div class="input-group">
-                      <span class="input-group-text bg-light"><i class="fas fa-phone"></i></span>
-                      <input type="tel" id="phone" class="form-control" placeholder="Phone" required>
-                  </div>
+              <div class="col-6">
+                  <label class="form-label">Name</label>
+                  <input type="text" id="name" class="form-control" placeholder="Your Name" required>
               </div>
-              <div class="col-5">
-                  <select id="city" class="form-select" required>
-                      <option value="" disabled selected>City</option>
-                      <option value="Toronto">Toronto</option>
-                      <option value="Ottawa">Ottawa</option>
-                      <option value="Calgary">Calgary</option>
-                      <option value="Edmonton">Edmonton</option>
-                      <option value="Vancouver">Vancouver</option>
-                      <option value="Winnipeg">Winnipeg</option>
-                      <option value="Other">Other</option>
-                  </select>
+              <div class="col-6">
+                  <label class="form-label">Phone</label>
+                  <input type="tel" id="phone" class="form-control" placeholder="Phone" required>
               </div>
           </div>
 
@@ -231,10 +254,8 @@
           <div class="row g-2 mb-3">
             <div class="col-8">
                 <select id="itemType" class="form-select" required>
-                    <option value="Barrel (Standard)">Barrel (Standard)</option>
-                    <option value="Barrel (Jumbo)">Barrel (Jumbo)</option>
-                    <option value="Box (Small)">Box (Small)</option>
-                    <option value="Box (Large)">Box (Large)</option>
+                    <option value="Barrel">Barrel (ፊስት)</option>
+                    <option value="Box">Box (ካርቶን)</option>
                     <option value="Container">Full Container</option>
                 </select>
             </div>
@@ -246,22 +267,32 @@
           <div class="mb-4">
               <label class="form-label small text-muted">Receiver in Eritrea (Optional)</label>
               <div class="input-group">
-                  <span class="input-group-text bg-light"><i class="fas fa-map-marker-alt"></i></span>
+                  <span class="input-group-text bg-light"><i class="fas fa-user-tag"></i></span>
                   <input type="text" id="receiver" class="form-control" placeholder="Receiver Name / City">
               </div>
           </div>
 
           <button type="submit" id="submitBtn" class="btn-submit">
               <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              <span class="btn-text">Book Now (WhatsApp)</span>
+              <span class="btn-text">Book Now</span>
               <i class="fab fa-whatsapp btn-text" style="font-size: 1.3rem;"></i>
           </button>
           
           <p class="text-center mt-3 mb-0" style="font-size: 0.75rem; color: #999;">
-              <i class="fas fa-lock me-1"></i> Your details are sent directly to our secure WhatsApp.
+              <i class="fas fa-lock me-1"></i> Data saved securely & sent to admin WhatsApp.
           </p>
       </form>
       
+      <div class="info-card">
+          <h6><i class="fas fa-info-circle me-2"></i> Important Information</h6>
+          <ul>
+              <li><strong>Door-to-Door:</strong> We pick up from your address in Canada.</li>
+              <li><strong>Payment:</strong> Payment is required upon pickup or drop-off at our warehouse.</li>
+              <li><strong>Prohibited Items:</strong> Do not pack flammable liquids, batteries, or illegal substances.</li>
+              <li><strong>Schedule:</strong> Shipping dates are subject to sea freight schedules. Please book in advance.</li>
+          </ul>
+      </div>
+
       <div style="height: 30px;"></div> </div>
 
   <nav class="bottom-nav">
@@ -303,26 +334,54 @@
         console.log("Firebase initialized");
     } catch (e) {
         console.error("Firebase init error:", e);
-        // We continue anyway so WhatsApp booking still works even if DB fails
     }
 
     const form = document.getElementById('cargoForm');
     const submitBtn = document.getElementById('submitBtn');
     const feedback = document.getElementById('generalFeedback');
+    
+    // Dynamic Pricing Elements
+    const citySelect = document.getElementById('city');
+    const priceValue = document.getElementById('priceValue');
+    const selectedCityLabel = document.getElementById('selectedCityLabel');
 
+    // --- Dynamic Pricing Logic ---
+    const rates = {
+        "Toronto": 250, "Kitchener": 250, "Guelph": 250,
+        "Calgary": 300, "Edmonton": 300, "Winnipeg": 300, "Saskatoon": 300
+    };
+
+    citySelect.addEventListener('change', function() {
+        const city = this.value;
+        selectedCityLabel.textContent = city;
+        
+        if (rates[city]) {
+            priceValue.textContent = `$${rates[city]} CAD`;
+            priceValue.style.color = "#0a3d62"; // Blue for explicit price
+        } else {
+            priceValue.textContent = "Contact Us";
+            priceValue.style.color = "#ffc107"; // Gold for contact
+        }
+    });
+
+    // --- Form Submission ---
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         feedback.classList.add('d-none');
         
-        // 1. Validation
+        // 1. Get Values
         const name = document.getElementById('name').value.trim();
         const phone = document.getElementById('phone').value.trim();
         const city = document.getElementById('city').value;
+        const address = document.getElementById('address').value.trim();
         const itemType = document.getElementById('itemType').value;
         const quantity = document.getElementById('quantity').value;
         const receiver = document.getElementById('receiver').value.trim();
+        
+        // Get estimated price string
+        const estimatedPrice = priceValue.textContent;
 
-        if(!name || !phone || !city) {
+        if(!name || !phone || !city || !address) {
             feedback.textContent = "Please fill in all required fields.";
             feedback.classList.remove('d-none');
             return;
@@ -332,58 +391,57 @@
         submitBtn.disabled = true;
         submitBtn.classList.add('loading');
 
-        // 3. Generate Reference Number (Professional Touch) 
+        // 3. Generate Reference Number
         const refNum = "CRG-" + Math.floor(1000 + Math.random() * 9000);
 
         try {
-            // 4. Try to save to Firebase (Timeout after 3 seconds so we don't block user)
+            // 4. Try to save to Firebase "cargo_requests" collection
+            // This enables the Admin Page to read this data later
             if (db) {
                 const savePromise = addDoc(collection(db, "cargo_requests"), {
-                    refNum, name, phone, city, itemType, quantity, receiver,
+                    refNum, name, phone, city, address, itemType, quantity, receiver, estimatedPrice,
                     route: "Canada-Eritrea",
+                    status: "Pending",
                     createdAt: serverTimestamp()
                 });
                 
-                // Race: If DB takes longer than 3s, proceed to WhatsApp anyway
+                // Timeout logic to prevent hanging
                 const timeoutPromise = new Promise(resolve => setTimeout(resolve, 3000));
                 await Promise.race([savePromise, timeoutPromise]);
             }
-
         } catch (error) {
             console.warn("Database save failed (proceeding to WhatsApp anyway):", error);
         }
 
-        // 5. Construct WhatsApp Message (Clean & Professional)
-        // Number hidden here: 16474624710
+        // 5. Construct WhatsApp Message
         const adminPhone = "16474624710"; 
         
         const message = 
-`*🆕 NEW CARGO BOOKING*
-------------------
+`*🚢 CARGO BOOKING REQUEST*
+--------------------------
 *Ref:* ${refNum}
-*From:* ${city}, Canada
-*To:* Eritrea
+*Route:* Canada to Eritrea
+
+📍 *Pickup:* ${city} (${estimatedPrice})
+${address}
 
 👤 *Customer:* ${name}
 📞 *Phone:* ${phone}
 
-📦 *Details:*
-• Item: ${itemType}
-• Qty: ${quantity}
+📦 *Cargo:*
+• ${quantity} x ${itemType}
 ${receiver ? `• Receiver: ${receiver}` : ''}
 
 _Sent via Eri Shipping Hub_`;
 
         // 6. Redirect
-        // Encode properly for URL
         const url = `https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`;
         
         setTimeout(() => {
             window.location.href = url;
-            // Reset button just in case user comes back
             submitBtn.disabled = false;
             submitBtn.classList.remove('loading');
-        }, 500); // Small delay for visual feedback
+        }, 500);
     });
   </script>
 </body>
