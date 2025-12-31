@@ -519,9 +519,9 @@
 
     // --- Card Creator Function with Share Buttons ---
     function createCourierCard(data, id) {
-        const shareText = encodeURIComponent(`Found a courier on EriShipping!\nFrom: ${data.from}\nTo: ${data.to}\nDate: ${data.date}\nCheck it out!`);
+        const shareText = encodeURIComponent(`Found a courier on EriShipping!\nFrom: ${data.from}\nTo: ${data.to}\nDate: ${data.date}\nVisit here: ${appUrl}`);
         const appUrl = encodeURIComponent("https://erishipping-e4532.web.app"); 
-
+      
         return `
             <div class="card courier-card mb-3" data-contact="${data.contact}" id="courier-${id}">
               <div class="card-body">
@@ -839,3 +839,4 @@
 
 </body>
 </html>
+
