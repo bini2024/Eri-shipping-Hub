@@ -1,39 +1,570 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard - Eri Shipping Hub</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Eri Shipping Hub</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <style>
-    :root {
-      /* Define your app colors consistently */
-       --app-primary: #0a3d62; /* Your dark blue */
-       --app-secondary: #1e90ff; /* Your hover blue */
+  <style>
+    :root {
+       --app-primary: #0a3d62;
+       --app-secondary: #1e90ff;
+       --bs-primary: var(--app-primary);
+       --bs-secondary: var(--app-secondary);
+       --bs-border-color: #ced4da;
+    }
 
-       /* Use your app colors for Bootstrap variables */
-       --bs-primary: var(--app-primary);
-       --bs-secondary: var(--app-secondary);
-       --bs-dark: var(--app-primary);
-       --bs-heading-color: var(--app-primary);
-       --bs-border-color: #ced4da; /* Standard border color */
-    }
+    body {
+      background-color: #f8f9fa;
+      color: #212529;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-    body {
-      background-color: #f8f9fa;
-      color: #212529;
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-    }
+    .container { max-width: 1200px; }
 
-    .container {
-      max-width: 1200px;
-    }
+    /* Cards */
+    .card {
+      border-radius: 0.75rem;
+      border: 1px solid rgba(0, 0, 0, 0.125);
+      background-color: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .card-header {
+      background-color: var(--app-primary);
+      color: white;
+      border-top-left-radius: 0.75rem;
+      border-top-right-radius: 0.75rem;
+      font-weight: bold;
+    }
 
-    .card {
-      border-radius: 0.75rem;
+    /* Tables */
+    .table th { cursor: pointer; user-select: none; }
+    .table th:hover { background-color: #e9ecef; }
+    .table-scroll-container {
+      max-height: 450px;
+      overflow-y: auto;
+      border: 1px solid var(--bs-border-color);
+      border-radius: 0.5rem;
+    }
+    .table-scroll-container table thead th {
+      position: sticky;
+      top: 0;
+      background-color: #f8f9fa;
+      z-index: 10;
+      box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Buttons & Spinners */
+    .btn .spinner-border { display: none; margin-right: .5rem; }
+    .btn.loading .spinner-border { display: inline-block; }
+    .btn.loading .button-text { visibility: hidden; }
+
+    /* Login Page */
+    .login-container {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      /* Ensure this URL works or replace with a local image/color */
+      background-image: url('https://raw.githubusercontent.com/bini2024/Eri-shipping-Hub/refs/heads/main/Erishipping.jpg');
+      background-size: cover;
+      background-position: center;
+      z-index: 1000;
+    }
+    .login-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.5); /* Dark overlay for readability */
+        z-index: -1;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      padding: 2rem;
+      background-color: rgba(255, 255, 255, 0.98);
+      border-radius: 1rem;
+      box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.2);
+    }
+
+    /* Dashboard Visibility */
+    #adminContent { display: none; flex: 1; }
+    
+    .chart-container {
+      height: 300px;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loginPage" class="login-container">
+    <div class="login-overlay"></div>
+    <div class="login-card">
+      <h2 class="text-center mb-4" style="color: var(--app-primary);">Admin Login</h2>
+      <div id="loginFeedback" class="alert alert-danger d-none" role="alert"></div>
+      <form id="loginForm">
+        <div class="mb-3">
+          <label for="adminEmail" class="form-label">Email address</label>
+          <input type="email" class="form-control" id="adminEmail" required>
+        </div>
+        <div class="mb-3">
+          <label for="adminPassword" class="form-label">Password</label>
+          <input type="password" class="form-control" id="adminPassword" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100" id="loginBtn">
+          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          <span class="button-text">Login</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div id="adminContent" class="container mt-4 pb-5">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+      <h1 class="h2"><i class="fas fa-shipping-fast me-2"></i>Admin Dashboard</h1>
+      <div class="d-flex gap-2">
+        <button id="exportBtn" class="btn btn-success"><i class="fas fa-file-excel me-2"></i>Export Loads</button>
+        <button id="logoutBtn" class="btn btn-outline-danger"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
+      </div>
+    </div>
+
+    <div class="alert alert-warning small" role="alert">
+      <i class="fas fa-shield-alt me-2"></i>
+      <strong>Admin Notice:</strong> Ensure Firestore Security Rules are active. This dashboard accesses live database records.
+    </div>
+
+    <div class="row mb-4 g-3">
+      <div class="col-md-4">
+        <div class="card text-center h-100 border-primary">
+          <div class="card-body">
+            <h5 class="card-title text-primary"><i class="fas fa-users me-2"></i>Total Couriers</h5>
+            <p class="card-text display-4 fw-bold" id="totalCouriers">0</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card text-center h-100 border-primary">
+          <div class="card-body">
+            <h5 class="card-title text-primary"><i class="fas fa-box-open me-2"></i>Active Loads</h5>
+            <p class="card-text display-4 fw-bold" id="totalLoads">0</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100">
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title text-center text-primary fs-6"><i class="fas fa-chart-bar me-2"></i>Destinations</h5>
+            <div class="chart-container flex-grow-1">
+               <canvas id="loadsByDestinationChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="h5 mb-0"><i class="fas fa-users me-2"></i>Couriers Registry</span>
+        <span class="badge bg-light text-dark" id="courierCount">0</span>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <input type="text" id="searchCouriers" class="form-control" placeholder="Search couriers by name, route, or phone...">
+        </div>
+        <div class="table-scroll-container">
+          <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle" id="couriersTable">
+              <thead class="table-light">
+                <tr>
+                  <th data-sort="name">Name <i class="fas fa-sort text-muted small"></i></th>
+                  <th data-sort="phone">Phone <i class="fas fa-sort text-muted small"></i></th>
+                  <th data-sort="routeFrom">From <i class="fas fa-sort text-muted small"></i></th>
+                  <th data-sort="routeTo">To <i class="fas fa-sort text-muted small"></i></th>
+                  <th data-sort="dateAvailable">Available <i class="fas fa-sort text-muted small"></i></th>
+                  <th data-sort="comment">Comment <i class="fas fa-sort text-muted small"></i></th>
+                  <th data-sort="createdAt">Joined <i class="fas fa-sort text-muted small"></i></th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="couriersTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="h5 mb-0"><i class="fas fa-cubes me-2"></i>Loads Registry</span>
+        <span class="badge bg-light text-dark" id="loadCount">0</span>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <input type="text" id="searchLoads" class="form-control" placeholder="Search loads by country, weight, or phone...">
+        </div>
+        <div class="table-scroll-container">
+          <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle" id="loadsTable">
+              <thead class="table-light">
+                <tr>
+                  <th data-sort="from">From <i class="fas fa-sort text-muted small"></i></th>
+                  <th data-sort="to">To <i class="fas fa-sort text-muted small"></i></th>
+                  <th data-sort="weight">Weight <i class="fas fa-sort text-muted small"></i></th>
+                  <th data-sort="deadline">Deadline <i class="fas fa-sort text-muted small"></i></th>
+                  <th data-sort="phone">Phone <i class="fas fa-sort text-muted small"></i></th>
+                  <th data-sort="comment">Details <i class="fas fa-sort text-muted small"></i></th>
+                  <th data-sort="createdAt">Posted <i class="fas fa-sort text-muted small"></i></th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="loadsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="mt-auto text-center text-muted small py-3">
+        &copy; <span id="year"></span> Eri Shipping Hub. All rights reserved.
+    </footer>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+
+    // --- CONFIGURATION ---
+    // Use the keys provided in your previous snippet. 
+    const firebaseConfig = {
+      apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ", 
+      authDomain: "erishipping-e4532.firebaseapp.com",
+      projectId: "erishipping-e4532",
+      storageBucket: "erishipping-e4532.appspot.com",
+      messagingSenderId: "388550131049",
+      appId: "1:388550131049:web:e9ac1784ab8e5fabc811f8"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // DOM Elements
+    const elements = {
+        loginPage: document.getElementById('loginPage'),
+        adminContent: document.getElementById('adminContent'),
+        loginForm: document.getElementById('loginForm'),
+        loginFeedback: document.getElementById('loginFeedback'),
+        loginBtn: document.getElementById('loginBtn'),
+        logoutBtn: document.getElementById('logoutBtn'),
+        exportBtn: document.getElementById('exportBtn'),
+        stats: {
+            couriers: document.getElementById('totalCouriers'),
+            loads: document.getElementById('totalLoads'),
+            courierCount: document.getElementById('courierCount'),
+            loadCount: document.getElementById('loadCount')
+        },
+        tables: {
+            couriers: document.getElementById('couriersTableBody'),
+            loads: document.getElementById('loadsTableBody'),
+            courierHeader: document.getElementById('couriersTable'),
+            loadHeader: document.getElementById('loadsTable')
+        },
+        search: {
+            couriers: document.getElementById('searchCouriers'),
+            loads: document.getElementById('searchLoads')
+        },
+        chart: document.getElementById('loadsByDestinationChart')
+    };
+
+    // Local State
+    let state = {
+        couriers: [],
+        loads: [],
+        chartInstance: null
+    };
+
+    // --- AUTHENTICATION ---
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            console.log("Admin logged in:", user.email);
+            elements.loginPage.style.display = 'none';
+            elements.adminContent.style.display = 'block';
+            elements.loginForm.reset();
+            fetchData();
+        } else {
+            console.log("Logged out.");
+            elements.loginPage.style.display = 'flex';
+            elements.adminContent.style.display = 'none';
+            clearData();
+        }
+    });
+
+    elements.loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('adminEmail').value;
+        const password = document.getElementById('adminPassword').value;
+
+        toggleLoading(elements.loginBtn, true);
+        elements.loginFeedback.classList.add('d-none');
+
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+        } catch (error) {
+            elements.loginFeedback.textContent = "Access Denied: " + error.message;
+            elements.loginFeedback.classList.remove('d-none');
+        } finally {
+            toggleLoading(elements.loginBtn, false);
+        }
+    });
+
+    elements.logoutBtn.addEventListener('click', () => signOut(auth));
+
+    // --- DATA HANDLING ---
+    async function fetchData() {
+        try {
+            // 1. Fetch Couriers
+            const couriersSnap = await getDocs(query(collection(db, "couriers"), orderBy('createdAt', 'desc')));
+            state.couriers = couriersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            // 2. Fetch Loads
+            const loadsSnap = await getDocs(query(collection(db, "loads"), orderBy('createdAt', 'desc')));
+            const now = new Date();
+            now.setHours(0,0,0,0);
+            
+            // Calculate Active Loads (Future Deadlines)
+            state.loads = loadsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const activeLoads = state.loads.filter(l => {
+                const d = l.deadline ? new Date(l.deadline) : null;
+                return d && d >= now;
+            });
+
+            // 3. Render
+            renderTable('couriers', state.couriers);
+            renderTable('loads', state.loads);
+            updateStats(state.couriers.length, activeLoads.length);
+            renderChart(activeLoads); // Chart only shows active loads
+
+        } catch (error) {
+            console.error("Fetch Error:", error);
+            alert("Error loading data. Check console for details.");
+        }
+    }
+
+    function clearData() {
+        state.couriers = [];
+        state.loads = [];
+        elements.tables.couriers.innerHTML = '';
+        elements.tables.loads.innerHTML = '';
+        if(state.chartInstance) state.chartInstance.destroy();
+    }
+
+    // --- RENDERING ---
+    function renderTable(type, data) {
+        const tbody = elements.tables[type];
+        tbody.innerHTML = '';
+
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">No records found.</td></tr>`;
+            return;
+        }
+
+        data.forEach(item => {
+            const row = tbody.insertRow();
+            
+            // Helper to safe string
+            const val = (v) => v || '<span class="text-muted small">N/A</span>';
+            const date = (t) => t?.toDate ? t.toDate().toLocaleDateString() : val(null);
+
+            if (type === 'couriers') {
+                row.innerHTML = `
+                    <td class="fw-bold">${val(item.name)}</td>
+                    <td>${val(item.phone)}</td>
+                    <td>${val(item.routeFrom)}</td>
+                    <td>${val(item.routeTo)}</td>
+                    <td>${val(item.dateAvailable)}</td>
+                    <td>${val(item.comment)}</td>
+                    <td><small>${date(item.createdAt)}</small></td>
+                    <td><button class="btn btn-outline-danger btn-sm delete-btn" data-id="${item.id}" data-type="couriers"><i class="fas fa-trash"></i></button></td>
+                `;
+            } else {
+                row.innerHTML = `
+                    <td>${val(item.from)}</td>
+                    <td class="fw-bold text-primary">${val(item.to)}</td>
+                    <td>${val(item.weight)} kg</td>
+                    <td>${val(item.deadline)}</td>
+                    <td>${val(item.phone)}</td>
+                    <td>${val(item.comment)}</td>
+                    <td><small>${date(item.createdAt)}</small></td>
+                    <td><button class="btn btn-outline-danger btn-sm delete-btn" data-id="${item.id}" data-type="loads"><i class="fas fa-trash"></i></button></td>
+                `;
+            }
+        });
+    }
+
+    function updateStats(cCount, lCount) {
+        elements.stats.couriers.textContent = cCount;
+        elements.stats.courierCount.textContent = cCount;
+        elements.stats.loads.textContent = lCount;
+        elements.stats.loadCount.textContent = lCount;
+    }
+
+    // --- CHARTING ---
+    function renderChart(loads) {
+        if (state.chartInstance) state.chartInstance.destroy();
+
+        const counts = {};
+        loads.forEach(l => {
+            const dest = l.to || 'Unknown';
+            counts[dest] = (counts[dest] || 0) + 1;
+        });
+
+        const ctx = elements.chart.getContext('2d');
+        state.chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(counts),
+                datasets: [{
+                    label: 'Active Loads',
+                    data: Object.values(counts),
+                    backgroundColor: '#0a3d62',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            }
+        });
+    }
+
+    // --- FILTER & SORT ---
+    function setupFilter(inputId, type) {
+        document.getElementById(inputId).addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const source = type === 'couriers' ? state.couriers : state.loads;
+            
+            const filtered = source.filter(item => 
+                Object.values(item).some(val => 
+                    String(val).toLowerCase().includes(term)
+                )
+            );
+            renderTable(type, filtered);
+        });
+    }
+    setupFilter('searchCouriers', 'couriers');
+    setupFilter('searchLoads', 'loads');
+
+    // Generic Sort Handler
+    [elements.tables.courierHeader, elements.tables.loadHeader].forEach(table => {
+        table.addEventListener('click', (e) => {
+            const th = e.target.closest('th');
+            if (!th || !th.dataset.sort) return;
+
+            const type = table.id === 'couriersTable' ? 'couriers' : 'loads';
+            const key = th.dataset.sort;
+            let order = th.dataset.order === 'asc' ? 'desc' : 'asc';
+
+            // Reset icons
+            table.querySelectorAll('i').forEach(i => i.className = 'fas fa-sort text-muted small');
+            th.querySelector('i').className = `fas fa-sort-${order === 'asc' ? 'up' : 'down'}`;
+            th.dataset.order = order;
+
+            const source = type === 'couriers' ? state.couriers : state.loads;
+            const sorted = [...source].sort((a, b) => {
+                let va = a[key], vb = b[key];
+                
+                // Handle Dates
+                if (key === 'createdAt' && va?.toDate) va = va.toDate();
+                if (key === 'createdAt' && vb?.toDate) vb = vb.toDate();
+                
+                if (va < vb) return order === 'asc' ? -1 : 1;
+                if (va > vb) return order === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            renderTable(type, sorted);
+        });
+    });
+
+    // --- ACTIONS (DELETE & EXPORT) ---
+    document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('.delete-btn');
+        if (!btn) return;
+
+        if (!confirm("Are you sure? This cannot be undone.")) return;
+
+        const { id, type } = btn.dataset;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+        try {
+            await deleteDoc(doc(db, type, id)); // type matches collection name
+            // Remove from local state
+            state[type] = state[type].filter(i => i.id !== id);
+            // Re-render
+            renderTable(type, state[type]);
+            alert("Record deleted.");
+        } catch (err) {
+            console.error(err);
+            alert("Delete failed: " + err.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-trash"></i>';
+        }
+    });
+
+    elements.exportBtn.addEventListener('click', () => {
+        if(!state.loads.length) return alert("No data to export.");
+        
+        const headers = ["ID", "From", "To", "Weight", "Deadline", "Phone", "Comment", "Created At"];
+        const rows = state.loads.map(l => [
+            l.id, l.from, l.to, l.weight, l.deadline, l.phone, 
+            `"${(l.comment||'').replace(/"/g, '""')}"`, // Escape CSV
+            l.createdAt?.toDate ? l.createdAt.toDate().toLocaleDateString() : ''
+        ]);
+
+        const csvContent = "data:text/csv;charset=utf-8," 
+            + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+        
+        const link = document.createElement("a");
+        link.href = encodeURI(csvContent);
+        link.download = `eri_shipping_loads_${new Date().toISOString().slice(0,10)}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+
+    // Utilities
+    function toggleLoading(btn, isLoading) {
+        btn.disabled = isLoading;
+        if(isLoading) btn.classList.add('loading');
+        else btn.classList.remove('loading');
+    }
+
+    // Init Footer
+    document.addEventListener('DOMContentLoaded', () => {
+        const y = document.getElementById("year");
+        if(y) y.textContent = new Date().getFullYear();
+    });
+
+  </script>
+</body>
+</html>
       border: 1px solid rgba(0, 0, 0, 0.125);
       background-color: #ffffff;
     }
