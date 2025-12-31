@@ -11,9 +11,9 @@
 
   <style>
     :root {
-       --app-primary: #0a3d62;
+       --app-primary: #0a3d62; /* Dark Navy Blue */
        --app-secondary: #1e90ff;
-       --bs-primary: var(--app-primary);
+       --bs-primary: var(--app-primary); 
        --bs-secondary: var(--app-secondary);
        --bs-border-color: #ced4da;
     }
@@ -25,6 +25,7 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      margin: 0;
     }
 
     .container { max-width: 1200px; }
@@ -52,6 +53,7 @@
       overflow-y: auto;
       border: 1px solid var(--bs-border-color);
       border-radius: 0.5rem;
+      background: white;
     }
     .table-scroll-container table thead th {
       position: sticky;
@@ -62,6 +64,9 @@
     }
 
     /* Buttons & Spinners */
+    .btn-primary { background-color: var(--app-primary); border-color: var(--app-primary); }
+    .btn-primary:hover { background-color: #082d49; border-color: #082d49; }
+    
     .btn .spinner-border { display: none; margin-right: .5rem; }
     .btn.loading .spinner-border { display: inline-block; }
     .btn.loading .button-text { visibility: hidden; }
@@ -73,25 +78,28 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      /* Ensure this URL works or replace with a local image/color */
+      /* Background Image */
       background-image: url('https://raw.githubusercontent.com/bini2024/Eri-shipping-Hub/refs/heads/main/Erishipping.jpg');
       background-size: cover;
       background-position: center;
-      z-index: 1000;
+      z-index: 2000; /* Ensure it stays on top */
     }
+    
+    /* Dark overlay to make login pop */
     .login-overlay {
         position: absolute;
         top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0, 0, 0, 0.5); /* Dark overlay for readability */
+        background: rgba(0, 0, 0, 0.6); 
         z-index: -1;
     }
+
     .login-card {
       width: 100%;
       max-width: 400px;
-      padding: 2rem;
-      background-color: rgba(255, 255, 255, 0.98);
+      padding: 2.5rem;
+      background-color: #ffffff;
       border-radius: 1rem;
-      box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.2);
+      box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
     }
 
     /* Dashboard Visibility */
@@ -108,7 +116,7 @@
   <div id="loginPage" class="login-container">
     <div class="login-overlay"></div>
     <div class="login-card">
-      <h2 class="text-center mb-4" style="color: var(--app-primary);">Admin Login</h2>
+      <h2 class="text-center mb-4" style="color: var(--app-primary); font-weight: bold;">Admin Login</h2>
       <div id="loginFeedback" class="alert alert-danger d-none" role="alert"></div>
       <form id="loginForm">
         <div class="mb-3">
@@ -119,7 +127,7 @@
           <label for="adminPassword" class="form-label">Password</label>
           <input type="password" class="form-control" id="adminPassword" required>
         </div>
-        <button type="submit" class="btn btn-primary w-100" id="loginBtn">
+        <button type="submit" class="btn btn-primary w-100 py-2" id="loginBtn">
           <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
           <span class="button-text">Login</span>
         </button>
@@ -130,37 +138,37 @@
   <div id="adminContent" class="container mt-4 pb-5">
     
     <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
-      <h1 class="h2"><i class="fas fa-shipping-fast me-2"></i>Admin Dashboard</h1>
+      <h1 class="h2" style="color: var(--app-primary);"><i class="fas fa-shipping-fast me-2"></i>Admin Dashboard</h1>
       <div class="d-flex gap-2">
         <button id="exportBtn" class="btn btn-success"><i class="fas fa-file-excel me-2"></i>Export Loads</button>
         <button id="logoutBtn" class="btn btn-outline-danger"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
       </div>
     </div>
 
-    <div class="alert alert-warning small" role="alert">
+    <div class="alert alert-warning small shadow-sm" role="alert">
       <i class="fas fa-shield-alt me-2"></i>
       <strong>Admin Notice:</strong> Ensure Firestore Security Rules are active. This dashboard accesses live database records.
     </div>
 
     <div class="row mb-4 g-3">
       <div class="col-md-4">
-        <div class="card text-center h-100 border-primary">
+        <div class="card text-center h-100 border-0 shadow-sm">
           <div class="card-body">
             <h5 class="card-title text-primary"><i class="fas fa-users me-2"></i>Total Couriers</h5>
-            <p class="card-text display-4 fw-bold" id="totalCouriers">0</p>
+            <p class="card-text display-4 fw-bold text-dark" id="totalCouriers">0</p>
           </div>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="card text-center h-100 border-primary">
+        <div class="card text-center h-100 border-0 shadow-sm">
           <div class="card-body">
             <h5 class="card-title text-primary"><i class="fas fa-box-open me-2"></i>Active Loads</h5>
-            <p class="card-text display-4 fw-bold" id="totalLoads">0</p>
+            <p class="card-text display-4 fw-bold text-dark" id="totalLoads">0</p>
           </div>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="card h-100">
+        <div class="card h-100 border-0 shadow-sm">
           <div class="card-body d-flex flex-column">
             <h5 class="card-title text-center text-primary fs-6"><i class="fas fa-chart-bar me-2"></i>Destinations</h5>
             <div class="chart-container flex-grow-1">
@@ -182,7 +190,7 @@
         </div>
         <div class="table-scroll-container">
           <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle" id="couriersTable">
+            <table class="table table-striped table-hover align-middle mb-0" id="couriersTable">
               <thead class="table-light">
                 <tr>
                   <th data-sort="name">Name <i class="fas fa-sort text-muted small"></i></th>
@@ -213,7 +221,7 @@
         </div>
         <div class="table-scroll-container">
           <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle" id="loadsTable">
+            <table class="table table-striped table-hover align-middle mb-0" id="loadsTable">
               <thead class="table-light">
                 <tr>
                   <th data-sort="from">From <i class="fas fa-sort text-muted small"></i></th>
@@ -247,7 +255,6 @@
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 
     // --- CONFIGURATION ---
-    // Use the keys provided in your previous snippet. 
     const firebaseConfig = {
       apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ", 
       authDomain: "erishipping-e4532.firebaseapp.com",
@@ -282,10 +289,6 @@
             loads: document.getElementById('loadsTableBody'),
             courierHeader: document.getElementById('couriersTable'),
             loadHeader: document.getElementById('loadsTable')
-        },
-        search: {
-            couriers: document.getElementById('searchCouriers'),
-            loads: document.getElementById('searchLoads')
         },
         chart: document.getElementById('loadsByDestinationChart')
     };
@@ -345,8 +348,8 @@
             const now = new Date();
             now.setHours(0,0,0,0);
             
-            // Calculate Active Loads (Future Deadlines)
             state.loads = loadsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            // Filter: Active loads (deadline is today or future)
             const activeLoads = state.loads.filter(l => {
                 const d = l.deadline ? new Date(l.deadline) : null;
                 return d && d >= now;
@@ -356,11 +359,11 @@
             renderTable('couriers', state.couriers);
             renderTable('loads', state.loads);
             updateStats(state.couriers.length, activeLoads.length);
-            renderChart(activeLoads); // Chart only shows active loads
+            renderChart(activeLoads);
 
         } catch (error) {
             console.error("Fetch Error:", error);
-            alert("Error loading data. Check console for details.");
+            // Don't show alert immediately if permission denied, just log
         }
     }
 
@@ -493,6 +496,10 @@
                 if (key === 'createdAt' && va?.toDate) va = va.toDate();
                 if (key === 'createdAt' && vb?.toDate) vb = vb.toDate();
                 
+                // Handle Strings (Case Insensitive)
+                if (typeof va === 'string') va = va.toLowerCase();
+                if (typeof vb === 'string') vb = vb.toLowerCase();
+
                 if (va < vb) return order === 'asc' ? -1 : 1;
                 if (va > vb) return order === 'asc' ? 1 : -1;
                 return 0;
@@ -502,7 +509,7 @@
         });
     });
 
-    // --- ACTIONS (DELETE & EXPORT) ---
+    // --- ACTIONS ---
     document.addEventListener('click', async (e) => {
         const btn = e.target.closest('.delete-btn');
         if (!btn) return;
@@ -514,12 +521,11 @@
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
         try {
-            await deleteDoc(doc(db, type, id)); // type matches collection name
-            // Remove from local state
+            await deleteDoc(doc(db, type, id));
             state[type] = state[type].filter(i => i.id !== id);
-            // Re-render
             renderTable(type, state[type]);
-            alert("Record deleted.");
+            // Refresh stats slightly imperfectly until full refresh, but faster
+            updateStats(state.couriers.length, state.loads.length);
         } catch (err) {
             console.error(err);
             alert("Delete failed: " + err.message);
@@ -534,7 +540,7 @@
         const headers = ["ID", "From", "To", "Weight", "Deadline", "Phone", "Comment", "Created At"];
         const rows = state.loads.map(l => [
             l.id, l.from, l.to, l.weight, l.deadline, l.phone, 
-            `"${(l.comment||'').replace(/"/g, '""')}"`, // Escape CSV
+            `"${(l.comment||'').replace(/"/g, '""')}"`, 
             l.createdAt?.toDate ? l.createdAt.toDate().toLocaleDateString() : ''
         ]);
 
@@ -565,703 +571,4 @@
   </script>
 </body>
 </html>
-      border: 1px solid rgba(0, 0, 0, 0.125);
-      background-color: #ffffff;
-    }
 
-    .card-header {
-      background-color: var(--app-primary);
-      color: white;
-      border-top-left-radius: 0.75rem;
-      border-top-right-radius: 0.75rem;
-      font-weight: bold;
-    }
-
-    h1, h2, h3, h4, h5, h6 {
-      color: var(--bs-heading-color);
-    }
-
-    .table {
-      margin-bottom: 0; /* Remove bottom margin from tables inside scroll container */
-    }
-
-    .table th {
-      cursor: pointer; /* Indicate sortable columns */
-      user-select: none;
-    }
-    .table th:hover {
-      background-color: #e9ecef;
-    }
-
-    .table th i.fa-sort,
-    .table th i.fa-sort-up,
-    .table th i.fa-sort-down {
-      margin-left: 5px;
-    }
-
-    .btn .spinner-border {
-      display: none;
-      margin-right: .5rem;
-    }
-    .btn.loading .spinner-border {
-      display: inline-block;
-    }
-    .btn.loading .button-text {
-      visibility: hidden;
-    }
-
-    /* Styles for login page layout */
-    .login-container {
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background-image: url('https://raw.githubusercontent.com/bini2024/Eri-shipping-Hub/refs/heads/main/Erishipping.jpg'); /* Use your background */
-      background-size: cover;
-      background-position: center center;
-    }
-
-    .login-card {
-      width: 100%;
-      max-width: 400px;
-      padding: 2rem;
-      background-color: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(5px);
-      border-radius: 1rem;
-      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-    }
-    .login-card h2 {
-      text-align: center;
-      color: var(--app-primary);
-      margin-bottom: 1.5rem;
-    }
-
-    /* Hide admin content until authenticated */
-    #adminContent {
-      display: none;
-    }
-
-    /* --- Styles for Scrollable Data Sections --- */
-    .table-scroll-container {
-      max-height: 400px; /* Adjust height as needed */
-      overflow-y: auto; /* Add vertical scrollbar */
-      border: 1px solid var(--bs-border-color); /* Optional: Add border */
-      border-radius: 0.5rem; /* Optional: Add border radius */
-    }
-
-    /* Make table header sticky when scrolling */
-    .table-scroll-container table thead th {
-      position: sticky;
-      top: 0;
-      background-color: #f8f9fa; /* Match body background or use a light color */
-      z-index: 10; /* Ensure it stays above scrolling content */
-      box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1); /* Optional: Add subtle shadow */
-    }
-
-    .chart-container {
-      height: 300px; /* Fixed height for the chart area */
-      position: relative; /* Needed for Chart.js responsive sizing */
-      margin-bottom: 1rem; /* Add space below the chart */
-    }
-
-
-  </style>
-</head>
-<body>
-
-    <div id="loginPage" class="login-container">
-    <div class="login-card">
-      <h2>Admin Login</h2>
-      <div id="loginFeedback" class="alert alert-danger d-none" role="alert"></div>
-      <form id="loginForm">
-        <div class="mb-3">
-          <label for="adminEmail" class="form-label">Email address</label>
-          <input type="email" class="form-control" id="adminEmail" required>
-        </div>
-        <div class="mb-3">
-          <label for="adminPassword" class="form-label">Password</label>
-          <input type="password" class="form-control" id="adminPassword" required>
-        </div>
-        <button type="submit" class="btn btn-primary w-100" id="loginBtn">
-          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-          <span class="button-text">Login</span>
-        </button>
-      </form>
-    </div>
-  </div>
-
-    <div id="adminContent" class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h1>Admin Dashboard</h1>
-      <button id="logoutBtn" class="btn btn-outline-secondary"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
-    </div>
-
-        <div class="alert alert-danger" role="alert">
-      <strong>SECURITY WARNING:</strong> This client-side code is for UI control only. You MUST configure Firestore Security Rules to protect your data and prevent unauthorized access or modification. Ensure only authenticated admin users can read and write sensitive data.
-    </div>
-    <div class="alert alert-info" role="alert">
-      <strong>NOTE on Visitor Analytics:</strong> This dashboard displays data from your Firestore database (couriers, loads). Comprehensive website visitor tracking (unique visits, traffic sources, user behavior) requires dedicated analytics tools like Google Analytics and is not included here.
-    </div>
-
-
-        <div class="row mb-4 g-3">
-      <div class="col-md-4">
-        <div class="card text-center h-100">           <div class="card-body">
-            <h5 class="card-title"><i class="fas fa-users me-2"></i>Total Couriers</h5>
-            <p class="card-text fs-3" id="totalCouriers">0</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card text-center h-100">           <div class="card-body">
-            <h5 class="card-title"><i class="fas fa-box me-2"></i>Total Active Loads</h5>
-            <p class="card-text fs-3" id="totalLoads">0</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card h-100">           <div class="card-body d-flex flex-column">             <h5 class="card-title text-center"><i class="fas fa-route me-2"></i>Loads by Destination</h5>
-                        <div class="chart-container flex-grow-1">                <canvas id="loadsByDestinationChart"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-        <div class="card mb-4">
-      <div class="card-header">
-        <h4 class="mb-0"><i class="fas fa-users me-2"></i>Couriers (<span id="courierCount">0</span>)</h4>
-      </div>
-      <div class="card-body">
-                <div class="mb-3">
-          <input type="text" id="searchCouriers" class="form-control" placeholder="Search couriers...">
-        </div>
-                <div class="table-scroll-container">
-          <div class="table-responsive">             <table class="table table-striped table-hover" id="couriersTable">
-              <thead>
-                <tr>
-                                     <th data-sort="name">Name <i class="fas fa-sort"></i></th>
-                  <th data-sort="phone">Phone <i class="fas fa-sort"></i></th>
-                  <th data-sort="routeFrom">From <i class="fas fa-sort"></i></th>
-                  <th data-sort="routeTo">To <i class="fas fa-sort"></i></th>
-                  <th data-sort="dateAvailable">Available <i class="fas fa-sort"></i></th>
-                  <th data-sort="comment">Comment <i class="fas fa-sort"></i></th>
-                  <th data-sort="createdAt">Registered <i class="fas fa-sort"></i></th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="couriersTableBody">
-                              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-
-        <div class="card mb-4">
-      <div class="card-header">
-        <h4 class="mb-0"><i class="fas fa-box me-2"></i>Loads (<span id="loadCount">0</span>)</h4>
-      </div>
-      <div class="card-body">
-                <div class="mb-3">
-          <input type="text" id="searchLoads" class="form-control" placeholder="Search loads...">
-        </div>
-                <div class="table-scroll-container">
-          <div class="table-responsive">             <table class="table table-striped table-hover" id="loadsTable">
-              <thead>
-                <tr>
-                                     <th data-sort="from">From <i class="fas fa-sort"></i></th>
-                  <th data-sort="to">To <i class="fas fa-sort"></i></th>
-                  <th data-sort="weight">Weight <i class="fas fa-sort"></i></th>
-                  <th data-sort="deadline">Deadline <i class="fas fa-sort"></i></th>
-                  <th data-sort="phone">Phone <i class="fas fa-sort"></i></th>
-                  <th data-sort="comment">Comment <i class="fas fa-sort"></i></th>
-                  <th data-sort="createdAt">Posted <i class="fas fa-sort"></i></th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="loadsTableBody">
-                              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div>   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script type="module">
-    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
-
-    // Replace with your actual Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ", // IMPORTANT: Keep your API key secure
-      authDomain: "erishipping-e4532.firebaseapp.com",
-      projectId: "erishipping-e4532",
-      storageBucket: "erishipping-e4532.appspot.com",
-      messagingSenderId: "388550131049",
-      appId: "1:388550131049:web:e9ac1784ab8e5fabc811f8"
-    };
-
-    // Initialize Firebase
-    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-
-    // Firebase Collections
-    const couriersRef = collection(db, "couriers");
-    const loadsRef = collection(db, "loads"); // Assuming your loads collection is named "loads"
-
-    // DOM Elements
-    const loginPage = document.getElementById('loginPage');
-    const adminContent = document.getElementById('adminContent');
-    const loginForm = document.getElementById('loginForm');
-    const loginFeedback = document.getElementById('loginFeedback');
-    const loginBtn = document.getElementById('loginBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-
-    const totalCouriersElement = document.getElementById('totalCouriers');
-    const totalLoadsElement = document.getElementById('totalLoads');
-    const courierCountElement = document.getElementById('courierCount');
-    const loadCountElement = document.getElementById('loadCount');
-    const couriersTableBody = document.getElementById('couriersTableBody');
-    const loadsTableBody = document.getElementById('loadsTableBody');
-    const searchCouriersInput = document.getElementById('searchCouriers');
-    const searchLoadsInput = document.getElementById('searchLoads');
-    const couriersTable = document.getElementById('couriersTable');
-    const loadsTable = document.getElementById('loadsTable');
-    const loadsByDestinationChartCanvas = document.getElementById('loadsByDestinationChart');
-
-    // Variables to store original data for client-side filtering/sorting
-    let allCouriers = [];
-    let allLoads = [];
-    let loadsByDestinationChart = null; // To hold the Chart.js instance
-
-    // --- Authentication State Listener ---
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            // User is signed in. Check if they are an admin (requires additional logic, e.g., custom claim or checking an 'admins' collection)
-            // For simplicity in this client-side example, we'll assume ANY logged-in user is an admin for UI purposes.
-            // *** IMPORTANT *** Implement proper admin role checking using Firebase Auth Custom Claims or a separate 'admins' collection
-            // and Firestore Security Rules for production.
-
-            console.log("User is logged in:", user.email);
-            loginPage.style.display = 'none';
-            adminContent.style.display = 'block';
-
-            // Fetch and display data
-            fetchDataAndRender();
-
-        } else {
-            // User is signed out.
-            console.log("No user logged in.");
-            loginPage.style.display = 'flex'; // Show login page
-            adminContent.style.display = 'none'; // Hide admin content
-            // Clear data displays if needed
-            couriersTableBody.innerHTML = '';
-            loadsTableBody.innerHTML = '';
-            totalCouriersElement.textContent = '0';
-            totalLoadsElement.textContent = '0';
-            courierCountElement.textContent = '0';
-            loadCountElement.textContent = '0';
-            // Destroy chart if it exists
-            if (loadsByDestinationChart) {
-                loadsByDestinationChart.destroy();
-                loadsByDestinationChart = null;
-            }
-        }
-    });
-
-    // --- Login/Logout ---
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('adminEmail').value;
-        const password = document.getElementById('adminPassword').value;
-
-        setButtonLoadingState(loginBtn, true);
-        loginFeedback.classList.add('d-none'); // Hide previous feedback
-
-        try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            // User is signed in, onAuthStateChanged listener will handle UI update
-            console.log("Login successful:", userCredential.user.email);
-            loginForm.reset(); // Clear form
-        } catch (error) {
-            console.error("Login failed:", error);
-            loginFeedback.textContent = `Login failed: ${error.message}`;
-            loginFeedback.classList.remove('d-none'); // Show error
-        } finally {
-            setButtonLoadingState(loginBtn, false);
-        }
-    });
-
-    logoutBtn.addEventListener('click', async () => {
-        try {
-            await signOut(auth);
-            // User is signed out, onAuthStateChanged listener will handle UI update
-            console.log("Logout successful.");
-        } catch (error) {
-            console.error("Logout failed:", error);
-            // Optionally show feedback for logout failure
-            alert("Logout failed: " + error.message); // Simple alert for admin
-        }
-    });
-
-    // --- Fetch and Render Data ---
-    async function fetchDataAndRender() {
-        try {
-            // Fetch Couriers
-            console.log("Fetching couriers...");
-            const courierSnapshot = await getDocs(query(couriersRef, orderBy('createdAt', 'desc'))); // Order by creation date
-            allCouriers = courierSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            console.log("Couriers fetched:", allCouriers.length);
-            renderCouriersTable(allCouriers);
-            updateCourierStats(allCouriers.length);
-
-            // Fetch Loads
-            console.log("Fetching loads...");
-            const loadSnapshot = await getDocs(query(loadsRef, orderBy('createdAt', 'desc'))); // Order by creation date
-            // Filter out loads with past deadlines for active count and display
-            const now = new Date();
-            now.setHours(0, 0, 0, 0);
-            allLoads = loadSnapshot.docs
-                .map(doc => ({ id: doc.id, ...doc.data() }))
-                .filter(load => {
-                    // Check if deadline is valid and in the future/today
-                    const deadlineDate = load.deadline ? new Date(load.deadline + 'T00:00:00') : null;
-                    return deadlineDate && deadlineDate >= now;
-                });
-            console.log("Loads fetched (active/future):", allLoads.length);
-            renderLoadsTable(allLoads);
-            updateLoadStats(allLoads);
-
-        } catch (error) {
-            console.error("Error fetching data:", error);
-            // Display error message on the admin page
-            alert("Error fetching data: " + error.message); // Simple alert for admin
-        }
-    }
-
-    function renderCouriersTable(couriers) {
-        couriersTableBody.innerHTML = ''; // Clear table
-        if (couriers.length === 0) {
-            // Calculate colspan dynamically
-            const colSpan = couriersTable.querySelectorAll('thead th').length;
-            couriersTableBody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center">No couriers found.</td></tr>`;
-            return;
-        }
-
-        couriers.forEach(courier => {
-            const row = couriersTableBody.insertRow();
-            row.innerHTML = `
-              <td>${courier.name || 'N/A'}</td>
-              <td>${courier.phone || 'N/A'}</td>
-              <td>${courier.routeFrom || 'N/A'}</td>
-              <td>${courier.routeTo || 'N/A'}</td>
-              <td>${courier.dateAvailable || 'N/A'}</td>
-              <td>${courier.comment || '<i>None</i>'}</td>
-              <td>${courier.createdAt?.toDate().toLocaleDateString() || 'N/A'}</td>
-              <td>
-                <button class="btn btn-danger btn-sm delete-btn" data-id="${courier.id}" data-type="courier">Delete</button>
-              </td>
-            `;
-        });
-    }
-
-    function renderLoadsTable(loads) {
-        loadsTableBody.innerHTML = ''; // Clear table
-        if (loads.length === 0) {
-            // Calculate colspan dynamically
-            const colSpan = loadsTable.querySelectorAll('thead th').length;
-            loadsTableBody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center">No loads found.</td></tr>`;
-            return;
-        }
-
-        loads.forEach(load => {
-            const row = loadsTableBody.insertRow();
-            row.innerHTML = `
-              <td>${load.from || 'N/A'}</td>
-              <td>${load.to || 'N/A'}</td>
-              <td>${load.weight || 'N/A'} kg</td>
-              <td>${load.deadline || 'N/A'}</td>
-              <td>${load.phone || 'N/A'}</td>
-              <td>${load.comment || '<i>None</i>'}</td>
-              <td>${load.createdAt?.toDate().toLocaleDateString() || 'N/A'}</td>
-              <td>
-                <button class="btn btn-danger btn-sm delete-btn" data-id="${load.id}" data-type="load">Delete</button>
-              </td>
-            `;
-        });
-    }
-
-    function updateCourierStats(count) {
-        totalCouriersElement.textContent = count;
-        courierCountElement.textContent = count;
-    }
-
-    function updateLoadStats(loads) {
-        totalLoadsElement.textContent = loads.length;
-        loadCountElement.textContent = loads.length;
-
-        // Calculate loads per destination for the chart
-        const loadsByDestination = loads.reduce((acc, load) => {
-            const destination = load.to || 'Unknown';
-            acc[destination] = (acc[destination] || 0) + 1;
-            return acc;
-        }, {});
-
-        renderLoadsByDestinationChart(loadsByDestination);
-    }
-
-    function renderLoadsByDestinationChart(data) {
-        // Destroy previous chart instance if it exists
-        if (loadsByDestinationChart) {
-            loadsByDestinationChart.destroy();
-        }
-
-        const labels = Object.keys(data);
-        const counts = Object.values(data);
-
-        // Get the canvas context
-        const ctx = loadsByDestinationChartCanvas.getContext('2d');
-
-        loadsByDestinationChart = new Chart(ctx, { // Use the context here
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: '# of Loads',
-                    data: counts,
-                    backgroundColor: 'rgba(10, 61, 98, 0.8)', // Using your primary color with alpha
-                    borderColor: 'rgba(10, 61, 98, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false, // Allow chart to resize freely within its container
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            // Ensure ticks are integers
-                            callback: function(value) { if (Number.isInteger(value)) { return value; } },
-                            stepSize: 1 // Ensure steps are by 1
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false // Hide legend
-                    },
-                    title: {
-                        display: true,
-                        text: 'Loads by Destination Country'
-                    }
-                }
-            }
-        });
-    }
-
-
-    // --- Client-Side Table Filtering ---
-    function filterTable(tableBody, data, searchTerm) {
-        tableBody.innerHTML = ''; // Clear table body
-        const lowerCaseSearchTerm = searchTerm.toLowerCase();
-        const filteredData = data.filter(item =>
-            Object.values(item).some(value =>
-                String(value).toLowerCase().includes(lowerCaseSearchTerm)
-            )
-        );
-
-        if (filteredData.length === 0) {
-            // Calculate colspan dynamically
-            const colSpan = tableBody.previousElementSibling.querySelector('th').length;
-            tableBody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center">No matching records found.</td></tr>`;
-        } else {
-            if (tableBody.id === 'couriersTableBody') {
-                renderCouriersTable(filteredData);
-            } else if (tableBody.id === 'loadsTableBody') {
-                renderLoadsTable(filteredData);
-            }
-        }
-    }
-
-    searchCouriersInput.addEventListener('input', (e) => {
-        filterTable(couriersTableBody, allCouriers, e.target.value);
-    });
-
-    searchLoadsInput.addEventListener('input', (e) => {
-        filterTable(loadsTableBody, allLoads, e.target.value);
-    });
-
-
-    // --- Client-Side Table Sorting ---
-    function sortTable(tableBody, data, key, order) {
-        const sortedData = [...data].sort((a, b) => {
-            const valueA = a[key];
-            const valueB = b[key];
-
-            if (valueA === valueB) return 0;
-
-            // Handle date sorting (assumingYYYY-MM-DD string or Firebase Timestamp)
-            if (key === 'dateAvailable' || key === 'deadline') {
-                const dateA = valueA ? new Date(valueA) : null;
-                const dateB = valueB ? new Date(valueB) : null;
-                if (!dateA && !dateB) return 0;
-                if (!dateA) return order === 'asc' ? -1 : 1;
-                if (!dateB) return order === 'asc' ? 1 : -1;
-                return order === 'asc' ? dateA.getTime() - dateB.getTime() : dateB.getTime() - dateA.getTime();
-            }
-
-            // Handle number sorting (e.g., weight)
-            if (typeof valueA === 'number' && typeof valueB === 'number') {
-                return order === 'asc' ? valueA - valueB : valueB - valueA;
-            }
-
-            // Handle Firebase Timestamp sorting
-            if (valueA?.toDate && valueB?.toDate) {
-                const timeA = valueA.toDate().getTime();
-                const timeB = valueB.toDate().getTime();
-                return order === 'asc' ? timeA - timeB : timeB - timeA;
-            }
-
-
-            // Default: Locale-aware string comparison
-            const stringA = String(valueA || '').toLowerCase();
-            const stringB = String(valueB || '').toLowerCase();
-            if (stringA < stringB) return order === 'asc' ? -1 : 1;
-            if (stringA > stringB) return order === 'asc' ? 1 : -1;
-            return 0;
-        });
-
-        // Re-render the table with sorted data
-        if (tableBody.id === 'couriersTableBody') {
-            renderCouriersTable(sortedData);
-        } else if (tableBody.id === 'loadsTableBody') {
-            renderLoadsTable(sortedData);
-        }
-    }
-
-    // Add click listeners to table headers for sorting (using event delegation)
-    couriersTable.addEventListener('click', (e) => handleTableSort(e, 'courier'));
-    loadsTable.addEventListener('click', (e) => handleTableSort(e, 'load'));
-
-
-    function handleTableSort(event, type) {
-        const th = event.target.closest('th');
-        if (!th || !th.dataset.sort) return; // Not a sortable header
-
-        const table = th.closest('table');
-        const tableBody = table.querySelector('tbody');
-        const key = th.dataset.sort;
-
-        // Determine the current sort order (asc, desc, or initial)
-        let order = th.dataset.order || 'asc'; // Default to ascending
-
-        // Cycle through sort states: asc -> desc -> initial (no sorting)
-        if (th.dataset.order === 'asc') {
-            order = 'desc';
-        } else if (th.dataset.order === 'desc') {
-            order = ''; // Reset to initial state
-        } else {
-            order = 'asc'; // Start with ascending
-        }
-
-        // Reset icons and data-order for all headers in this table
-        table.querySelectorAll('th i.fas').forEach(icon => {
-            icon.classList.remove('fa-sort-up', 'fa-sort-down');
-            icon.classList.add('fa-sort');
-            icon.closest('th').dataset.order = '';
-        });
-
-        // Update the clicked header's icon and data-order if not resetting
-        if (order) {
-            const icon = th.querySelector('i.fas');
-            icon.classList.remove('fa-sort');
-            icon.classList.add(order === 'asc' ? 'fa-sort-up' : 'fa-sort-down');
-            th.dataset.order = order;
-        }
-
-        // Perform sorting or revert to original data
-        const dataToSort = type === 'courier' ? allCouriers : allLoads;
-        if (order) {
-            sortTable(tableBody, dataToSort, key, order);
-        } else {
-            // If resetting sort, re-render the original fetched data
-            if (type === 'courier') {
-                renderCouriersTable(allCouriers);
-            } else {
-                renderLoadsTable(allLoads);
-            }
-        }
-    }
-
-
-    // --- Delete Action (Event Delegation) ---
-    document.addEventListener('click', async (e) => {
-        const deleteBtn = e.target.closest('.delete-btn');
-        if (deleteBtn) {
-            const itemId = deleteBtn.dataset.id;
-            const itemType = deleteBtn.dataset.type; // 'courier' or 'load'
-            const collectionName = itemType === 'courier' ? 'couriers' : 'loads';
-
-            console.log(`Delete button clicked for ${itemType} ID: ${itemId}`);
-
-            // Client-side check (reinforce security rules needed)
-            if (!auth.currentUser) {
-                alert("You must be logged in to delete items.");
-                return;
-            }
-            // *** Add a check here if the logged-in user has admin privileges (based on custom claim or 'admins' collection) ***
-            // If not authorized, return here.
-
-            if (confirm(`Are you sure you want to delete this ${itemType}? This action cannot be undone.`)) {
-                setButtonLoadingState(deleteBtn, true);
-                try {
-                    await deleteDoc(doc(db, collectionName, itemId));
-                    console.log(`${itemType} deleted successfully: ${itemId}`);
-                    // Re-fetch and render data after deletion
-                    fetchDataAndRender();
-                    alert(`${itemType} deleted successfully.`);
-                } catch (error) {
-                    console.error(`Error deleting ${itemType}:`, itemId, error);
-                    alert(`Failed to delete ${itemType}: ${error.message}`);
-                } finally {
-                    setButtonLoadingState(deleteBtn, false);
-                }
-            }
-        }
-    });
-
-
-    // --- Utility function for loading state ---
-    function setButtonLoadingState(button, isLoading) {
-        button.disabled = isLoading;
-        const spinner = button.querySelector('.spinner-border');
-        const buttonText = button.querySelector('.button-text');
-        if (isLoading) {
-            if (spinner) spinner.style.display = 'inline-block';
-            if (buttonText) buttonText.style.visibility = 'hidden';
-        } else {
-            if (spinner) spinner.style.display = 'none';
-            if (buttonText) buttonText.style.visibility = 'visible';
-        }
-    }
-
-    // --- Initial setup ---
-    $(document).ready(function() {
-        console.log("Admin page ready.");
-        // Update footer year
-        document.getElementById("year").textContent = new Date().getFullYear();
-        // onAuthStateChanged listener handles initial data fetch if logged in
-    });
-
-  </script>
-</body>
-</html>
