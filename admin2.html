@@ -28,7 +28,7 @@
       margin: 0;
     }
 
-    .container { max-width: 1200px; }
+    .container { max-width: 1400px; } /* Widened slightly for extra tables */
 
     /* Cards */
     .card {
@@ -46,7 +46,7 @@
     }
 
     /* Tables */
-    .table th { cursor: pointer; user-select: none; }
+    .table th { cursor: pointer; user-select: none; white-space: nowrap; font-size: 0.9rem; }
     .table th:hover { background-color: #e9ecef; }
     .table-scroll-container {
       max-height: 450px;
@@ -62,6 +62,10 @@
       z-index: 10;
       box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
     }
+
+    /* Badges */
+    .badge-ref { background-color: #ffc107; color: #000; font-family: monospace; }
+    .badge-price { background-color: #198754; color: white; }
 
     /* Buttons & Spinners */
     .btn-primary { background-color: var(--app-primary); border-color: var(--app-primary); }
@@ -106,8 +110,9 @@
     #adminContent { display: none; flex: 1; }
     
     .chart-container {
-      height: 300px;
+      height: 200px; /* Adjusted height for 4-col layout */
       position: relative;
+      width: 100%;
     }
   </style>
 </head>
@@ -151,33 +156,71 @@
     </div>
 
     <div class="row mb-4 g-3">
-      <div class="col-md-4">
+      <div class="col-md-3">
         <div class="card text-center h-100 border-0 shadow-sm">
           <div class="card-body">
-            <h5 class="card-title text-primary"><i class="fas fa-users me-2"></i>Total Couriers</h5>
-            <p class="card-text display-4 fw-bold text-dark" id="totalCouriers">0</p>
+            <h6 class="card-title text-muted text-uppercase small">Couriers</h6>
+            <p class="card-text display-5 fw-bold text-dark" id="totalCouriers">0</p>
           </div>
         </div>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
         <div class="card text-center h-100 border-0 shadow-sm">
           <div class="card-body">
-            <h5 class="card-title text-primary"><i class="fas fa-box-open me-2"></i>Active Loads</h5>
-            <p class="card-text display-4 fw-bold text-dark" id="totalLoads">0</p>
+            <h6 class="card-title text-muted text-uppercase small">Active Loads</h6>
+            <p class="card-text display-5 fw-bold text-dark" id="totalLoads">0</p>
           </div>
         </div>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
+        <div class="card text-center h-100 border-0 shadow-sm border-start border-4 border-warning">
+          <div class="card-body">
+            <h6 class="card-title text-muted text-uppercase small">Cargo Requests</h6>
+            <p class="card-text display-5 fw-bold text-dark" id="totalCargo">0</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
         <div class="card h-100 border-0 shadow-sm">
-          <div class="card-body d-flex flex-column">
-            <h5 class="card-title text-center text-primary fs-6"><i class="fas fa-chart-bar me-2"></i>Destinations</h5>
-            <div class="chart-container flex-grow-1">
+          <div class="card-body d-flex flex-column align-items-center justify-content-center">
+             <div class="chart-container">
                <canvas id="loadsByDestinationChart"></canvas>
-            </div>
+             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <div class="card mb-4 shadow-sm border-warning" style="border-width: 0 0 0 4px;">
+        <div class="card-header d-flex justify-content-between align-items-center bg-white text-dark border-bottom">
+          <span class="h5 mb-0 text-primary"><i class="fas fa-ship me-2"></i>Cargo Requests (Barrels)</span>
+          <span class="badge bg-warning text-dark" id="cargoCount">0</span>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <input type="text" id="searchCargo" class="form-control" placeholder="Search by Ref #, Name, City...">
+          </div>
+          <div class="table-scroll-container">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover align-middle mb-0" id="cargoTable">
+                <thead class="table-light">
+                  <tr>
+                    <th data-sort="refNum">Ref # <i class="fas fa-sort text-muted small"></i></th>
+                    <th data-sort="name">Customer <i class="fas fa-sort text-muted small"></i></th>
+                    <th data-sort="city">Pickup <i class="fas fa-sort text-muted small"></i></th>
+                    <th data-sort="itemType">Details <i class="fas fa-sort text-muted small"></i></th>
+                    <th data-sort="estimatedPrice">Price <i class="fas fa-sort text-muted small"></i></th>
+                    <th data-sort="receiver">Receiver <i class="fas fa-sort text-muted small"></i></th>
+                    <th data-sort="createdAt">Date <i class="fas fa-sort text-muted small"></i></th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="cargoTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
 
     <div class="card mb-4 shadow-sm">
       <div class="card-header d-flex justify-content-between align-items-center">
@@ -186,7 +229,7 @@
       </div>
       <div class="card-body">
         <div class="mb-3">
-          <input type="text" id="searchCouriers" class="form-control" placeholder="Search couriers by name, route, or phone...">
+          <input type="text" id="searchCouriers" class="form-control" placeholder="Search couriers...">
         </div>
         <div class="table-scroll-container">
           <div class="table-responsive">
@@ -217,7 +260,7 @@
       </div>
       <div class="card-body">
         <div class="mb-3">
-          <input type="text" id="searchLoads" class="form-control" placeholder="Search loads by country, weight, or phone...">
+          <input type="text" id="searchLoads" class="form-control" placeholder="Search loads...">
         </div>
         <div class="table-scroll-container">
           <div class="table-responsive">
@@ -281,14 +324,18 @@
         stats: {
             couriers: document.getElementById('totalCouriers'),
             loads: document.getElementById('totalLoads'),
+            cargo: document.getElementById('totalCargo'),
             courierCount: document.getElementById('courierCount'),
-            loadCount: document.getElementById('loadCount')
+            loadCount: document.getElementById('loadCount'),
+            cargoCount: document.getElementById('cargoCount')
         },
         tables: {
             couriers: document.getElementById('couriersTableBody'),
             loads: document.getElementById('loadsTableBody'),
+            cargo: document.getElementById('cargoTableBody'),
             courierHeader: document.getElementById('couriersTable'),
-            loadHeader: document.getElementById('loadsTable')
+            loadHeader: document.getElementById('loadsTable'),
+            cargoHeader: document.getElementById('cargoTable')
         },
         chart: document.getElementById('loadsByDestinationChart')
     };
@@ -297,6 +344,7 @@
     let state = {
         couriers: [],
         loads: [],
+        cargo: [],
         chartInstance: null
     };
 
@@ -349,29 +397,43 @@
             now.setHours(0,0,0,0);
             
             state.loads = loadsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            // Filter: Active loads (deadline is today or future)
             const activeLoads = state.loads.filter(l => {
                 const d = l.deadline ? new Date(l.deadline) : null;
                 return d && d >= now;
             });
 
-            // 3. Render
+            // 3. Fetch Cargo Requests (NEW)
+            // Note: If you get "Missing Index" error, remove orderBy for now or create index
+            try {
+                const cargoSnap = await getDocs(query(collection(db, "cargo_requests"), orderBy('createdAt', 'desc')));
+                state.cargo = cargoSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } catch(e) {
+                // Fallback if index missing: fetch without sort
+                console.warn("Sorting failed (index missing?), fetching raw cargo data...");
+                const cargoSnap = await getDocs(collection(db, "cargo_requests"));
+                state.cargo = cargoSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            }
+
+            // 4. Render Everything
             renderTable('couriers', state.couriers);
             renderTable('loads', state.loads);
-            updateStats(state.couriers.length, activeLoads.length);
+            renderTable('cargo', state.cargo); // Render cargo table
+            
+            updateStats(state.couriers.length, activeLoads.length, state.cargo.length);
             renderChart(activeLoads);
 
         } catch (error) {
             console.error("Fetch Error:", error);
-            // Don't show alert immediately if permission denied, just log
         }
     }
 
     function clearData() {
         state.couriers = [];
         state.loads = [];
+        state.cargo = [];
         elements.tables.couriers.innerHTML = '';
         elements.tables.loads.innerHTML = '';
+        elements.tables.cargo.innerHTML = '';
         if(state.chartInstance) state.chartInstance.destroy();
     }
 
@@ -387,8 +449,6 @@
 
         data.forEach(item => {
             const row = tbody.insertRow();
-            
-            // Helper to safe string
             const val = (v) => v || '<span class="text-muted small">N/A</span>';
             const date = (t) => t?.toDate ? t.toDate().toLocaleDateString() : val(null);
 
@@ -403,7 +463,7 @@
                     <td><small>${date(item.createdAt)}</small></td>
                     <td><button class="btn btn-outline-danger btn-sm delete-btn" data-id="${item.id}" data-type="couriers"><i class="fas fa-trash"></i></button></td>
                 `;
-            } else {
+            } else if (type === 'loads') {
                 row.innerHTML = `
                     <td>${val(item.from)}</td>
                     <td class="fw-bold text-primary">${val(item.to)}</td>
@@ -414,27 +474,44 @@
                     <td><small>${date(item.createdAt)}</small></td>
                     <td><button class="btn btn-outline-danger btn-sm delete-btn" data-id="${item.id}" data-type="loads"><i class="fas fa-trash"></i></button></td>
                 `;
+            } else if (type === 'cargo') {
+                // NEW Cargo Row Structure
+                row.innerHTML = `
+                    <td><span class="badge badge-ref">${val(item.refNum)}</span></td>
+                    <td>
+                        <div class="fw-bold">${val(item.name)}</div>
+                    </td>
+                    <td>
+                        <div class="fw-bold text-primary">${val(item.city)}</div>
+                        <div class="small text-muted" style="max-width:150px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">${val(item.address)}</div>
+                    </td>
+                    <td>${val(item.quantity)} x ${val(item.itemType)}</td>
+                    <td><span class="badge badge-price">${val(item.estimatedPrice)}</span></td>
+                    <td>${val(item.receiver)}</td>
+                    <td><small>${date(item.createdAt)}</small></td>
+                    <td><button class="btn btn-outline-danger btn-sm delete-btn" data-id="${item.id}" data-type="cargo_requests"><i class="fas fa-trash"></i></button></td>
+                `;
             }
         });
     }
 
-    function updateStats(cCount, lCount) {
+    function updateStats(cCount, lCount, crgCount) {
         elements.stats.couriers.textContent = cCount;
         elements.stats.courierCount.textContent = cCount;
         elements.stats.loads.textContent = lCount;
         elements.stats.loadCount.textContent = lCount;
+        elements.stats.cargo.textContent = crgCount;
+        elements.stats.cargoCount.textContent = crgCount;
     }
 
     // --- CHARTING ---
     function renderChart(loads) {
         if (state.chartInstance) state.chartInstance.destroy();
-
         const counts = {};
         loads.forEach(l => {
             const dest = l.to || 'Unknown';
             counts[dest] = (counts[dest] || 0) + 1;
         });
-
         const ctx = elements.chart.getContext('2d');
         state.chartInstance = new Chart(ctx, {
             type: 'bar',
@@ -460,8 +537,7 @@
     function setupFilter(inputId, type) {
         document.getElementById(inputId).addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
-            const source = type === 'couriers' ? state.couriers : state.loads;
-            
+            const source = state[type]; 
             const filtered = source.filter(item => 
                 Object.values(item).some(val => 
                     String(val).toLowerCase().includes(term)
@@ -472,14 +548,19 @@
     }
     setupFilter('searchCouriers', 'couriers');
     setupFilter('searchLoads', 'loads');
+    setupFilter('searchCargo', 'cargo'); // New Cargo Filter
 
     // Generic Sort Handler
-    [elements.tables.courierHeader, elements.tables.loadHeader].forEach(table => {
+    [elements.tables.courierHeader, elements.tables.loadHeader, elements.tables.cargoHeader].forEach(table => {
         table.addEventListener('click', (e) => {
             const th = e.target.closest('th');
             if (!th || !th.dataset.sort) return;
 
-            const type = table.id === 'couriersTable' ? 'couriers' : 'loads';
+            let type;
+            if (table.id === 'couriersTable') type = 'couriers';
+            else if (table.id === 'loadsTable') type = 'loads';
+            else type = 'cargo';
+
             const key = th.dataset.sort;
             let order = th.dataset.order === 'asc' ? 'desc' : 'asc';
 
@@ -488,44 +569,49 @@
             th.querySelector('i').className = `fas fa-sort-${order === 'asc' ? 'up' : 'down'}`;
             th.dataset.order = order;
 
-            const source = type === 'couriers' ? state.couriers : state.loads;
+            const source = state[type];
             const sorted = [...source].sort((a, b) => {
                 let va = a[key], vb = b[key];
-                
-                // Handle Dates
                 if (key === 'createdAt' && va?.toDate) va = va.toDate();
                 if (key === 'createdAt' && vb?.toDate) vb = vb.toDate();
-                
-                // Handle Strings (Case Insensitive)
                 if (typeof va === 'string') va = va.toLowerCase();
                 if (typeof vb === 'string') vb = vb.toLowerCase();
-
                 if (va < vb) return order === 'asc' ? -1 : 1;
                 if (va > vb) return order === 'asc' ? 1 : -1;
                 return 0;
             });
-
             renderTable(type, sorted);
         });
     });
 
-    // --- ACTIONS ---
+    // --- ACTIONS (Delete) ---
     document.addEventListener('click', async (e) => {
         const btn = e.target.closest('.delete-btn');
         if (!btn) return;
 
         if (!confirm("Are you sure? This cannot be undone.")) return;
 
-        const { id, type } = btn.dataset;
+        const { id, type } = btn.dataset; // type: 'couriers', 'loads', or 'cargo_requests'
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
         try {
             await deleteDoc(doc(db, type, id));
-            state[type] = state[type].filter(i => i.id !== id);
-            renderTable(type, state[type]);
-            // Refresh stats slightly imperfectly until full refresh, but faster
-            updateStats(state.couriers.length, state.loads.length);
+            
+            // Map Firestore collection name to local state key if different
+            const stateKey = type === 'cargo_requests' ? 'cargo' : type;
+            
+            state[stateKey] = state[stateKey].filter(i => i.id !== id);
+            renderTable(stateKey, state[stateKey]);
+            
+            // Refresh stats
+            const activeLoads = state.loads.filter(l => {
+                const d = l.deadline ? new Date(l.deadline) : null;
+                const now = new Date(); now.setHours(0,0,0,0);
+                return d && d >= now;
+            });
+            updateStats(state.couriers.length, activeLoads.length, state.cargo.length);
+
         } catch (err) {
             console.error(err);
             alert("Delete failed: " + err.message);
@@ -535,7 +621,7 @@
     });
 
     elements.exportBtn.addEventListener('click', () => {
-        if(!state.loads.length) return alert("No data to export.");
+        if(!state.loads.length) return alert("No load data to export.");
         
         const headers = ["ID", "From", "To", "Weight", "Deadline", "Phone", "Comment", "Created At"];
         const rows = state.loads.map(l => [
@@ -562,7 +648,6 @@
         else btn.classList.remove('loading');
     }
 
-    // Init Footer
     document.addEventListener('DOMContentLoaded', () => {
         const y = document.getElementById("year");
         if(y) y.textContent = new Date().getFullYear();
@@ -571,4 +656,3 @@
   </script>
 </body>
 </html>
-
