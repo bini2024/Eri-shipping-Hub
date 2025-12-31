@@ -25,7 +25,6 @@
     :root {
        --app-primary: #0a3d62; /* Dark Blue */
        --app-secondary: #1e90ff; /* Light Blue */
-       --app-accent: #ffcc00; /* Gold/Yellow for highlights */
     }
 
     body {
@@ -44,11 +43,11 @@
          font-weight: 700;
      }
      header h1, header p {
-         text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
-         color: white !important; 
+         text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+         color: var(--app-primary) !important; 
      }
      header {
-         background: linear-gradient(to bottom, rgba(10, 61, 98, 0.9), transparent);
+         background: none !important;
      }
 
     /* --- Card Styles --- */
@@ -62,8 +61,6 @@
       border-left: 4px solid var(--app-secondary);
       background-color: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(5px);
-      border-radius: 12px;
-      border-right: none; border-top: none; border-bottom: none;
     }
     .courier-card:hover {
       transform: translateY(-3px);
@@ -88,29 +85,50 @@
     .section-grid {
        display: grid;
        grid-template-columns: 1fr;
-       gap: 15px;
-       margin: 20px auto;
+       gap: 20px;
+       margin: 30px auto;
        max-width: 600px;
     }
     @media (min-width: 768px) {
        .section-grid { grid-template-columns: 1fr 1fr; }
     }
-    .section-grid a.action-btn {
+    .section-grid a {
        display: block;
-       padding: 20px;
+       padding: 30px;
        background-color: var(--app-primary);
        color: white;
-       font-size: 1.1rem;
+       font-size: 1.2rem;
        font-weight: bold;
        text-align: center;
        border-radius: 10px;
        text-decoration: none;
-       box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+       box-shadow: 0 0 10px rgba(0,0,0,0.2);
        transition: all 0.3s ease;
     }
-    .section-grid a.action-btn:hover {
+    .section-grid a:hover {
        background-color: var(--app-secondary);
-       transform: scale(1.02);
+       transform: scale(1.05);
+    }
+
+    /* --- Load Board Button (Restored) --- */
+    .load-board-button {
+        font-size: 1.5rem;
+        padding: 20px 50px;
+        background-color: var(--app-primary);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: bold;
+        box-shadow: 0 0 10px var(--app-primary);
+        animation: blink-glow 1.5s infinite;
+        display: inline-block;
+        margin-top: 3rem;
+        margin-bottom: 3rem;
+    }
+    .load-board-button:hover {
+        background-color: var(--app-secondary);
+        color: #fff;
     }
 
     /* --- Bottom Navigation Bar (New Feature) --- */
@@ -156,6 +174,7 @@
         padding-top: 10px;
         display: flex;
         gap: 10px;
+        justify-content: center;
     }
     .btn-share {
         border-radius: 50px;
@@ -171,80 +190,77 @@
     .btn-whatsapp { background-color: #25D366; }
     .btn-telegram { background-color: #0088cc; }
 
-    /* --- Entertainment Button --- */
-    .ent-btn {
-        display:inline-block;
-        background:linear-gradient(90deg,#ff9900,#ffcc33);
-        color:#fff !important;
-        font-weight:bold;
-        font-size:1.1em;
-        padding:14px 28px;
-        border-radius:12px;
-        text-decoration:none;
-        text-transform:uppercase;
-        letter-spacing:1px;
-        box-shadow:0 4px 15px rgba(255,153,0,0.4);
-        transition:all 0.25s ease;
-        font-family:'Orbitron',sans-serif;
-        width: 100%;
-        text-align: center;
-    }
-
     /* --- Select2 Overrides --- */
-    .select2-container--bootstrap-5 .select2-selection {
-       border: 1px solid #ced4da;
-    }
     .select2-container--bootstrap-5 .select2-selection.is-invalid {
-        border-color: #dc3545 !important;
+        border-color: var(--bs-danger) !important;
+        background-image: url("data:image/svg+xml,...") !important; /* Kept from bootstrap validation */
+        background-repeat: no-repeat !important;
+        background-position: right calc(0.375em + 0.1875rem) center !important;
+    }
+    .select2-container .select2-selection--single .select2-selection__placeholder {
+         color: #6c757d !important;
+    }
+    .select2-container--bootstrap-5 .select2-selection {
+         padding-top: 0.55rem !important;
+         padding-bottom: 0.55rem !important;
     }
 
     /* --- Video Section --- */
     .video-section {
-         margin-top: -20px;
-         margin-bottom: 2rem;
+          margin-top: -30px; 
+          padding-top: 30px;
+          margin-bottom: 4rem;
     }
 
     /* --- Animations --- */
     @keyframes blink-glow {
-      0%, 100% { box-shadow: 0 0 8px var(--app-primary); }
-      50% { box-shadow: 0 0 16px var(--app-secondary); }
+      0%, 100% { box-shadow: 0 0 15px var(--app-primary); }
+      50% { box-shadow: 0 0 25px var(--app-secondary); }
     }
     
     #installBtn {
       background-color: var(--app-primary);
       color: white;
-      padding: 10px 20px;
+      font-size: 1rem;
+      padding: 8px 16px;
       border: none;
       border-radius: 50px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      animation: blink-glow 1.5s infinite;
       position: fixed;
-      bottom: 90px; /* Above nav bar */
-      right: 20px;
+      bottom: 90px; /* Adjusted to sit above bottom nav */
+      right: 30px;
       z-index: 1500;
-      animation: blink-glow 2s infinite;
-      display: none; /* Hidden by default */
+      display: none;
+    }
+    #installBtn:hover {
+      background-color: var(--app-secondary);
+      color: #fff;
     }
 
     /* Logo */
     #siteLogo {
-       width: 60px;
+       position: fixed;
+       top: 16px;
+       left: 16px;
+       width: 48px;
        height: auto;
-       display: block;
-       margin: 0 auto 10px auto;
+       z-index: 1000;
     }
   </style>
 </head>
 <body>
 
-    <header class="py-3 mb-2">
-       <div class="container text-center">
-           <img id="siteLogo" src="1000072056-removebg-preview.png" alt="Eri Shipping Logo">
-         <h1>
-           <span class="nav-brand">Eri Shipping Hub</span>
-         </h1>
-         <p>Our community, our courier</p>
-       </div>
-    </header>
+    <header class="py-4 mb-4">
+        <div class="container">
+            <img id="siteLogo" src="1000072056-removebg-preview.png" alt="Eri Shipping Hub Logo">
+          <h1 class="text-center mb-2">
+            <i class="fas fa-shipping-fast" style="color: var(--app-primary);"></i>
+            <span class="nav-brand">Eri Shipping Hub</span>
+          </h1>
+          <p class="text-center">Our community, our courier</p>
+        </div>
+     </header>
 
     <div class="container">
          <div id="generalFeedback" class="alert alert-info alert-dismissible fade show d-none mx-auto" role="alert" style="max-width: 600px;">
@@ -253,7 +269,10 @@
         </div>
     </div>
 
-    <section class="container video-section">
+    <section class="container my-5 video-section">
+      <h4 class="text-center mb-4" style="color:white; font-weight:600; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">
+        🎥 ኣጠቃቕማ Erishipping Hub
+      </h4>
       <div class="ratio ratio-16x9 mx-auto" style="max-width:800px; box-shadow:0 4px 12px rgba(0,0,0,0.3); border-radius:8px; overflow:hidden;">
         <video controls poster="how-to-poster.png" style="width:100%; height:100%; object-fit:cover;">
           <source src="how-to.mp4" type="video/mp4">
@@ -262,37 +281,42 @@
       </div>
     </section>
 
-    <div class="container">
+    <div class="container text-center mt-4">
+      <h3 class="mb-4 text-white text-shadow" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">What Do You Want To Do?</h3>
       <div class="section-grid">
-         <a href="#packageFormSection" class="action-btn">📦 ንብረት ንምስዳድ <br><small style="font-weight:normal; opacity:0.8;">(Send Package)</small></a> 
-         <a href="register.html" class="action-btn">🚚 ንብረት ክማላእ <br><small style="font-weight:normal; opacity:0.8;">(Post Trip)</small></a>
+        <a href="#packageFormSection">📦 ንብረት ንምስዳድ</a> 
+        <a href="register.html">🚚 ንብረት ክማላእ</a>
       </div>
-      <div class="text-center mb-4" style="max-width: 600px; margin: 0 auto;">
-          <a href="https://bini2024.github.io/Habeshabingo/" class="ent-btn">
-            ✨ <span style="color:#005b96;">Play Bingo</span> ✨
-          </a>
-      </div>
+      
+      <a href="https://bini2024.github.io/Habeshabingo/" style="display:inline-block;background:linear-gradient(90deg,#ff9900,#ffcc33);color:#fff;font-weight:bold;font-size:1.3em;padding:14px 28px;border-radius:12px;text-decoration:none;text-transform:uppercase;letter-spacing:1px;box-shadow:0 4px 15px rgba(255,153,0,0.4);transition:all 0.25s ease;font-family:'Orbitron',sans-serif;" onmouseover="this.style.background='linear-gradient(90deg,#ffcc33,#ff9900)';this.style.transform='translateY(-3px) scale(1.05)';this.style.boxShadow='0 6px 25px rgba(255,153,0,0.6)';" onmouseout="this.style.background='linear-gradient(90deg,#ff9900,#ffcc33)';this.style.transform='none';this.style.boxShadow='0 4px 15px rgba(255,153,0,0.4)';" onmousedown="this.style.transform='translateY(0) scale(0.98)';this.style.boxShadow='0 3px 10px rgba(255,153,0,0.3)';" onmouseup="this.style.transform='translateY(-3px) scale(1.05)';this.style.boxShadow='0 6px 25px rgba(255,153,0,0.6)';">
+          ✨ <span style="color:#005b96;">Erishipping Entertainment</span> ✨
+      </a>
     </div>
 
-    <main class="container mt-4"> 
+    <div class="text-end me-3 mt-3">
+        <a href="admin.html" class="btn btn-sm btn-outline-light"> <i class="fas fa-lock me-1"></i>Admin Login</a>
+    </div>
+
+    <main class="container mt-5"> 
         <div class="row justify-content-center"> 
             <div id="packageFormSection" class="col-lg-8"> 
                 
                 <div id="upcomingFlightsContainer" class="mb-4 d-none">
-                    <h5 class="text-white text-shadow mb-3"><i class="fas fa-plane-departure me-2"></i>Upcoming Trips (ዝልቀቁ)</h5>
+                    <h5 class="text-white mb-3" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.5);"><i class="fas fa-plane-departure me-2"></i>Upcoming Trips (ዝልቀቁ)</h5>
                     <div id="recentFlightsList">
                         </div>
                 </div>
 
-                <div class="card shadow-sm border-0">
-                  <div class="card-header border-0 rounded-top">
-                    <h4 class="mb-0 text-center">🔎 ተጐዓዛይ ድለ (Search)</h4>
+                <div class="card shadow-sm">
+                  <div class="card-header">
+                    <h3 class="mb-0">📦 </h3>
                   </div>
                   <div class="card-body">
+                    <p class="card-text"></p>
                     <form id="packageForm" novalidate> 
                         <div class="row g-3 mb-3"> 
                             <div class="col-md-6">
-                               <label for="fromCountry" class="form-label">ካብ (From):</label>
+                               <label for="fromCountry" class="form-label">ካብ:</label>
                                <select id="fromCountry" class="form-select" required>
                                  <option value="" disabled selected>Select From Country</option>
                                  <option value="Ethiopia">🇪🇹 Ethiopia</option>
@@ -318,7 +342,7 @@
                                </select>
                             </div>
                             <div class="col-md-6">
-                               <label for="toCountry" class="form-label">ናብ (To):</label>
+                               <label for="toCountry" class="form-label">ናብ:</label>
                                <select id="toCountry" class="form-select" required>
                                   <option value="" disabled selected>Select Destination Country</option>
                                   <option value="Ethiopia">🇪🇹 Ethiopia</option>
@@ -344,20 +368,22 @@
                                </select>
                             </div>
                         </div>
-                        <button id="searchCourierBtn" type="submit" class="btn btn-primary w-100 py-2 fs-5">
+                        <button id="searchCourierBtn" type="submit" class="btn btn-primary w-100">
                              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                             <span class="button-text"><i class="fas fa-search me-2"></i> Search</span>
+                             <span class="button-text"><i class="fas fa-search me-2"></i> ተጐዓዛይ ድለ</span>
                         </button>
                     </form>
                   </div>
                 </div>
 
-                <div id="courierResults" class="mt-4 pb-5"></div>
+                <div id="courierResults" class="mt-4"></div>
             </div>
         </div>
 
-        <div class="text-center mt-3 mb-5">
-           <a href="admin.html" class="btn btn-sm btn-outline-light opacity-50">Admin Login</a>
+        <div class="text-center mt-5">
+            <a href="load-board.html" class="load-board-button">
+              📦 ዝውሰድ ንብረት
+            </a>
         </div>
     </main>
 
@@ -380,7 +406,7 @@
         </a>
     </nav>
 
-    <button id="installBtn">📲 Install App</button>
+    <button id="installBtn">📲 Install Eri Shipping Hub App</button>
 
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -419,13 +445,33 @@
     // --- Helpers ---
     const parseDateString = (dateString) => {
         if (!dateString) return null;
+        // Try impenetrable-MM-DD
         const partsYYYYMMDD = dateString.split('-');
         if (partsYYYYMMDD.length === 3) {
-            return new Date(partsYYYYMMDD[0], partsYYYYMMDD[1] - 1, partsYYYYMMDD[2]);
+            const year = parseInt(partsYYYYMMDD[0], 10);
+            const month = parseInt(partsYYYYMMDD[1], 10) - 1;
+            const day = parseInt(partsYYYYMMDD[2], 10);
+            if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+                 const date = new Date(year, month, day);
+                 if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
+                      date.setHours(0, 0, 0, 0);
+                      return date;
+                 }
+            }
         }
+        // Try DD/MM/YYYY
         const partsDDMMYYYY = dateString.split('/');
         if (partsDDMMYYYY.length === 3) {
-            return new Date(partsDDMMYYYY[2], partsDDMMYYYY[1] - 1, partsDDMMYYYY[0]);
+             const day = parseInt(partsDDMMYYYY[0], 10);
+             const month = parseInt(partsDDMMYYYY[1], 10) - 1;
+             const year = parseInt(partsDDMMYYYY[2], 10);
+             if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+                 const date = new Date(year, month, day);
+                 if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
+                      date.setHours(0, 0, 0, 0);
+                      return date;
+                 }
+            }
         }
         return null;
     };
@@ -435,6 +481,10 @@
         generalFeedback.classList.add(`alert-${type}`, 'show');
         generalFeedbackText.textContent = message;
         generalFeedback.classList.remove('d-none');
+    }
+    
+    function hideGeneralFeedback() {
+        generalFeedback.classList.add('d-none');
     }
 
     function setButtonLoadingState(button, isLoading) {
@@ -446,6 +496,14 @@
             button.disabled = false;
         }
     }
+    
+    function setValidationFeedback(inputElement, message = '') {
+         if (message) {
+             inputElement.classList.add('is-invalid');
+         } else {
+             inputElement.classList.remove('is-invalid');
+         }
+     }
 
     // --- NEW FEATURE: Card Creator Function with Share Buttons ---
     function createCourierCard(data, id) {
@@ -457,23 +515,19 @@
             <div class="card courier-card mb-3" data-contact="${data.contact}" id="courier-${id}">
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                  <h5 class="card-title mb-0" style="color:var(--app-primary); font-weight:700;">
-                    <i class="fas fa-user-circle me-2"></i>${data.name || 'Courier'}
-                  </h5>
-                  <span class="badge bg-secondary">${data.date}</span>
+                  <h5 class="card-title mb-0"><i class="fas fa-user-tie me-2"></i>${data.name || 'Unnamed Courier'}</h5>
+                  <small class="text-muted" style="background:transparent!important; font-size:unset!important; color:#6c757d!important;">${data.date}</small>
                 </div>
-                <div class="mb-2">
-                    <strong class="text-dark">${data.from}</strong> <i class="fas fa-arrow-right mx-1 text-primary"></i> <strong class="text-dark">${data.to}</strong>
-                </div>
+                <p class="card-text"><i class="fas fa-route me-2"></i>${data.from} → ${data.to}</p>
                 
-                <div class="contact-area mt-3">
-                    <button class="btn btn-sm btn-primary show-contact-btn w-100">
-                        <i class="fas fa-phone-alt me-2"></i> Show Contact
+                <div class="contact-area">
+                    <button class="btn btn-sm btn-outline-primary show-contact-btn">
+                        <i class="fas fa-phone me-2"></i>Show Contact
                     </button>
-                    <span class="revealed-contact text-center w-100 mt-2" style="display: none;"></span>
+                    <span class="revealed-contact" style="display: none;"></span>
                 </div>
 
-                <div class="share-btn-group justify-content-center">
+                <div class="share-btn-group">
                     <small class="text-muted d-flex align-items-center me-2">Share:</small>
                     <a href="https://wa.me/?text=${shareText}" target="_blank" class="btn-share btn-whatsapp">
                         <i class="fab fa-whatsapp me-1"></i> WhatsApp
@@ -483,7 +537,7 @@
                     </a>
                 </div>
 
-                ${data.comments ? `<div class="alert alert-light mt-2 mb-0 py-2"><small><i class="fas fa-comment-dots me-1"></i> ${data.comments}</small></div>` : ''}
+                <small class="text-muted mt-2 d-block">${data.comments || 'No comments provided'}</small>
               </div>
             </div>
         `;
@@ -525,53 +579,65 @@
     // Call on load
     loadRecentFlights();
 
-    // --- Search Logic ---
+    // --- Search Logic (Preserved exactly from original) ---
     packageForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      generalFeedback.classList.add('d-none');
+      hideGeneralFeedback();
       courierResultsDiv.innerHTML = "";
 
       const fromCountry = fromCountrySelect.value;
       const toCountry = toCountrySelect.value;
+      let isValid = true;
 
-      if (!fromCountry || !toCountry) {
-         showGeneralFeedback("Please select both countries.", "warning");
+      if (!fromCountry) { setValidationFeedback(fromCountrySelect, "required"); isValid = false; } 
+      else { setValidationFeedback(fromCountrySelect, ""); }
+      if (!toCountry) { setValidationFeedback(toCountrySelect, "required"); isValid = false; } 
+      else { setValidationFeedback(toCountrySelect, ""); }
+
+      if (!isValid) {
+         showGeneralFeedback("Please select both origin and destination countries.", "warning");
+         packageForm.classList.add('was-validated');
          return;
       }
-
+      
+      packageForm.classList.remove('was-validated');
       setButtonLoadingState(searchCourierBtn, true);
 
       try {
         const querySnapshot = await getDocs(courierCollection);
         const now = new Date();
         now.setHours(0,0,0,0);
-        let count = 0;
+        let matchingCouriers = [];
 
         querySnapshot.forEach((doc) => {
             const data = doc.data();
-            const cDate = parseDateString(data.date);
-            
-            if (cDate && data.from === fromCountry && data.to === toCountry && cDate >= now) {
-                 courierResultsDiv.innerHTML += createCourierCard({...data, id: doc.id}, doc.id);
-                 count++;
+            const courierDate = parseDateString(data.date);
+            if (courierDate && data.from === fromCountry && data.to === toCountry && courierDate >= now) {
+                 matchingCouriers.push({...data, id: doc.id});
             }
         });
 
-        if (count === 0) {
-            courierResultsDiv.innerHTML = `
-            <div class="alert alert-warning text-center">
-                <i class="fas fa-exclamation-circle fa-2x mb-2"></i><br>
-                No couriers found from <strong>${fromCountry}</strong> to <strong>${toCountry}</strong> this week.
-                <br><br>
-                <a href="load-board.html" class="btn btn-outline-dark btn-sm">Post Package Request</a>
-            </div>`;
+        if(matchingCouriers.length > 0) {
+           courierResultsDiv.innerHTML = `
+            <h4 class="mb-3 text-white text-shadow">
+              <span style="background: var(--app-primary); color: white; padding: 0.4rem 1.2rem; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); display: inline-block;">
+                ✈️ ዘለዉ ገያሾ
+              </span> (${matchingCouriers.length})
+            </h4>`;
+           matchingCouriers.forEach((data) => {
+               courierResultsDiv.innerHTML += createCourierCard(data, data.id);
+           });
         } else {
-             courierResultsDiv.insertAdjacentHTML('afterbegin', `<h5 class="text-white mb-3">Found ${count} Courier(s)</h5>`);
+             courierResultsDiv.innerHTML = `
+            <div class="alert alert-info mt-4 mx-auto" style="max-width: 600px;">
+               <p class="fw-bold mb-0"> ኣብዚ ሰሙን'ዚ ካብ (${fromCountry} → ${toCountry}) ዝከዱ ገያሾ የለውን ጸኒሕኩም ተመለሱ</p>
+               <small> ኣብዛ ትሕት ኢላ ዘላ "ዝውሰድ ንብረት" ትብል ኣቲኩም post ግበርዎ ገያሻይ ርእዩ ክድውለልኩም</small>
+            </div>`;
         }
 
       } catch (error) {
-        console.error(error);
-        showGeneralFeedback("Error searching. Please try again.", "danger");
+        console.error("Error fetching couriers:", error);
+        showGeneralFeedback(`❌ Failed to search for couriers: ${error.message}`, "danger");
       } finally {
         setButtonLoadingState(searchCourierBtn, false);
       }
@@ -584,13 +650,16 @@
         const btn = event.target.closest('.show-contact-btn');
         if (btn) {
             const card = btn.closest('.courier-card');
-            courierResultsDiv.dataset.currentClickedCardId = card.id; 
-            // Also support clicks in the recent list
-            if(card.parentElement.id === "recentFlightsList") {
-                recentFlightsList.dataset.currentClickedCardId = card.id;
+            // Check if card exists and has contact data
+            if (card && card.dataset.contact) {
+                 courierResultsDiv.dataset.currentClickedCardId = card.id; 
+                 // Also support clicks in the recent list
+                 if(card.parentElement.id === "recentFlightsList") {
+                     recentFlightsList.dataset.currentClickedCardId = card.id;
+                 }
+                 const modal = new bootstrap.Modal(document.getElementById('safetyTipsModal'));
+                 modal.show();
             }
-            const modal = new bootstrap.Modal(document.getElementById('safetyTipsModal'));
-            modal.show();
         }
     });
 
@@ -602,14 +671,19 @@
         if(!cardId) return;
 
         const card = document.getElementById(cardId);
-        if (card) {
+        if (card && card.dataset.contact) {
             const contact = card.dataset.contact;
             const btn = card.querySelector('.show-contact-btn');
             const span = card.querySelector('.revealed-contact');
             
-            btn.style.display = 'none';
-            span.innerHTML = `<a href="tel:${contact}" class="btn btn-success btn-sm w-100 fw-bold"><i class="fas fa-phone me-2"></i> ${contact}</a>`;
-            span.style.display = 'block';
+            if (btn && span) {
+                btn.style.display = 'none';
+                span.innerHTML = `
+                 <a href="tel:${contact}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-phone me-2"></i>Contact: ${contact}
+                 </a>`;
+                span.style.display = 'inline-block';
+            }
         }
         
         // Cleanup
@@ -620,6 +694,8 @@
     // --- Install Button Logic ---
     let deferredPrompt;
     const installBtn = document.getElementById('installBtn');
+    installBtn.style.display = 'none';
+    
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
@@ -629,37 +705,120 @@
       installBtn.style.display = 'none';
       if (deferredPrompt) {
         deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(outcome === 'accepted' ? '✅ User accepted' : '❌ User dismissed');
         deferredPrompt = null;
       }
+    });
+    window.addEventListener('appinstalled', () => {
+      console.log('✅ App installed successfully');
+      installBtn.style.display = 'none';
     });
 
     // --- Select2 Init ---
     $(document).ready(function() {
-        $('#fromCountry, #toCountry').select2({ theme: 'bootstrap-5', width: '100%' });
+        const originalSelectPlaceholders = {};
+        packageForm.querySelectorAll('select').forEach(select => {
+             const selectedOption = select.querySelector('option[disabled][selected]');
+             if (selectedOption) originalSelectPlaceholders[select.id] = selectedOption.textContent;
+        });
+        
+        $('#fromCountry').select2({ placeholder: originalSelectPlaceholders['fromCountry'] || 'Select From Country', theme: 'bootstrap-5' });
+        $('#toCountry').select2({ placeholder: originalSelectPlaceholders['toCountry'] || 'Select Destination Country', theme: 'bootstrap-5' });
+        
+        $('#fromCountry, #toCountry').on('change', function() {
+             if ($(this).val()) {
+                 $(this).removeClass('is-invalid');
+                 const form = $(this).closest('form')[0];
+                 if ($('#fromCountry').val() && $('#toCountry').val()) {
+                      form.classList.remove('was-validated');
+                 }
+             }
+        });
     });
 </script>
 
-<div class="modal fade" id="safetyTipsModal" tabindex="-1" aria-hidden="true">
+<footer class="text-center text-white mt-5" style="background-color: var(--app-primary); padding: 30px 15px;">
+  <div class="container">
+    <h5 class="mb-4 text-light">📦 Contact Eri Shipping Hub</h5>
+
+    <div class="row justify-content-center text-start">
+      <div class="col-md-4 mb-3">
+        <p class="mb-1">
+          <strong>📞 Phone (Ethiopia):</strong><br>
+          <a href="tel:+251937529633" class="text-white text-decoration-none">+251 937 529 633</a>
+        </p>
+        <p class="mb-1">
+          <strong>📞 Phone (Uganda):</strong><br>
+          <a href="tel:+256709399618" class="text-white text-decoration-none">+256 709 399 618</a>
+        </p>
+        <p class="mb-1">
+          <strong>📞 Phone (Canada):</strong><br>
+          <a href="tel:+16474624710" class="text-white text-decoration-none">+1 647 462 4710</a>
+        </p>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <p class="mb-1">
+          <strong>✉️ Email:</strong><br>
+          <a href="mailto:Erishipping0@gmail.com" class="text-white text-decoration-none">Erishipping0@gmail.com</a>
+        </p>
+
+        <p class="mb-0 mt-2">
+          <strong>📨 Telegram:</strong><br>
+          <a href="https://t.me/Erishipping" target="_blank" class="text-info text-decoration-none">
+            <i class="fab fa-telegram-plane me-1"></i> @Erishipping
+          </a>
+        </p>
+
+        <p class="mb-0 mt-2">
+          <strong>📘 Facebook:</strong><br>
+          <a href="https://www.facebook.com/profile.php?id=100083145791622" target="_blank" class="text-info text-decoration-none">
+            <i class="fab fa-facebook me-1"></i> @Erishipping
+          </a>
+        </p>
+
+        <p class="mb-0 mt-2">
+          <strong>📸 Instagram:</strong><br>
+          <a href="https://instagram.com/Erishipping" target="_blank" class="text-danger text-decoration-none">
+            <i class="fab fa-instagram me-1"></i> @Erishipping
+          </a>
+        </p>
+      </div>
+    </div>
+
+    <hr class="bg-white" style="opacity: 0.15;">
+
+    <p class="mb-0 text-white">&copy; <span id="year"></span> <strong>Eri Shipping Hub</strong>. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
+<div class="modal fade" id="safetyTipsModal" tabindex="-1" aria-labelledby="safetyTipsModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
-      <div class="modal-header bg-warning">
-        <h5 class="modal-title text-dark fw-bold"><i class="fas fa-shield-alt me-2"></i>Safety Tips (ጥንቃቐ)</h5>
+      <div class="modal-header">
+        <h5 class="modal-title" id="safetyTipsModalLabel">🔒 Safety Tips</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <p class="mb-2"><strong>Please follow these rules:</strong></p>
-        <ul class="small text-muted mb-3">
-          <li>Do not pay the full amount in advance.</li>
-          <li>Meet in public places.</li>
-          <li>Verify ID if possible.</li>
-          <li>Take a photo of the item and the person.</li>
+        <p>ንብረት ክትሰዱ ከለኩም ኣብ ኣገዳሲ ምኽርታት ኣብ ግምት ከተእትውዎም ዘለኩም:</p>
+        <ul>
+          <li>ምሉእ ገንዘብ ኣቐዲምካ ካብ ምኽፋል ተቖጠብ።</li>
+          <li>ኣብ ህዝባዊን ውሑስን ቦታ  ተረካከቡ።</li>
+          <li>ቅድሚ ምሃብካ ወይ ምኽፋልካ ነቲ ንብረት ትሕዝቶኡን (ኣድላዪ እንተኾይኑ) ብጥንቃቐ መርምር።</li>
+          <li>መንነት ናይቲ መልእኽተኛ ብውልቅኹም  ምርግጋጽ።</li>
+          <li>እቲ ንብረት  ክትሰዱ ከለኩም ሓባራዊ ስምምዕኩም ይከውን ብዛዕባ ክፍሊት፣ ምድንጓይ ወዘተ.።</li>
         </ul>
-        <div class="alert alert-danger py-2 small">
-            <strong>Disclaimer:</strong> Eri Shipping Hub connects people but does not take responsibility for lost items or money.
-        </div>
+        <p class="fw-bold text-danger">Eri Shipping Hub ንምትሕግጋዝን ገያሾን ሰደድትን ንምርካብ ጥራይ የገልግል፣  ናይ ገንዘባዊ ወይ ናይ ንብረት ሓላፍነት ኣይወስድን እዩ ።
+ ብዘይካ ንሕና ብውልቅና ኣረጋጊጽና ምልክት ዝገበርናሉ ገያሻይ  
+</p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary w-100" id="acknowledgeSafetyTips" data-bs-dismiss="modal">I Understand & Agree</button>
+        <button type="button" class="btn btn-primary" id="acknowledgeSafetyTips" data-bs-dismiss="modal">I Understand and Agree</button>
       </div>
     </div>
   </div>
