@@ -150,6 +150,20 @@
     .btn-submit.loading .spinner-border { display: inline-block; }
     .btn-submit.loading .btn-text { display: none; }
 
+    /* Animation for the blinking alert */
+    .blink-alert {
+        color: #dc3545; /* Red color */
+        font-weight: 800;
+        text-transform: uppercase;
+        animation: blink-animation 1.5s linear infinite;
+    }
+
+    @keyframes blink-animation {
+        0% { opacity: 1; }
+        50% { opacity: 0; }
+        100% { opacity: 1; }
+    }
+
     /* --- Bottom Nav --- */
     .bottom-nav {
         position: fixed; bottom: 0; left: 0; width: 100%;
