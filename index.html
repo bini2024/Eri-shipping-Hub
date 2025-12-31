@@ -457,7 +457,6 @@
     // --- Helpers ---
     const parseDateString = (dateString) => {
         if (!dateString) return null;
-        // Try YYYY-MM-DD
         const partsYYYYMMDD = dateString.split('-');
         if (partsYYYYMMDD.length === 3) {
             const year = parseInt(partsYYYYMMDD[0], 10);
@@ -471,7 +470,6 @@
                  }
             }
         }
-        // Try DD/MM/YYYY
         const partsDDMMYYYY = dateString.split('/');
         if (partsDDMMYYYY.length === 3) {
              const day = parseInt(partsDDMMYYYY[0], 10);
@@ -517,11 +515,12 @@
          }
      }
 
-    // --- Card Creator Function with Share Buttons ---
+    // --- Card Creator Function with UPDATED Share Link ---
     function createCourierCard(data, id) {
+        // Here is where we add your website link to the share message
+        const appUrl = "https://erishipping-e4532.web.app"; 
         const shareText = encodeURIComponent(`Found a courier on EriShipping!\nFrom: ${data.from}\nTo: ${data.to}\nDate: ${data.date}\nVisit here: ${appUrl}`);
-        const appUrl = encodeURIComponent("https://erishipping-e4532.web.app"); 
-      
+
         return `
             <div class="card courier-card mb-3" data-contact="${data.contact}" id="courier-${id}">
               <div class="card-body">
@@ -543,7 +542,7 @@
                     <a href="https://wa.me/?text=${shareText}" target="_blank" class="btn-share btn-whatsapp">
                         <i class="fab fa-whatsapp me-1"></i> WhatsApp
                     </a>
-                    <a href="https://t.me/share/url?url=${appUrl}&text=${shareText}" target="_blank" class="btn-share btn-telegram">
+                    <a href="https://t.me/share/url?url=${encodeURIComponent(appUrl)}&text=${shareText}" target="_blank" class="btn-share btn-telegram">
                         <i class="fab fa-telegram-plane me-1"></i> Telegram
                     </a>
                 </div>
@@ -658,7 +657,6 @@
 
       } catch (error) {
         console.error("Error fetching couriers:", error);
-        // Alert the user clearly
         alert(`Error: ${error.message}`); 
         showGeneralFeedback(`❌ Failed to search: ${error.message}`, "danger");
       } finally {
@@ -839,4 +837,3 @@
 
 </body>
 </html>
-
