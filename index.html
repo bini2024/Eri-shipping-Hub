@@ -81,6 +81,18 @@
       border-color: var(--app-secondary);
     }
 
+    /* --- Loading Spinner Logic --- */
+    .btn .spinner-border {
+        display: none;
+        margin-right: .5rem;
+    }
+    .btn.loading .spinner-border {
+        display: inline-block;
+    }
+    .btn.loading .button-text {
+        display: none; /* Hide text when loading */
+    }
+
     /* --- Action Buttons Grid --- */
     .section-grid {
        display: grid;
@@ -110,7 +122,7 @@
        transform: scale(1.05);
     }
 
-    /* --- Load Board Button (Restored) --- */
+    /* --- Load Board Button --- */
     .load-board-button {
         font-size: 1.5rem;
         padding: 20px 50px;
@@ -131,7 +143,7 @@
         color: #fff;
     }
 
-    /* --- Bottom Navigation Bar (New Feature) --- */
+    /* --- Bottom Navigation Bar --- */
     .bottom-nav {
         position: fixed;
         bottom: 0;
@@ -167,7 +179,7 @@
         color: var(--app-secondary);
     }
 
-    /* --- Share Buttons (New Feature) --- */
+    /* --- Share Buttons --- */
     .share-btn-group {
         margin-top: 10px;
         border-top: 1px solid #eee;
@@ -193,7 +205,7 @@
     /* --- Select2 Overrides --- */
     .select2-container--bootstrap-5 .select2-selection.is-invalid {
         border-color: var(--bs-danger) !important;
-        background-image: url("data:image/svg+xml,...") !important; /* Kept from bootstrap validation */
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linecap='round' stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e") !important;
         background-repeat: no-repeat !important;
         background-position: right calc(0.375em + 0.1875rem) center !important;
     }
@@ -228,7 +240,7 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       animation: blink-glow 1.5s infinite;
       position: fixed;
-      bottom: 90px; /* Adjusted to sit above bottom nav */
+      bottom: 90px;
       right: 30px;
       z-index: 1500;
       display: none;
@@ -415,8 +427,8 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script type="module">
-    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ",
@@ -445,7 +457,7 @@
     // --- Helpers ---
     const parseDateString = (dateString) => {
         if (!dateString) return null;
-        // Try impenetrable-MM-DD
+        // Try YYYY-MM-DD
         const partsYYYYMMDD = dateString.split('-');
         if (partsYYYYMMDD.length === 3) {
             const year = parseInt(partsYYYYMMDD[0], 10);
@@ -505,11 +517,10 @@
          }
      }
 
-    // --- NEW FEATURE: Card Creator Function with Share Buttons ---
+    // --- Card Creator Function with Share Buttons ---
     function createCourierCard(data, id) {
-        // Construct the share text
         const shareText = encodeURIComponent(`Found a courier on EriShipping!\nFrom: ${data.from}\nTo: ${data.to}\nDate: ${data.date}\nCheck it out!`);
-        const appUrl = encodeURIComponent("https://erishipping-e4532.web.app"); // Replace with your real URL if different
+        const appUrl = encodeURIComponent("https://erishipping-e4532.web.app"); 
 
         return `
             <div class="card courier-card mb-3" data-contact="${data.contact}" id="courier-${id}">
@@ -543,7 +554,7 @@
         `;
     }
 
-    // --- NEW FEATURE: Load Recent Flights ---
+    // --- Load Recent Flights ---
     async function loadRecentFlights() {
         try {
             const querySnapshot = await getDocs(courierCollection);
@@ -579,7 +590,7 @@
     // Call on load
     loadRecentFlights();
 
-    // --- Search Logic (Preserved exactly from original) ---
+    // --- Search Logic with TIMEOUT ---
     packageForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       hideGeneralFeedback();
@@ -603,8 +614,18 @@
       packageForm.classList.remove('was-validated');
       setButtonLoadingState(searchCourierBtn, true);
 
+      // Create a Safety Timeout to stop the spinner if Firebase is slow
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Request timed out. Please check your internet connection.")), 8000)
+      );
+
       try {
-        const querySnapshot = await getDocs(courierCollection);
+        // Race between the fetch and the timeout
+        const querySnapshot = await Promise.race([
+            getDocs(courierCollection),
+            timeoutPromise
+        ]);
+
         const now = new Date();
         now.setHours(0,0,0,0);
         let matchingCouriers = [];
@@ -637,23 +658,21 @@
 
       } catch (error) {
         console.error("Error fetching couriers:", error);
-        showGeneralFeedback(`❌ Failed to search for couriers: ${error.message}`, "danger");
+        // Alert the user clearly
+        alert(`Error: ${error.message}`); 
+        showGeneralFeedback(`❌ Failed to search: ${error.message}`, "danger");
       } finally {
         setButtonLoadingState(searchCourierBtn, false);
       }
     });
 
     // --- Show Contact / Safety Modal Logic ---
-    // (Event delegation used to handle dynamically added cards)
     document.body.addEventListener('click', (event) => {
-        // Handle Show Contact
         const btn = event.target.closest('.show-contact-btn');
         if (btn) {
             const card = btn.closest('.courier-card');
-            // Check if card exists and has contact data
             if (card && card.dataset.contact) {
                  courierResultsDiv.dataset.currentClickedCardId = card.id; 
-                 // Also support clicks in the recent list
                  if(card.parentElement.id === "recentFlightsList") {
                      recentFlightsList.dataset.currentClickedCardId = card.id;
                  }
@@ -665,9 +684,7 @@
 
     // Modal Agree Button
     document.getElementById('acknowledgeSafetyTips').addEventListener('click', () => {
-        // Check both containers for the ID
         let cardId = courierResultsDiv.dataset.currentClickedCardId || recentFlightsList.dataset.currentClickedCardId;
-        
         if(!cardId) return;
 
         const card = document.getElementById(cardId);
@@ -685,8 +702,6 @@
                 span.style.display = 'inline-block';
             }
         }
-        
-        // Cleanup
         delete courierResultsDiv.dataset.currentClickedCardId;
         delete recentFlightsList.dataset.currentClickedCardId;
     });
@@ -706,12 +721,10 @@
       if (deferredPrompt) {
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
-        console.log(outcome === 'accepted' ? '✅ User accepted' : '❌ User dismissed');
         deferredPrompt = null;
       }
     });
     window.addEventListener('appinstalled', () => {
-      console.log('✅ App installed successfully');
       installBtn.style.display = 'none';
     });
 
