@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Add | Eri Shipping Hub</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body { background-color: #f0f2f5; padding-bottom: 50px; }
+    .magic-box {
+        background: linear-gradient(135deg, #0a3d62, #004e92);
+        color: white;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .result-card {
+        border-left: 5px solid #28a745;
+        display: none; /* Hidden until parsed */
+    }
+    textarea { font-size: 0.9rem; background: rgba(255,255,255,0.9); border: none; }
+    textarea:focus { background: white; box-shadow: none; }
+  </style>
+</head>
+<body>
+
+<div class="container mt-4" style="max-width: 600px;">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4 class="fw-bold text-dark"><i class="fas fa-magic me-2 text-warning"></i>Smart Data Entry</h4>
+      <a href="admin.html" class="btn btn-sm btn-outline-secondary">Back to Admin</a>
+  </div>
+
+  <div class="magic-box mb-4">
+      <label class="form-label fw-bold"><i class="fab fa-telegram-plane me-2"></i>Paste Telegram Text Here:</label>
+      <textarea id="rawText" class="form-control mb-3" rows="4" placeholder="Example: 'Salam, I am flying to Asmara from Toronto on Jan 25. Contact 647-555-0199'"></textarea>
+      <button onclick="parseText()" class="btn btn-warning w-100 fw-bold text-dark">
+          <i class="fas fa-bolt me-2"></i>Auto-Detect Details
+      </button>
+  </div>
+
+  <div id="resultCard" class="card shadow-sm result-card p-3">
+      <h5 class="mb-3 text-success">Review & Save</h5>
+      <form id="quickForm">
+          <div class="row g-2 mb-2">
+              <div class="col-6">
+                  <label class="small text-muted">Type</label>
+                  <select id="entryType" class="form-select form-select-sm">
+                      <option value="couriers">Traveling (Courier)</option>
+                      <option value="loads">Package (Load)</option>
+                  </select>
+              </div>
+              <div class="col-6">
+                  <label class="small text-muted">Date / Deadline</label>
+                  <input type="date" id="date" class="form-control form-select-sm">
+              </div>
+          </div>
+
+          <div class="row g-2 mb-2">
+              <div class="col-6">
+                  <label class="small text-muted">From</label>
+                  <select id="from" class="form-select form-select-sm">
+                      <option value="">Select...</option>
+                      <option value="Canada">Canada</option>
+                      <option value="Ethiopia">Ethiopia</option>
+                      <option value="Eritrea">Eritrea</option>
+                      <option value="Uganda">Uganda</option>
+                      <option value="Dubai">Dubai</option>
+                      <option value="USA">USA</option>
+                      <option value="Europe">Europe</option>
+                  </select>
+              </div>
+              <div class="col-6">
+                  <label class="small text-muted">To</label>
+                  <select id="to" class="form-select form-select-sm">
+                      <option value="">Select...</option>
+                      <option value="Eritrea">Eritrea</option>
+                      <option value="Ethiopia">Ethiopia</option>
+                      <option value="Canada">Canada</option>
+                      <option value="Uganda">Uganda</option>
+                      <option value="Europe">Europe</option>
+                  </select>
+              </div>
+          </div>
+
+          <div class="mb-2">
+              <label class="small text-muted">Phone Number</label>
+              <input type="text" id="contact" class="form-control form-control-sm">
+          </div>
+
+          <div class="mb-3">
+              <label class="small text-muted">Original Text (Comment)</label>
+              <textarea id="comment" class="form-control form-control-sm" rows="2"></textarea>
+          </div>
+
+          <button type="submit" id="saveBtn" class="btn btn-success w-100">
+              <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+              Save to Database
+          </button>
+      </form>
+  </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ", 
+      authDomain: "erishipping-e4532.firebaseapp.com",
+      projectId: "erishipping-e4532",
+      storageBucket: "erishipping-e4532.appspot.com",
+      messagingSenderId: "388550131049",
+      appId: "1:388550131049:web:e9ac1784ab8e5fabc811f8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // --- SMART PARSING LOGIC ---
+    window.parseText = function() {
+        const text = document.getElementById('rawText').value;
+        if (!text) return alert("Paste text first!");
+
+        // 1. Detect Phone (Look for patterns like 091..., +251..., 647...)
+        const phoneRegex = /(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?|\b09\d{8}\b|\b07\d{8}\b/g;
+        const phones = text.match(phoneRegex);
+        const contact = phones ? phones[0] : "";
+
+        // 2. Detect Keywords for Countries
+        const lowerText = text.toLowerCase();
+        let from = "";
+        let to = "";
+
+        // Dictionary of keywords
+        const locations = {
+            "asmara": "Eritrea", "eri": "Eritrea", "eritrea": "Eritrea",
+            "addis": "Ethiopia", "bole": "Ethiopia", "ethiopia": "Ethiopia",
+            "toronto": "Canada", "canada": "Canada", "yyz": "Canada", "calgary": "Canada",
+            "kampala": "Uganda", "uganda": "Uganda", "entebbe": "Uganda",
+            "dubai": "Dubai", "dxb": "Dubai"
+        };
+
+        // Simple logic: usually people say "To Asmara" or "Going to Asmara"
+        // If we find "Asmara", we assume it's the DESTINATION unless "From Asmara" is explicit
+        if (lowerText.includes("asmara") || lowerText.includes("eri")) to = "Eritrea";
+        if (lowerText.includes("addis") || lowerText.includes("ethiopia")) to = "Ethiopia";
+        
+        // If To is Eritrea, From is likely Canada/USA/Europe (based on your context)
+        if (lowerText.includes("toronto") || lowerText.includes("canada")) from = "Canada";
+        if (lowerText.includes("kampala") || lowerText.includes("uganda")) from = "Uganda";
+
+        // Swap if words "from Asmara" detected
+        if (lowerText.includes("from asmara") || lowerText.includes("kab asmara")) { from = "Eritrea"; to = "Canada"; } // Default swap
+
+        // 3. Auto-Fill Form
+        document.getElementById('contact').value = contact;
+        document.getElementById('comment').value = text; // Keep full text as comment
+        
+        // Set dropdowns if found
+        if(from) document.getElementById('from').value = from;
+        if(to) document.getElementById('to').value = to;
+
+        // Show the result card
+        document.getElementById('resultCard').style.display = 'block';
+    }
+
+    // --- SAVE TO DATABASE ---
+    document.getElementById('quickForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('saveBtn');
+        const spinner = btn.querySelector('.spinner-border');
+        
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+
+        const collectionName = document.getElementById('entryType').value;
+        const data = {
+            from: document.getElementById('from').value,
+            to: document.getElementById('to').value,
+            contact: document.getElementById('contact').value,
+            createdAt: serverTimestamp()
+        };
+
+        // Specific fields based on type
+        if (collectionName === 'couriers') {
+            data.name = "Telegram User"; // Default name
+            data.date = document.getElementById('date').value;
+            data.comments = document.getElementById('comment').value;
+        } else {
+            data.weight = "Unknown"; // Default weight
+            data.deadline = document.getElementById('date').value;
+            data.phone = data.contact;
+            data.comment = document.getElementById('comment').value;
+        }
+
+        try {
+            await addDoc(collection(db, collectionName), data);
+            alert("Saved successfully!");
+            // Reset
+            document.getElementById('rawText').value = "";
+            document.getElementById('resultCard').style.display = 'none';
+        } catch (error) {
+            console.error(error);
+            alert("Error saving: " + error.message);
+        } finally {
+            btn.disabled = false;
+            spinner.classList.add('d-none');
+        }
+    });
+</script>
+
+</body>
+</html>
