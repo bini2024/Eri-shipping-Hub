@@ -149,7 +149,7 @@
         <div class="booking-card">
           <h4 class="mb-4 text-center" style="color: var(--app-primary);">Get an Instant Quote & Book</h4>
           
-          <form id="movingBookingForm" novalidate>
+         <form id="movingBookingForm" novalidate>
             <div class="row g-3">
               
               <div class="col-md-6">
@@ -176,6 +176,15 @@
                 <input type="number" id="estimatedHours" class="form-control" min="1" placeholder="e.g., 3" required>
               </div>
 
+              <div class="col-md-12 mt-4">
+                <label class="form-label fw-bold"><i class="fas fa-id-badge text-primary me-1"></i> Preferred Mover</label>
+                <select id="preferredDriver" class="form-select" style="border-color: var(--app-primary);">
+                  <option value="Any Available Mover">🟢 Any Available Mover (Fastest matching)</option>
+                  <option value="Elias M. (Cargo Van)">🚐 Elias M. (Cargo Van)</option>
+                  <option value="Dawit T. (Cube Truck)">🚚 Dawit T. (16ft Cube Truck)</option>
+                </select>
+              </div>
+
             </div>
 
             <div class="mt-4 p-3 text-center" style="background-color: #f8f9fa; border-radius: 8px; border: 1px dashed #ccc;">
@@ -196,7 +205,7 @@
         <h4 class="mb-3" style="color: var(--app-primary);">👨‍✈️ Top Available Movers in Canada</h4>
         
         <div id="moversList">
-          <div class="driver-card mb-4 d-flex flex-column flex-md-row" data-contact="+16474624710" id="mover-1">
+         <div class="driver-card mb-4 d-flex flex-column flex-md-row" id="mover-1">
             <div class="vehicle-img-container col-md-5">
               <img src="https://images.unsplash.com/photo-1617366373055-6c7b321cce8e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Cargo Van" class="vehicle-img">
             </div>
@@ -214,16 +223,15 @@
               <p class="text-muted small mb-3">Great for 1-bedroom apartments or single large items. Fits Queen mattress, boxes, and small sofa.</p>
               <small class="d-block mb-3 fw-bold text-primary"><i class="fas fa-map-marker-alt me-1"></i> Usually serves: GTA & Ottawa</small>
               
-              <div class="contact-area mt-auto border-top pt-3">
-                  <button class="btn btn-outline-primary show-contact-btn w-100">
-                      <i class="fas fa-phone me-2"></i> Show Driver Contact
+              <div class="mt-auto border-top pt-3">
+                  <button type="button" class="btn btn-outline-danger w-100 select-driver-btn" data-driver="🚐 Elias M. (Cargo Van)" data-service="45">
+                      <i class="fas fa-check-circle me-2"></i> Select this Driver
                   </button>
-                  <span class="revealed-contact" style="display: none;"></span>
               </div>
             </div>
           </div>
 
-          <div class="driver-card mb-4 d-flex flex-column flex-md-row" data-contact="+16474624710" id="mover-2">
+         <div class="driver-card mb-4 d-flex flex-column flex-md-row" id="mover-2">
             <div class="vehicle-img-container col-md-5">
               <img src="danitruck.jpg" alt="Cube Truck" class="vehicle-img">
             </div>
@@ -237,19 +245,17 @@
                   <span class="badge bg-warning text-dark"><i class="fas fa-star"></i> 4.8</span>
                 </div>
               </div>
-              <p class="text-danger fw-bold mb-1"><i class="fas fa-truck me-1"></i> 16ft Cube Truck • $70/hr (Base $50)</p>
-              <p class="text-muted small mb-3">Perfect for 2-3 bedroom houses. Equipped with dolly, blankets, and straps. Labourers available upon request.</p>
+              <p class="text-danger fw-bold mb-1"><i class="fas fa-truck me-1"></i> 26ft Cube Truck • $70/hr (Base $50)</p>
+              <p class="text-muted small mb-3">Perfect for 2-3 bedroom houses. Equipped with dolly, blankets, and straps.</p>
               <small class="d-block mb-3 fw-bold text-primary"><i class="fas fa-map-marker-alt me-1"></i> Usually serves: Toronto, Mississauga, Brampton</small>
               
-              <div class="contact-area mt-auto border-top pt-3">
-                  <button class="btn btn-outline-primary show-contact-btn w-100">
-                      <i class="fas fa-phone me-2"></i> Show Driver Contact
+              <div class="mt-auto border-top pt-3">
+                  <button type="button" class="btn btn-outline-danger w-100 select-driver-btn" data-driver="🚚 Dawit T. (16ft Cube Truck)" data-service="70">
+                      <i class="fas fa-check-circle me-2"></i> Select this Driver
                   </button>
-                  <span class="revealed-contact" style="display: none;"></span>
               </div>
             </div>
           </div>
-        </div>
 
         <div class="text-center mt-5 p-4 rounded shadow-sm" style="background-color: white; border: 2px dashed var(--canada-red);">
           <h4 class="fw-bold" style="color: var(--app-primary);">Can't find a mover right now?</h4>
@@ -323,9 +329,11 @@
     serviceTypeSelect.addEventListener('change', calculateQuote);
     estimatedHoursInput.addEventListener('input', calculateQuote);
 
-    // 2. WhatsApp Booking Form Logic
+   // 2. WhatsApp Booking Form Logic
     const bookingForm = document.getElementById('movingBookingForm');
-    const adminWhatsAppNumber = "16474624710"; 
+    
+    // 👇 YOUR WHATSAPP NUMBER GOES HERE 👇
+    const adminWhatsAppNumber = "16474624710"; // Only numbers! E.g., 14165551234
 
     bookingForm.addEventListener('submit', function(e) {
       e.preventDefault(); 
@@ -335,64 +343,51 @@
         return;
       }
 
+      // Grab all the details from the form
       const pickup = document.getElementById('pickupLocation').value;
       const dropoff = document.getElementById('dropoffLocation').value;
       const serviceName = serviceTypeSelect.options[serviceTypeSelect.selectedIndex].text;
       const hours = estimatedHoursInput.value;
+      const preferredDriver = document.getElementById('preferredDriver').value; // NEW
       const totalQuote = calculateQuote();
 
+      // Build the message that will be sent to your WhatsApp
       const message = `Hello Eri Shipping Hub! I would like to book a moving service in Canada. 🇨🇦%0A%0A` +
                       `*Pick-up:* ${pickup}%0A` +
                       `*Drop-off:* ${dropoff}%0A` +
                       `*Service:* ${serviceName}%0A` +
                       `*Estimated Time:* ${hours} hours%0A` +
+                      `*Preferred Driver:* ${preferredDriver}%0A` +  // NEW
                       `*Total Quoted Price:* $${totalQuote} CAD%0A%0A` +
-                      `Please let me know when a driver is available!`;
+                      `Please let me know when this can be scheduled!`;
 
+      // Open WhatsApp on the user's phone/computer
       window.open(`https://wa.me/${adminWhatsAppNumber}?text=${message}`, '_blank');
     });
-
-    // 3. Show Contact / Safety Modal Logic (Adapted from index.html)
-    const moversList = document.getElementById('moversList');
     
-    document.body.addEventListener('click', (event) => {
-        const btn = event.target.closest('.show-contact-btn');
-        if (btn) {
-            const card = btn.closest('.driver-card');
-            if (card && card.dataset.contact) {
-                 // Store the ID of the clicked card so the modal knows which one to reveal
-                 moversList.dataset.currentClickedCardId = card.id; 
-                 const modal = new bootstrap.Modal(document.getElementById('safetyTipsModal'));
-                 modal.show();
-            }
-        }
-    });
+  // 3. Smooth Select Driver Logic
+    document.querySelectorAll('.select-driver-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        // Grab the data from the button they clicked
+        const selectedDriver = this.getAttribute('data-driver');
+        const recommendedServiceRate = this.getAttribute('data-service');
+        
+        // Update the form dropdowns
+        document.getElementById('preferredDriver').value = selectedDriver;
+        document.getElementById('serviceType').value = recommendedServiceRate;
+        
+        // Recalculate the live quote based on the new selection
+        calculateQuote();
 
-    // Modal Agree Button
-    document.getElementById('acknowledgeSafetyTips').addEventListener('click', () => {
-        let cardId = moversList.dataset.currentClickedCardId;
-        if(!cardId) return;
-
-        const card = document.getElementById(cardId);
-        if (card && card.dataset.contact) {
-            const contact = card.dataset.contact;
-            const btn = card.querySelector('.show-contact-btn');
-            const span = card.querySelector('.revealed-contact');
-            
-            if (btn && span) {
-                btn.style.display = 'none';
-                span.innerHTML = `
-                 <a href="tel:${contact}" class="btn btn-primary w-100 fw-bold shadow-sm" style="font-size: 1.1rem;">
-                    <i class="fas fa-phone-alt me-2"></i> ${contact}
-                 </a>
-                 <div class="mt-2 d-flex justify-content-center gap-2">
-                   <a href="https://wa.me/${contact.replace('+','')}" target="_blank" class="btn btn-sm btn-outline-success"><i class="fab fa-whatsapp"></i> Message</a>
-                 </div>`;
-                span.style.display = 'block';
-            }
-        }
-        // Clear the data attribute after revealing
-        delete moversList.dataset.currentClickedCardId;
+        // Smoothly scroll back up to the booking form
+        const formElement = document.getElementById('movingBookingForm');
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Briefly flash the Preferred Driver box red so they see it changed
+        const driverDropdown = document.getElementById('preferredDriver');
+        driverDropdown.style.boxShadow = "0 0 12px var(--canada-red)";
+        setTimeout(() => { driverDropdown.style.boxShadow = ""; }, 1500);
+      });
     });
   </script>
 
