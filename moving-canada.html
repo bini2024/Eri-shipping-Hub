@@ -12,8 +12,8 @@
   
   <style>
     :root {
-       --app-primary: #0a3d62; /* Dark Blue */
-       --app-secondary: #1e90ff; /* Light Blue */
+       --app-primary: #0a3d62;
+       --app-secondary: #1e90ff;
        --canada-red: #e53935;
        --canada-dark: #b71c1c;
     }
@@ -43,7 +43,7 @@
       border-top: 5px solid var(--canada-red);
       box-shadow: 0 8px 24px rgba(0,0,0,0.1);
       padding: 25px;
-      margin-top: -30px; /* Overlaps header slightly for modern look */
+      margin-top: -30px;
     }
 
     .form-control:focus, .form-select:focus {
@@ -67,7 +67,7 @@
       color: white;
     }
 
-    /* --- Driver Cards --- */
+    /* --- Driver Cards (Updated for Vehicles) --- */
     .driver-card {
       background: white;
       border-radius: 12px;
@@ -78,21 +78,31 @@
     }
     .driver-card:hover {
       transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
     }
-    .driver-img {
-      width: 80px;
-      height: 80px;
+    .vehicle-img-container {
+      height: 200px;
+      background-color: #eee;
+    }
+    .vehicle-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .driver-avatar {
+      width: 40px;
+      height: 40px;
       object-fit: cover;
       border-radius: 50%;
-      border: 3px solid #eee;
+      border: 2px solid white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-    .driver-badge {
-      background-color: var(--canada-red);
-      color: white;
-      font-size: 0.75rem;
-      padding: 3px 8px;
-      border-radius: 50px;
-      font-weight: bold;
+    
+    @media (min-width: 768px) {
+      .vehicle-img-container {
+        height: auto;
+        min-height: 100%;
+      }
     }
 
     /* --- Bottom Nav --- */
@@ -118,10 +128,7 @@
       align-items: center;
       transition: color 0.3s;
     }
-    .bottom-nav a i {
-      font-size: 1.2rem;
-      margin-bottom: 4px;
-    }
+    .bottom-nav a i { font-size: 1.2rem; margin-bottom: 4px; }
     .bottom-nav a.active { color: white; }
     .bottom-nav a.active i { color: var(--canada-red); }
   </style>
@@ -148,40 +155,37 @@
               <div class="col-md-6">
                 <label class="form-label fw-bold"><i class="fas fa-map-marker-alt text-danger me-1"></i> Pick-up Address / City</label>
                 <input type="text" id="pickupLocation" class="form-control" placeholder="e.g., Downtown Toronto" required>
-                <div class="invalid-feedback">Please enter a pick-up location.</div>
               </div>
               
               <div class="col-md-6">
                 <label class="form-label fw-bold"><i class="fas fa-flag-checkered text-success me-1"></i> Drop-off Address / City</label>
                 <input type="text" id="dropoffLocation" class="form-control" placeholder="e.g., Mississauga" required>
-                <div class="invalid-feedback">Please enter a drop-off location.</div>
               </div>
 
               <div class="col-md-6 mt-4">
                 <label class="form-label fw-bold"><i class="fas fa-people-carry me-1"></i> Service Type</label>
                 <select id="serviceType" class="form-select">
-                  <option value="70">🚚 Transport Only (Driver + Truck) - $70/hr</option>
-                  <option value="140">💪 Transport + 2 Movers - $140/hr</option>
+                  <option value="45" data-base="35">🚐 Cargo Van ($35 base + $45/hr)</option>
+                  <option value="70" data-base="50">🚚 Transport Only Truck ($50 base + $70/hr)</option>
+                  <option value="140" data-base="50">💪 Truck + 2 Movers ($50 base + $140/hr)</option>
                 </select>
               </div>
 
               <div class="col-md-6 mt-4">
                 <label class="form-label fw-bold"><i class="fas fa-clock me-1"></i> Estimated Hours</label>
                 <input type="number" id="estimatedHours" class="form-control" min="1" placeholder="e.g., 3" required>
-                <div class="invalid-feedback">Please enter estimated hours.</div>
               </div>
 
             </div>
 
             <div class="mt-4 p-3 text-center" style="background-color: #f8f9fa; border-radius: 8px; border: 1px dashed #ccc;">
-              <h5 class="mb-1 text-dark">Estimated Total: <span id="quoteResult" style="color: var(--canada-dark); font-size: 1.5rem; font-weight: bold;">$50 CAD</span></h5>
-              <small class="text-muted d-block">Includes $50 base starting fee. Final price may adjust based on actual time.</small>
+              <h5 class="mb-1 text-dark">Estimated Total: <span id="quoteResult" style="color: var(--canada-dark); font-size: 1.5rem; font-weight: bold;">$35 CAD</span></h5>
+              <small class="text-muted d-block">Includes $<span id="baseFeeDisplay">35</span> CAD base starting fee. Final price may adjust based on actual time.</small>
             </div>
 
             <button type="submit" class="btn btn-whatsapp-book w-100 mt-4">
               <i class="fab fa-whatsapp me-2"></i> Book Now via WhatsApp
             </button>
-            <p class="text-center text-muted mt-2 mb-0" style="font-size: 0.85rem;">This will open WhatsApp to send your details directly to our dispatcher.</p>
           </form>
         </div>
       </div>
@@ -191,22 +195,68 @@
       <div class="col-lg-8">
         <h4 class="mb-3" style="color: var(--app-primary);">👨‍✈️ Top Available Movers in Canada</h4>
         
-        <div class="driver-card p-3 mb-3 d-flex align-items-center">
-          <img src="https://ui-avatars.com/api/?name=Dawit+T&background=0a3d62&color=fff&size=150" alt="Driver" class="driver-img me-3">
-          <div class="flex-grow-1">
-            <h5 class="mb-1 fw-bold">Dawit T. <span class="driver-badge ms-2"><i class="fas fa-star text-warning"></i> 4.9</span></h5>
-            <p class="mb-1 text-muted"><i class="fas fa-truck me-1"></i> 16ft Cube Truck • Fully Equipped</p>
-            <small>📍 Usually serves: GTA (Toronto, Mississauga, Brampton)</small>
+        <div id="moversList">
+          <div class="driver-card mb-4 d-flex flex-column flex-md-row" data-contact="+16474624710" id="mover-1">
+            <div class="vehicle-img-container col-md-5">
+              <img src="https://images.unsplash.com/photo-1617366373055-6c7b321cce8e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Cargo Van" class="vehicle-img">
+            </div>
+            <div class="p-4 col-md-7 d-flex flex-column justify-content-center">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <h5 class="mb-1 fw-bold">
+                    <img src="https://ui-avatars.com/api/?name=Elias+M&background=e53935&color=fff" alt="Elias" class="driver-avatar me-2">
+                    Elias M.
+                  </h5>
+                  <span class="badge bg-warning text-dark"><i class="fas fa-star"></i> 4.9</span>
+                </div>
+              </div>
+              <p class="text-danger fw-bold mb-1"><i class="fas fa-shuttle-van me-1"></i> Cargo Van • $45/hr (Base $35)</p>
+              <p class="text-muted small mb-3">Great for 1-bedroom apartments or single large items. Fits Queen mattress, boxes, and small sofa.</p>
+              <small class="d-block mb-3 fw-bold text-primary"><i class="fas fa-map-marker-alt me-1"></i> Usually serves: GTA & Ottawa</small>
+              
+              <div class="contact-area mt-auto border-top pt-3">
+                  <button class="btn btn-outline-primary show-contact-btn w-100">
+                      <i class="fas fa-phone me-2"></i> Show Driver Contact
+                  </button>
+                  <span class="revealed-contact" style="display: none;"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="driver-card mb-4 d-flex flex-column flex-md-row" data-contact="+16474624710" id="mover-2">
+            <div class="vehicle-img-container col-md-5">
+              <img src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Cube Truck" class="vehicle-img">
+            </div>
+            <div class="p-4 col-md-7 d-flex flex-column justify-content-center">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <h5 class="mb-1 fw-bold">
+                    <img src="https://ui-avatars.com/api/?name=Dawit+T&background=0a3d62&color=fff" alt="Dawit" class="driver-avatar me-2">
+                    Dawit T.
+                  </h5>
+                  <span class="badge bg-warning text-dark"><i class="fas fa-star"></i> 4.8</span>
+                </div>
+              </div>
+              <p class="text-danger fw-bold mb-1"><i class="fas fa-truck me-1"></i> 16ft Cube Truck • $70/hr (Base $50)</p>
+              <p class="text-muted small mb-3">Perfect for 2-3 bedroom houses. Equipped with dolly, blankets, and straps. Labourers available upon request.</p>
+              <small class="d-block mb-3 fw-bold text-primary"><i class="fas fa-map-marker-alt me-1"></i> Usually serves: Toronto, Mississauga, Brampton</small>
+              
+              <div class="contact-area mt-auto border-top pt-3">
+                  <button class="btn btn-outline-primary show-contact-btn w-100">
+                      <i class="fas fa-phone me-2"></i> Show Driver Contact
+                  </button>
+                  <span class="revealed-contact" style="display: none;"></span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="driver-card p-3 mb-3 d-flex align-items-center">
-          <img src="https://ui-avatars.com/api/?name=Elias+M&background=1e90ff&color=fff&size=150" alt="Driver" class="driver-img me-3">
-          <div class="flex-grow-1">
-            <h5 class="mb-1 fw-bold">Elias M. <span class="driver-badge ms-2"><i class="fas fa-star text-warning"></i> 4.8</span></h5>
-            <p class="mb-1 text-muted"><i class="fas fa-shuttle-van me-1"></i> Cargo Van • Great for small moves</p>
-            <small>📍 Usually serves: Ottawa Region</small>
-          </div>
+        <div class="text-center mt-5 p-4 rounded shadow-sm" style="background-color: white; border: 2px dashed var(--canada-red);">
+          <h4 class="fw-bold" style="color: var(--app-primary);">Can't find a mover right now?</h4>
+          <p class="text-muted">Post your moving details on our Load Board so available drivers can see your request and contact you directly with a quote.</p>
+          <a href="load-board.html" class="btn btn-danger btn-lg mt-2">
+            <i class="fas fa-bullhorn me-2"></i> Post a Moving Request
+          </a>
         </div>
 
       </div>
@@ -214,66 +264,83 @@
   </main>
 
   <nav class="bottom-nav">
-    <a href="index.html">
-        <i class="fas fa-home"></i> Home
-    </a>
-    <a href="moving-canada.html" class="active">
-        <i class="fas fa-truck-moving"></i> Moving
-    </a>
-    <a href="load-board.html">
-        <i class="fas fa-box-open"></i> Load Board
-    </a>
-    <a href="https://t.me/Erishipping" target="_blank">
-        <i class="fab fa-telegram-plane"></i> Support
-    </a>
+    <a href="index.html"><i class="fas fa-home"></i> Home</a>
+    <a href="moving-canada.html" class="active"><i class="fas fa-truck-moving"></i> Moving</a>
+    <a href="load-board.html"><i class="fas fa-box-open"></i> Load Board</a>
+    <a href="https://t.me/Erishipping" target="_blank"><i class="fab fa-telegram-plane"></i> Support</a>
   </nav>
 
+  <div class="modal fade" id="safetyTipsModal" tabindex="-1" aria-labelledby="safetyTipsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="safetyTipsModalLabel"><i class="fas fa-shield-alt me-2"></i> Moving Safety Tips</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Please keep these tips in mind when booking a moving service:</p>
+          <ul>
+            <li><strong>Do not pay the full amount upfront.</strong> Pay the balance upon successful delivery.</li>
+            <li>Confirm the driver's vehicle license plate matches their profile/description when they arrive.</li>
+            <li>Agree clearly on the hourly rate and estimated time <em>before</em> the move begins.</li>
+            <li>Do not transport prohibited, illegal, or hazardous materials.</li>
+          </ul>
+          <p class="fw-bold text-danger" style="font-size: 0.9rem;">
+            Eri Shipping Hub connects you with independent drivers. We do not handle payments and are not liable for lost or damaged goods. Please verify the driver independently.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" id="acknowledgeSafetyTips" data-bs-dismiss="modal">I Understand, Show Number</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
   <script>
-    // 1. Live Calculator Logic
+    // 1. Live Calculator Logic (Updated for dynamic Base Rates)
     const serviceTypeSelect = document.getElementById('serviceType');
     const estimatedHoursInput = document.getElementById('estimatedHours');
     const quoteResultDisplay = document.getElementById('quoteResult');
+    const baseFeeDisplay = document.getElementById('baseFeeDisplay');
 
     function calculateQuote() {
-      const baseFee = 50;
-      const hourlyRate = parseInt(serviceTypeSelect.value);
-      // If user hasn't typed anything yet, default to 0 hours so quote shows base fee
-      const hours = parseFloat(estimatedHoursInput.value) || 0; 
+      // Get the currently selected option to read BOTH the hourly value and the data-base attribute
+      const selectedOption = serviceTypeSelect.options[serviceTypeSelect.selectedIndex];
+      const baseFee = parseFloat(selectedOption.getAttribute('data-base'));
+      const hourlyRate = parseInt(selectedOption.value);
       
+      const hours = parseFloat(estimatedHoursInput.value) || 0; 
       const total = baseFee + (hourlyRate * hours);
+      
       quoteResultDisplay.textContent = `$${total} CAD`;
-      return total; // Return for the WhatsApp function
+      baseFeeDisplay.textContent = baseFee; // Update the text at the bottom to reflect $35 or $50
+      
+      return total;
     }
 
     serviceTypeSelect.addEventListener('change', calculateQuote);
     estimatedHoursInput.addEventListener('input', calculateQuote);
 
-
     // 2. WhatsApp Booking Form Logic
     const bookingForm = document.getElementById('movingBookingForm');
-    
-    // Replace this with your actual Canadian phone number (without +)
-    // Currently set to the Canadian number from your footer
     const adminWhatsAppNumber = "16474624710"; 
 
     bookingForm.addEventListener('submit', function(e) {
-      e.preventDefault(); // Prevent page reload
-      
-      // Basic Validation Check
+      e.preventDefault(); 
       if (!bookingForm.checkValidity()) {
         e.stopPropagation();
         bookingForm.classList.add('was-validated');
         return;
       }
 
-      // Gather Data
       const pickup = document.getElementById('pickupLocation').value;
       const dropoff = document.getElementById('dropoffLocation').value;
       const serviceName = serviceTypeSelect.options[serviceTypeSelect.selectedIndex].text;
       const hours = estimatedHoursInput.value;
       const totalQuote = calculateQuote();
 
-      // Construct WhatsApp Message
       const message = `Hello Eri Shipping Hub! I would like to book a moving service in Canada. 🇨🇦%0A%0A` +
                       `*Pick-up:* ${pickup}%0A` +
                       `*Drop-off:* ${dropoff}%0A` +
@@ -282,9 +349,50 @@
                       `*Total Quoted Price:* $${totalQuote} CAD%0A%0A` +
                       `Please let me know when a driver is available!`;
 
-      // Open WhatsApp Link
-      const whatsappURL = `https://wa.me/${adminWhatsAppNumber}?text=${message}`;
-      window.open(whatsappURL, '_blank');
+      window.open(`https://wa.me/${adminWhatsAppNumber}?text=${message}`, '_blank');
+    });
+
+    // 3. Show Contact / Safety Modal Logic (Adapted from index.html)
+    const moversList = document.getElementById('moversList');
+    
+    document.body.addEventListener('click', (event) => {
+        const btn = event.target.closest('.show-contact-btn');
+        if (btn) {
+            const card = btn.closest('.driver-card');
+            if (card && card.dataset.contact) {
+                 // Store the ID of the clicked card so the modal knows which one to reveal
+                 moversList.dataset.currentClickedCardId = card.id; 
+                 const modal = new bootstrap.Modal(document.getElementById('safetyTipsModal'));
+                 modal.show();
+            }
+        }
+    });
+
+    // Modal Agree Button
+    document.getElementById('acknowledgeSafetyTips').addEventListener('click', () => {
+        let cardId = moversList.dataset.currentClickedCardId;
+        if(!cardId) return;
+
+        const card = document.getElementById(cardId);
+        if (card && card.dataset.contact) {
+            const contact = card.dataset.contact;
+            const btn = card.querySelector('.show-contact-btn');
+            const span = card.querySelector('.revealed-contact');
+            
+            if (btn && span) {
+                btn.style.display = 'none';
+                span.innerHTML = `
+                 <a href="tel:${contact}" class="btn btn-primary w-100 fw-bold shadow-sm" style="font-size: 1.1rem;">
+                    <i class="fas fa-phone-alt me-2"></i> ${contact}
+                 </a>
+                 <div class="mt-2 d-flex justify-content-center gap-2">
+                   <a href="https://wa.me/${contact.replace('+','')}" target="_blank" class="btn btn-sm btn-outline-success"><i class="fab fa-whatsapp"></i> Message</a>
+                 </div>`;
+                span.style.display = 'block';
+            }
+        }
+        // Clear the data attribute after revealing
+        delete moversList.dataset.currentClickedCardId;
     });
   </script>
 
