@@ -385,8 +385,23 @@
 
     // --- Auth Listener ---
     onAuthStateChanged(auth, (user) => {
-        currentUser = user; // Store user details
-        isAdmin = !!user; // Keeping your existing admin logic
+        currentUser = user; 
+        isAdmin = !!user; 
+        
+        // Make the navigation button smart!
+        const authNavBtn = document.getElementById('authNavBtn');
+        if (authNavBtn) {
+            if (user) {
+                // If logged in, button goes to My Jobs
+                authNavBtn.innerHTML = '<i class="fas fa-id-badge text-success"></i><span class="text-success fw-bold">My Jobs</span>';
+                authNavBtn.href = "my-jobs.html"; 
+            } else {
+                // If logged out, button goes to Login
+                authNavBtn.innerHTML = '<i class="fas fa-user-circle"></i>Login';
+                authNavBtn.href = "loginmover.html";
+            }
+        }
+
         if (currentSnapshot) renderLoads(currentSnapshot);
     });
 
