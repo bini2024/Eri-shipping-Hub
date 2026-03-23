@@ -98,7 +98,7 @@
 
       <div class="alert alert-danger text-center small" id="errorMsg"></div>
 
-      <form id="authForm">
+    <form id="authForm">
         
         <div id="signupFields" style="display: none;">
           <div class="mb-3">
@@ -108,6 +108,21 @@
           <div class="mb-3">
             <label class="form-label fw-bold text-dark small">Phone Number</label>
             <input type="tel" id="phoneNumber" class="form-control" placeholder="e.g., 416-555-0198">
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label fw-bold text-dark small">Vehicle Type</label>
+            <select id="vehicleType" class="form-control">
+                <option value="" disabled selected>Select your vehicle...</option>
+                <option value="Cargo Van">Cargo Van</option>
+                <option value="Cube Truck">Cube Truck</option>
+                <option value="Pickup Truck">Pickup Truck</option>
+                <option value="Passenger Car">Passenger Car (Small items only)</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-dark small">License Plate</label>
+            <input type="text" id="licensePlate" class="form-control" placeholder="e.g., ABCD 123">
           </div>
         </div>
 
@@ -141,7 +156,6 @@
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // Your exact Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ", 
       authDomain: "erishipping-e4532.firebaseapp.com",
@@ -155,7 +169,6 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // UI Elements
     const authForm = document.getElementById('authForm');
     const signupFields = document.getElementById('signupFields');
     const formTitle = document.getElementById('formTitle');
@@ -167,7 +180,6 @@
 
     let isLoginMode = true;
 
-    // Toggle between Login and Sign Up
     toggleModeBtn.addEventListener('click', () => {
       isLoginMode = !isLoginMode;
       errorMsg.style.display = 'none';
@@ -185,12 +197,9 @@
         signupFields.style.display = 'block';
         toggleText.innerHTML = `Already have an account? <span class="toggle-link" id="toggleModeBtn">Login here</span>`;
       }
-
-      // Re-attach listener to the newly generated toggle link
       document.getElementById('toggleModeBtn').addEventListener('click', () => toggleModeBtn.click());
     });
 
-    // Handle Form Submission
     authForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
@@ -204,32 +213,34 @@
 
       try {
         if (isLoginMode) {
-          // --- LOGIN LOGIC ---
           await signInWithEmailAndPassword(auth, email, password);
-          window.location.href = "load-board.html"; // Redirect to load board on success
+          window.location.href = "load-board.html"; 
         } else {
-          // --- SIGN UP LOGIC ---
           const fullName = document.getElementById('fullName').value.trim();
           const phone = document.getElementById('phoneNumber').value.trim();
+          const vehicleType = document.getElementById('vehicleType').value;
+          const licensePlate = document.getElementById('licensePlate').value.trim();
 
-          if (!fullName || !phone) {
-            throw new Error("Please fill in your Name and Phone Number.");
+          if (!fullName || !phone || !vehicleType || !licensePlate) {
+            throw new Error("Please fill out all personal and vehicle details.");
           }
 
-          // 1. Create the user in Firebase Auth
           const userCredential = await createUserWithEmailAndPassword(auth, email, password);
           const user = userCredential.user;
 
-          // 2. Save their extra profile data in Firestore 'users' collection
+          // NEW: Save vehicle data and lock the account by default!
           await setDoc(doc(db, "users", user.uid), {
             fullName: fullName,
             phone: phone,
             email: email,
-            userType: "mover", // Automatically flag them as a mover
+            vehicleType: vehicleType,
+            licensePlate: licensePlate,
+            userType: "mover", 
+            isApproved: false, // <--- THE ADMIN LOCK
             createdAt: new Date()
           });
 
-          window.location.href = "load-board.html"; // Redirect to load board on success
+          window.location.href = "load-board.html"; 
         }
       } catch (error) {
         console.error("Auth Error:", error);
