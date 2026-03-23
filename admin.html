@@ -60,6 +60,12 @@
               <i class="fas fa-ship me-1"></i> Cargo Requests
             </button>
           </li>
+        
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="drivers-tab" data-bs-toggle="tab" data-bs-target="#drivers" type="button" role="tab">
+            <i class="fas fa-id-card me-1"></i> Drivers
+          </button>
+        </li>
       </ul>
 
       <div class="tab-content shadow-sm p-3 bg-white rounded" id="adminTabsContent">
@@ -128,6 +134,26 @@
             </div>
         </div>
 
+        <div class="tab-pane fade" id="drivers" role="tabpanel">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th>Driver Name</th>
+                  <th>Contact</th>
+                  <th>Vehicle Info</th>
+                  <th>License Plate</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="driversTableBody">
+                <tr><td colspan="6" class="text-center text-muted">Loading drivers...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </div> 
     
@@ -139,10 +165,9 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> 
   
-  <script type="module">
+ <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    // NEW: Added updateDoc to imports
-    import { getFirestore, collection, onSnapshot, deleteDoc, doc, orderBy, query, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, onSnapshot, deleteDoc, doc, orderBy, query, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     // Firebase Config
@@ -163,6 +188,7 @@
     const courierCollection = collection(db, "couriers");
     const loadsCollection = collection(db, "loads");
     const cargoCollection = collection(db, "cargo_requests");
+    const usersCollection = collection(db, "users");
 
     // Elements
     const adminContent = document.getElementById('adminContent');
@@ -170,6 +196,7 @@
     const couriersTableBody = document.getElementById('couriersTableBody');
     const loadsTableBody = document.getElementById('loadsTableBody');
     const cargoTableBody = document.getElementById('cargoTableBody');
+    const driversTableBody = document.getElementById('driversTableBody');
     const generalFeedback = document.getElementById("generalFeedback");
     const generalFeedbackText = document.getElementById("generalFeedbackText");
 
@@ -181,19 +208,19 @@
         if (adminUIDs.includes(user.uid)) {
           authMessage.style.display = 'none';
           adminContent.style.display = 'block';
-          loadAdminData();
+          loadAdminData(); // This now starts ALL listeners
         } else {
           authMessage.style.display = 'block';
           adminContent.style.display = 'none';
         }
       } else {
-        window.location.href = "login.html"; // Redirect if not logged in
+        window.location.href = "login.html"; 
       }
     });
 
-    // --- Load Data ---
+    // --- Load Data (Unified Dashboard) ---
     function loadAdminData() {
-      // 1. Couriers (Unchanged)
+      // 1. Couriers
       onSnapshot(query(courierCollection, orderBy('createdAt', 'desc')), (snapshot) => {
         couriersTableBody.innerHTML = snapshot.empty ? `<tr><td colspan="7" class="text-center text-muted">No couriers.</td></tr>` : "";
         snapshot.forEach(doc => {
@@ -212,7 +239,7 @@
         });
       });
 
-      // 2. Loads (UPGRADED FOR MARKETPLACE)
+      // 2. Loads (Hybrid Board)
       onSnapshot(query(loadsCollection, orderBy('createdAt', 'desc')), (snapshot) => {
         loadsTableBody.innerHTML = snapshot.empty ? `<tr><td colspan="8" class="text-center text-muted">No loads.</td></tr>` : "";
         snapshot.forEach(docSnap => {
@@ -220,7 +247,6 @@
             const id = docSnap.id;
             const dateStr = data.createdAt ? new Date(data.createdAt.toDate()).toLocaleDateString() : "-";
             
-            // Handle both Canada Moving AND International Shipping
             const isLocalMove = !!data.pickup;
             const routeStr = isLocalMove 
                 ? `🇨🇦 ${data.pickup} <i class="fas fa-arrow-right text-muted small"></i> ${data.dropoff}`
@@ -230,22 +256,18 @@
                 ? `<span class="badge bg-info text-dark">${data.service}</span><br><small>${data.date} @ ${data.time}</small>`
                 : `<span class="badge bg-warning text-dark">${data.weight}kg</span><br><small class="text-danger">By: ${data.deadline}</small>`;
 
-            // Handle Status & Accepted By
             const status = data.status || "open";
-            let statusBadge = "";
-            let actionButtons = `<button class="btn btn-sm btn-outline-danger delete-btn" data-id="${id}" data-col="loads" title="Delete Load"><i class="fas fa-trash"></i></button>`;
+            let statusBadge = status === "open" 
+                ? `<span class="badge bg-primary">Open</span>`
+                : `<span class="badge bg-success mb-1">Accepted</span><br><small class="text-muted" style="font-size: 0.7rem;">ID: ${data.acceptedBy?.substring(0,6)}...</small>`;
 
-            if (status === "open") {
-                statusBadge = `<span class="badge bg-primary">Open</span>`;
-            } else if (status === "accepted") {
-                statusBadge = `<span class="badge bg-success mb-1">Accepted</span><br><small class="text-muted" style="font-size: 0.75rem;">By: ${data.acceptedBy}</small>`;
-                // Add a "Reset" button for accepted jobs
+            let actionButtons = `<button class="btn btn-sm btn-outline-danger delete-btn" data-id="${id}" data-col="loads"><i class="fas fa-trash"></i></button>`;
+            if (status === "accepted") {
                 actionButtons = `
                   <div class="btn-group">
                     <button class="btn btn-sm btn-outline-warning reset-btn" data-id="${id}" title="Reset to Open"><i class="fas fa-undo"></i></button>
-                    <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${id}" data-col="loads" title="Delete Load"><i class="fas fa-trash"></i></button>
-                  </div>
-                `;
+                    <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${id}" data-col="loads"><i class="fas fa-trash"></i></button>
+                  </div>`;
             }
 
             loadsTableBody.innerHTML += `
@@ -261,27 +283,18 @@
         });
       });
 
-      // 3. Cargo Requests (Unchanged)
+      // 3. Cargo Requests
       onSnapshot(query(cargoCollection, orderBy('createdAt', 'desc')), (snapshot) => {
         cargoTableBody.innerHTML = snapshot.empty ? `<tr><td colspan="8" class="text-center text-muted">No cargo requests.</td></tr>` : "";
         snapshot.forEach(doc => {
             const data = doc.data();
             const dateStr = data.createdAt ? new Date(data.createdAt.toDate()).toLocaleDateString() : "-";
-            
             cargoTableBody.innerHTML += `
             <tr>
                 <td><span class="badge badge-ref">${data.refNum || "N/A"}</span></td>
-                <td>
-                    <div class="fw-bold">${data.name}</div>
-                    <div class="small text-muted"><i class="fas fa-phone-alt"></i> ${data.phone}</div>
-                </td>
-                <td>
-                    <div class="fw-bold text-primary">${data.city}</div>
-                    <div class="small text-muted" style="max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${data.address}">${data.address}</div>
-                </td>
-                <td>
-                    <div class="fw-bold">${data.quantity} x ${data.itemType}</div>
-                </td>
+                <td><div class="fw-bold">${data.name}</div><div class="small text-muted">${data.phone}</div></td>
+                <td><div class="fw-bold text-primary">${data.city}</div><div class="small text-muted text-truncate" style="max-width:120px;">${data.address}</div></td>
+                <td><div class="fw-bold">${data.quantity} x ${data.itemType}</div></td>
                 <td><span class="badge badge-price">${data.estimatedPrice || "Quote"}</span></td>
                 <td>${data.receiver || "-"}</td>
                 <td class="small">${dateStr}</td>
@@ -289,67 +302,101 @@
             </tr>`;
         });
       });
+
+      // 4. Drivers (Vetting System)
+      const moversQuery = query(usersCollection, where("userType", "==", "mover"));
+      onSnapshot(moversQuery, (snapshot) => {
+        driversTableBody.innerHTML = snapshot.empty ? `<tr><td colspan="6" class="text-center text-muted">No drivers registered.</td></tr>` : "";
+        snapshot.forEach(docSnap => {
+            const driver = docSnap.data();
+            const id = docSnap.id;
+            const isApproved = driver.isApproved === true;
+            const statusBadge = isApproved 
+                ? `<span class="badge bg-success"><i class="fas fa-check-circle"></i> Approved</span>` 
+                : `<span class="badge bg-warning text-dark"><i class="fas fa-clock"></i> Pending</span>`;
+            const approveBtn = isApproved 
+                ? `<button class="btn btn-sm btn-outline-secondary approve-driver-btn" data-id="${id}"><i class="fas fa-user-slash"></i> Revoke</button>`
+                : `<button class="btn btn-sm btn-primary approve-driver-btn" data-id="${id}"><i class="fas fa-user-check"></i> Approve</button>`;
+
+            driversTableBody.innerHTML += `
+            <tr>
+                <td class="fw-bold">${driver.fullName || "N/A"}</td>
+                <td><small>${driver.email}</small><br><small class="text-muted">${driver.phone}</small></td>
+                <td><span class="badge bg-info text-dark">${driver.vehicleType || "N/A"}</span></td>
+                <td><code>${driver.licensePlate || "N/A"}</code></td>
+                <td>${statusBadge}</td>
+                <td>
+                  <div class="btn-group">
+                    ${approveBtn}
+                    <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${id}" data-col="users"><i class="fas fa-trash"></i></button>
+                  </div>
+                </td>
+            </tr>`;
+        });
+      });
     }
 
-    // --- Action Listeners (Delete & Reset) ---
+    // --- Unified Action Listeners ---
     document.addEventListener('click', async (e) => {
-        // Handle Delete
+        // Delete Handler
         const deleteBtn = e.target.closest('.delete-btn');
         if (deleteBtn) {
             const id = deleteBtn.dataset.id;
             const col = deleteBtn.dataset.col;
-            let colRef;
+            let colRef = col === "couriers" ? courierCollection : (col === "loads" ? loadsCollection : (col === "cargo_requests" ? cargoCollection : usersCollection));
 
-            if (col === "couriers") colRef = courierCollection;
-            else if (col === "loads") colRef = loadsCollection;
-            else if (col === "cargo_requests") colRef = cargoCollection;
-
-            if (confirm("Permanently delete this entry?")) {
-                deleteBtn.classList.add('loading');
+            if (confirm(`Permanently delete this ${col === 'users' ? 'driver account' : 'entry'}?`)) {
                 try {
                     await deleteDoc(doc(colRef, id));
                     showFeedback("Deleted successfully.", "success");
                 } catch (err) {
-                    console.error(err);
-                    showFeedback("Error deleting: " + err.message, "danger");
-                    deleteBtn.classList.remove('loading');
+                    showFeedback("Error: " + err.message, "danger");
                 }
             }
-            return; // Exit click handler
         }
 
-        // Handle Reset (NEW)
+        // Reset Load Handler
         const resetBtn = e.target.closest('.reset-btn');
         if (resetBtn) {
             const id = resetBtn.dataset.id;
-            if (confirm("Reset this load to 'Open'? This will remove the assigned driver.")) {
+            if (confirm("Reset this load to 'Open'?")) {
                 try {
-                    const loadDocRef = doc(db, "loads", id);
-                    await updateDoc(loadDocRef, {
-                        status: "open",
-                        acceptedBy: null
-                    });
-                    showFeedback("Load reset to Open.", "success");
+                    await updateDoc(doc(loadsCollection, id), { status: "open", acceptedBy: null });
+                    showFeedback("Load reset.", "success");
                 } catch (err) {
-                    console.error("Error resetting load:", err);
-                    showFeedback("Error resetting load.", "danger");
+                    showFeedback("Error resetting.", "danger");
+                }
+            }
+        }
+
+        // Driver Approval Handler
+        const approveBtn = e.target.closest('.approve-driver-btn');
+        if (approveBtn) {
+            const id = approveBtn.dataset.id;
+            const isRevoking = approveBtn.innerHTML.includes("Revoke");
+            if (confirm(isRevoking ? "Revoke approval?" : "Approve this driver?")) {
+                try {
+                    await updateDoc(doc(usersCollection, id), { isApproved: !isRevoking });
+                    showFeedback(isRevoking ? "Approval revoked." : "Driver approved!", "success");
+                } catch (err) {
+                    showFeedback("Update failed.", "danger");
                 }
             }
         }
     });
 
-    // --- Logout ---
+    // --- Helper Functions ---
     document.getElementById('logoutBtn').addEventListener('click', () => {
         signOut(auth).then(() => window.location.href = "login.html");
     });
 
     function showFeedback(msg, type) {
-        generalFeedback.className = `alert alert-${type} fade show fixed-top m-3 mx-auto`;
-        generalFeedback.style.maxWidth = "500px";
+        generalFeedback.className = `alert alert-${type} fade show fixed-top m-3 mx-auto shadow`;
+        generalFeedback.style.maxWidth = "400px";
         generalFeedback.style.zIndex = "3000";
         generalFeedbackText.textContent = msg;
         generalFeedback.classList.remove('d-none');
-        setTimeout(() => generalFeedback.classList.add('d-none'), 4000);
+        setTimeout(() => generalFeedback.classList.add('d-none'), 3000);
     }
   </script>
 </body>
