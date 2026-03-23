@@ -172,6 +172,12 @@
                 <label class="form-label fw-bold"><i class="fas fa-hourglass-half me-1"></i> <span data-i18n="estHours">Estimated Hours</span></label>
                 <input type="number" id="estimatedHours" class="form-control" min="1" placeholder="e.g., 3" required>
               </div>
+              
+              <div class="col-md-12 mt-4">
+                <label class="form-label fw-bold"><i class="fas fa-phone text-success me-1"></i> <span data-i18n="phoneLabel">Your Phone Number</span></label>
+                <input type="tel" id="customerPhone" class="form-control" placeholder="e.g., 416-555-0198" required>
+                <small class="text-muted">Safe & secure. Hidden until a mover accepts your job.</small>
+              </div>
 
               <div class="col-md-6 mt-4">
                 <label class="form-label fw-bold"><i class="fas fa-calendar-alt text-primary me-1"></i> <span data-i18n="moveDate">Move Date</span></label>
@@ -348,8 +354,25 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   
-  <script>
-    // --- Translations Dictionary ---
+  <script type="module">
+    // --- 1. FIREBASE SETUP ---
+    // You MUST replace these empty strings with your actual Firebase config!
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_MESSAGING_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // --- 2. Translations Dictionary ---
     const translations = {
       en: {
         headerTitle: "Canada Moving Service", headerSub: "Professional local moving and transport",
@@ -357,6 +380,7 @@
         dropoff: "Drop-off Address / City", serviceType: "Service Type",
         sizeGuideLink: "Size Guide", estHours: "Estimated Hours",
         moveDate: "Move Date", moveTime: "Start Time", prefMover: "Preferred Mover",
+        phoneLabel: "Your Phone Number", // <--- NEW Translation added
         estTotalLabel: "Estimated Total: ", baseFeeNotice1: "Includes $", baseFeeNotice2: " CAD base fee. Final price depends on actual time.",
         bookBtn: "Book Now via WhatsApp", driversTitle: "👨‍✈️ Top Available Movers in Canada",
         faqTitle: "❓ Frequently Asked Questions", noMoverTitle: "Can't find a mover right now?",
@@ -369,6 +393,7 @@
         dropoff: "ዝበጽሓሉ ቦታ / ከተማ", serviceType: "ዓይነት ኣገልግሎት",
         sizeGuideLink: "መጠን መገምገሚ", estHours: "ዝወስዶ ግዜ (ብግምት)",
         moveDate: "ዕለት ጉዕዞ", moveTime: "ዝጅምረሉ ሰዓት", prefMover: "ትደልይዎ ኣውቲስታ",
+        phoneLabel: "ቁጽሪ ተሌፎንኩም", // <--- NEW Translation added
         estTotalLabel: "ድምር ገምጋም ዋጋ: ", baseFeeNotice1: "ናይ መበገሲ ዋጋ $", baseFeeNotice2: " CAD የጠቓልል። ናይ መወዳእታ ዋጋ ኣብ ዝወሰዶ ግዜ ይምርኰስ።",
         bookBtn: "ብ WhatsApp ስደዱ", driversTitle: "👨‍✈️ ኣብ ካናዳ ዝርከቡ ብሉጻት ገያሾ",
         faqTitle: "❓ ብተደጋጋሚ ዝሕተቱ ሕቶታት", noMoverTitle: "ገያሻይ ክትረኽቡ ኣይከኣልኩምን?",
@@ -381,6 +406,7 @@
         dropoff: "መድረሻ ቦታ / ከተማ", serviceType: "የአገልግሎት ዓይነት",
         sizeGuideLink: "የመኪና መጠን መመሪያ", estHours: "የሚወስደው ጊዜ (በግምት)",
         moveDate: "የሚጓጓዝበት ቀን", moveTime: "የሚጀመርበት ሰዓት", prefMover: "የመረጡት አጓጓዥ",
+        phoneLabel: "የስልክ ቁጥርዎ", // <--- NEW Translation added
         estTotalLabel: "አጠቃላይ የዋጋ ግምት: ", baseFeeNotice1: "የመነሻ ክፍያ $", baseFeeNotice2: " CAD ያካትታል። የመጨረሻው ዋጋ በሚወስደው ጊዜ ላይ ይወሰናል።",
         bookBtn: "በ WhatsApp አሁኑኑ ይመዝገቡ", driversTitle: "👨‍✈️ በካናዳ የሚገኙ ምርጥ አጓጓዦች",
         faqTitle: "❓ በተደጋጋሚ የሚጠየቁ ጥያቄዎች", noMoverTitle: "አጓጓዥ ማግኘት አልቻሉም?",
@@ -389,13 +415,12 @@
       }
     };
 
-    // --- Language Switch Logic ---
+    // --- 3. Language Switch Logic ---
     document.getElementById('languageSelector').addEventListener('change', function() {
       const lang = this.value;
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (translations[lang] && translations[lang][key]) {
-          // Preserve inner HTML structure if elements contain icons
           if (el.childNodes.length > 0 && el.childNodes[0].nodeType === 1) {
              const icon = el.querySelector('i');
              if(icon) {
@@ -410,13 +435,12 @@
           }
         }
       });
-      // Update buttons
       document.querySelectorAll('.select-btn-text').forEach(btn => {
          btn.textContent = lang === 'en' ? 'Select this Driver' : (lang === 'ti' ? 'ነዚ ገያሻይ ምረጽ' : 'ይህንን አጓጓዥ ይምረጡ');
       });
     });
 
-    // --- Live Calculator Logic ---
+    // --- 4. Live Calculator Logic ---
     const serviceTypeSelect = document.getElementById('serviceType');
     const estimatedHoursInput = document.getElementById('estimatedHours');
     const quoteResultDisplay = document.getElementById('quoteResult');
@@ -426,20 +450,16 @@
       const selectedOption = serviceTypeSelect.options[serviceTypeSelect.selectedIndex];
       const baseFee = parseFloat(selectedOption.getAttribute('data-base'));
       const hourlyRate = parseInt(selectedOption.value);
-      
       const hours = parseFloat(estimatedHoursInput.value) || 0; 
       const total = baseFee + (hourlyRate * hours);
-      
       const isAm = document.getElementById('languageSelector').value === 'am';
       const isTi = document.getElementById('languageSelector').value === 'ti';
       
-      // Keep price format uniform
       if(isAm || isTi) {
           quoteResultDisplay.parentElement.innerHTML = `<span data-i18n="estTotalLabel">${translations[document.getElementById('languageSelector').value].estTotalLabel}</span> <span id="quoteResult" style="color: var(--canada-dark); font-size: 1.5rem; font-weight: bold;">$${total} CAD</span>`;
       } else {
           quoteResultDisplay.textContent = `$${total} CAD`;
       }
-      
       baseFeeDisplay.textContent = baseFee; 
       return total;
     }
@@ -447,11 +467,12 @@
     serviceTypeSelect.addEventListener('change', calculateQuote);
     estimatedHoursInput.addEventListener('input', calculateQuote);
 
-   // --- WhatsApp Booking Form Logic ---
+    // --- 5. Firebase Submission & WhatsApp Backup ---
     const bookingForm = document.getElementById('movingBookingForm');
     const adminWhatsAppNumber = "16474624710"; 
 
-    bookingForm.addEventListener('submit', function(e) {
+    // Note the async keyword here
+    bookingForm.addEventListener('submit', async function(e) {
       e.preventDefault(); 
       if (!bookingForm.checkValidity()) {
         e.stopPropagation();
@@ -459,30 +480,65 @@
         return;
       }
 
+      // UI update: show loading state on button
+      const submitBtn = bookingForm.querySelector('button[type="submit"]');
+      const originalBtnText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Posting...';
+      submitBtn.disabled = true;
+
+      // Get values
       const pickup = document.getElementById('pickupLocation').value;
       const dropoff = document.getElementById('dropoffLocation').value;
       const serviceName = serviceTypeSelect.options[serviceTypeSelect.selectedIndex].text;
       const hours = estimatedHoursInput.value;
-      const date = document.getElementById('moveDate').value; // NEW
-      const time = document.getElementById('moveTime').value; // NEW
+      const date = document.getElementById('moveDate').value; 
+      const time = document.getElementById('moveTime').value; 
+      const customerPhone = document.getElementById('customerPhone').value; // Grabbing the new field
       const preferredDriver = document.getElementById('preferredDriver').value;
       const totalQuote = calculateQuote();
 
-      const message = `Hello Eri Shipping Hub! I would like to book a moving service in Canada. 🇨🇦%0A%0A` +
-                      `*Pick-up:* ${pickup}%0A` +
-                      `*Drop-off:* ${dropoff}%0A` +
-                      `*Date:* ${date}%0A` +          // NEW
-                      `*Time:* ${time}%0A` +          // NEW
-                      `*Service:* ${serviceName}%0A` +
-                      `*Estimated Time:* ${hours} hours%0A` +
-                      `*Preferred Driver:* ${preferredDriver}%0A` +
-                      `*Total Quoted Price:* $${totalQuote} CAD%0A%0A` +
-                      `Please confirm availability!`;
+      try {
+        // A. Save to Firebase
+        await addDoc(collection(db, "loads"), {
+          pickup: pickup,
+          dropoff: dropoff,
+          date: date,
+          time: time,
+          service: serviceName,
+          hours: hours,
+          preferredDriver: preferredDriver,
+          phone: customerPhone,
+          totalQuote: totalQuote,
+          city: "Toronto", // Hardcoded filter tag
+          status: "open", // The crucial marketplace status
+          acceptedBy: null,
+          createdAt: new Date()
+        });
 
-      window.open(`https://wa.me/${adminWhatsAppNumber}?text=${message}`, '_blank');
+        // B. Send backup WhatsApp message
+        const message = `Hello Eri Shipping Hub! I just posted a moving job to the Load Board. 🇨🇦%0A%0A` +
+                        `*Route:* ${pickup} to ${dropoff}%0A` +
+                        `*Date:* ${date} at ${time}%0A` +
+                        `*My Phone:* ${customerPhone}%0A` +
+                        `*Service:* ${serviceName}%0A` +
+                        `*Preferred Driver:* ${preferredDriver}`;
+
+        window.open(`https://wa.me/${adminWhatsAppNumber}?text=${message}`, '_blank');
+        
+        // C. Optional: Redirect to load board
+        // window.location.href = "load-board.html";
+
+      } catch (error) {
+        console.error("Error adding document: ", error);
+        alert("Error posting request. Please try again or use WhatsApp.");
+      } finally {
+        // Reset button state
+        submitBtn.innerHTML = originalBtnText;
+        submitBtn.disabled = false;
+      }
     });
     
-  // --- Smooth Select Driver Logic ---
+  // --- 6. Smooth Select Driver Logic ---
     document.querySelectorAll('.select-driver-btn').forEach(button => {
       button.addEventListener('click', function() {
         const selectedDriver = this.getAttribute('data-driver');
