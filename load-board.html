@@ -280,11 +280,22 @@
         </form>
     </section>
 
-    <section>
-      <div class="d-flex justify-content-center mb-4">
-          <span style="background: var(--app-primary); color: white; padding: 0.6rem 2rem; border-radius: 50px; font-weight:bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+   <section>
+      <div class="d-flex flex-column align-items-center mb-4">
+          <span class="mb-3" style="background: var(--app-primary); color: white; padding: 0.6rem 2rem; border-radius: 50px; font-weight:bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
             📋 Available Loads (ዝውሰድ ንብረት)
           </span>
+          
+          <div class="btn-group shadow-sm" role="group" aria-label="Load Filters">
+            <input type="radio" class="btn-check" name="loadFilter" id="filterAll" value="all" checked>
+            <label class="btn btn-outline-primary fw-bold px-4" for="filterAll">All</label>
+
+            <input type="radio" class="btn-check" name="loadFilter" id="filterLocal" value="local">
+            <label class="btn btn-outline-primary fw-bold px-3" for="filterLocal">🇨🇦 Local</label>
+
+            <input type="radio" class="btn-check" name="loadFilter" id="filterIntl" value="intl">
+            <label class="btn btn-outline-primary fw-bold px-3" for="filterIntl">🌍 Int'l</label>
+          </div>
       </div>
       
       <div id="loadList" class="row gy-4">
@@ -352,7 +363,7 @@
     let currentUser = null; // NEW: Track the logged-in user
     let currentSnapshot = null;
     let feedbackHideTimeout = null;
-
+    let currentFilter = "all"; // Tracks the active filter
     // --- Helpers ---
     function showGeneralFeedback(message, type = 'info', duration = 7000) {
         if (feedbackHideTimeout) clearTimeout(feedbackHideTimeout);
@@ -398,7 +409,7 @@
             } else {
                 // If logged out, button goes to Login
                 authNavBtn.innerHTML = '<i class="fas fa-user-circle"></i>Login';
-                authNavBtn.href = "loginmover.html";
+                authNavBtn.href = "loginmoving.html";
             }
         }
 
@@ -484,6 +495,10 @@
             
             // Check if it's an international shipping load or a local Canada move
             const isLocalMove = !!load.pickup; 
+          // NEW: Filter Logic
+            if (currentFilter === "local" && !isLocalMove) return; // Hide int'l jobs
+            if (currentFilter === "intl" && isLocalMove) return;   // Hide local jobs
+          
             
             // Expiration logic (only for international loads with deadlines right now)
             if (!isLocalMove) {
@@ -626,6 +641,16 @@
                 showGeneralFeedback("Failed to delete.", "danger");
             }
         }
+    });
+
+   // --- NEW: Filter Click Listener ---
+    document.querySelectorAll('input[name="loadFilter"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            currentFilter = e.target.value;
+            if (currentSnapshot) {
+                renderLoads(currentSnapshot); // Instantly redraw the board!
+            }
+        });
     });
 
     // --- Select2 Init ---
