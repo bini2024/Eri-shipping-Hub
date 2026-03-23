@@ -316,9 +316,10 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-  <script type="module">
+ <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, doc, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    // NEW: Added updateDoc to the imports
+    import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, doc, query, where, getDocs, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = {
@@ -344,6 +345,7 @@
     const agreeToTermsCheckbox = document.getElementById('agreeToTermsCheckbox');
     
     let isAdmin = false;
+    let currentUser = null; // NEW: Track the logged-in user
     let currentSnapshot = null;
     let feedbackHideTimeout = null;
 
@@ -379,11 +381,12 @@
 
     // --- Auth Listener ---
     onAuthStateChanged(auth, (user) => {
-        isAdmin = !!user;
+        currentUser = user; // Store user details
+        isAdmin = !!user; // Keeping your existing admin logic
         if (currentSnapshot) renderLoads(currentSnapshot);
     });
 
-    // --- Submit Logic ---
+    // --- Submit Logic (International Loads) ---
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
         clearAllValidationFeedback();
@@ -408,7 +411,6 @@
         setButtonLoadingState(submitLoadBtn, true);
 
         try {
-            // Cooldown Check
             const lastPostTime = localStorage.getItem("lastLoadPostTime");
             const cooldownDuration = 2 * 60 * 60 * 1000;
             const currentTime = Date.now();
@@ -417,13 +419,15 @@
                  throw new Error(`Please wait ${minutes} mins before posting again.`);
             }
 
-            // Duplicate Check
             const dupQuery = query(loadRef, where("from","==",from), where("to","==",to), where("deadline","==",deadline), where("phone","==",phone));
             const existing = await getDocs(dupQuery);
             if (!existing.empty) throw new Error("This load is already posted.");
 
+            // NEW: Added status and acceptedBy to the payload
             await addDoc(loadRef, {
                 from, to, weight: parseFloat(weight), deadline, phone, comment,
+                status: "open", // Key for matchmaking
+                acceptedBy: null, // Key for matchmaking
                 createdAt: serverTimestamp()
             });
 
@@ -442,7 +446,7 @@
         }
     });
 
-    // --- Render Logic ---
+    // --- Render Logic (Hybrid Board: Local & International) ---
     function renderLoads(snapshot) {
         currentSnapshot = snapshot;
         loadList.innerHTML = "";
@@ -457,26 +461,73 @@
 
         snapshot.forEach(docSnap => {
             const load = docSnap.data();
-            const deadlineDate = load.deadline ? new Date(load.deadline + 'T00:00:00') : null;
-
-            if (!deadlineDate || deadlineDate < now) return; // Skip expired
+            const loadId = docSnap.id;
+            
+            // Check if it's an international shipping load or a local Canada move
+            const isLocalMove = !!load.pickup; 
+            
+            // Expiration logic (only for international loads with deadlines right now)
+            if (!isLocalMove) {
+                const deadlineDate = load.deadline ? new Date(load.deadline + 'T00:00:00') : null;
+                if (!deadlineDate || deadlineDate < now) return; 
+            }
             hasLoads = true;
+
+            // --- MARKETPLACE LOGIC ---
+            let displayPhone = "***-***-**** 🔒 (Accept to view)";
+            let actionButton = "";
+            let cardStyle = "";
+
+            // Treat missing status as "open" for older loads
+            const currentStatus = load.status || "open"; 
+
+            if (currentStatus === "open") {
+                cardStyle = "border-left: 4px solid var(--app-secondary);";
+                if (currentUser) {
+                    actionButton = `<button class="btn btn-sm btn-success mt-3 w-100 fw-bold accept-load-btn" data-id="${loadId}">🤝 Accept Load</button>`;
+                } else {
+                    actionButton = `<button class="btn btn-sm btn-outline-secondary mt-3 w-100" disabled>Log in as Mover to Accept</button>`;
+                }
+            } else if (currentStatus === "accepted") {
+                if (currentUser && load.acceptedBy === currentUser.uid) {
+                    displayPhone = load.phone; // 🎉 Reveal Phone Number!
+                    cardStyle = "border-left: 4px solid #28a745; background-color: #f8fff9;";
+                    actionButton = `<button class="btn btn-sm btn-outline-success mt-3 w-100 fw-bold" disabled>✅ You Accepted This Job</button>`;
+                } else {
+                    cardStyle = "border-left: 4px solid #dc3545; opacity: 0.8;";
+                    actionButton = `<button class="btn btn-sm btn-danger mt-3 w-100" disabled>🔒 Claimed by another Mover</button>`;
+                }
+            }
+
+            // --- DYNAMIC UI CONTENT ---
+            const routeHeader = isLocalMove ? `🇨🇦 ${load.pickup} <i class="fas fa-arrow-right mx-1 text-primary"></i> ${load.dropoff}` : `🌍 ${load.from} <i class="fas fa-arrow-right mx-1 text-primary"></i> ${load.to}`;
+            
+            const badgeDetails = isLocalMove 
+                ? `<span class="badge bg-info text-dark"><i class="fas fa-truck-moving"></i> ${load.service}</span> <small class="text-muted fw-bold">${load.date} @ ${load.time}</small>`
+                : `<span class="badge bg-warning text-dark"><i class="fas fa-weight-hanging"></i> ${load.weight} kg</span> <small class="text-muted fw-bold">Before: ${load.deadline}</small>`;
+
+            const notes = isLocalMove ? `Est. ${load.hours} hours. Budget: $${load.totalQuote}` : (load.comment || "No details provided.");
 
             const div = document.createElement("div");
             div.className = "col-lg-4 col-md-6 mb-4";
             div.innerHTML = `
-              <div class="card h-100 load-card shadow-sm">
+              <div class="card h-100 load-card shadow-sm" style="${cardStyle}">
                 <div class="card-body d-flex flex-column">
-                  <div class="d-flex justify-content-between mb-2">
-                     <span class="badge bg-warning text-dark"><i class="fas fa-weight-hanging"></i> ${load.weight} kg</span>
-                     <small class="text-muted">${load.deadline}</small>
+                  <div class="d-flex justify-content-between mb-3 align-items-center border-bottom pb-2">
+                     ${badgeDetails}
                   </div>
-                  <h5 class="card-title text-center my-2">${load.from} <i class="fas fa-arrow-right mx-2 text-primary"></i> ${load.to}</h5>
-                  <hr class="my-2">
-                  <p class="mb-1"><i class="fas fa-phone me-2 text-success"></i><a href="tel:${load.phone}" class="text-decoration-none text-dark fw-bold">${load.phone}</a></p>
-                  <p class="mb-3 flex-grow-1 text-muted small"><i class="fas fa-sticky-note me-2"></i>${load.comment || "No details."}</p>
+                  <h6 class="card-title text-center mb-3" style="font-size:1.1rem;">${routeHeader}</h6>
                   
-                  ${isAdmin ? `<button class="btn btn-sm btn-outline-danger mt-auto delete-load-btn w-100" data-id="${docSnap.id}">Delete</button>` : ""}
+                  <div class="p-2 rounded mb-2 text-center" style="background-color: #f1f3f5;">
+                      <p class="mb-0 text-danger fw-bold" style="font-size: 1.1rem;"><i class="fas fa-phone-alt me-2"></i>${displayPhone}</p>
+                  </div>
+                  
+                  <p class="mb-3 flex-grow-1 text-muted small"><i class="fas fa-sticky-note me-2"></i>${notes}</p>
+                  
+                  <div class="mt-auto">
+                      ${actionButton}
+                      ${isAdmin ? `<button class="btn btn-sm btn-link text-danger mt-2 w-100 delete-load-btn" data-id="${loadId}">Delete (Admin)</button>` : ""}
+                  </div>
                 </div>
               </div>
             `;
@@ -485,6 +536,39 @@
 
         if (!hasLoads) loadList.innerHTML = `<div class="col-12 text-center text-muted"><p>📭 No active loads found.</p></div>`;
     }
+
+    // --- NEW: Accept Load Action ---
+    loadList.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('accept-load-btn')) {
+            if (!currentUser) {
+                showGeneralFeedback("You must be logged in to accept a job.", "warning");
+                return;
+            }
+
+            if (!confirm("Are you sure you want to commit to this load?")) return;
+
+            const btn = e.target;
+            const loadId = btn.getAttribute('data-id');
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            btn.disabled = true;
+
+            try {
+                const loadDocRef = doc(db, "loads", loadId);
+                await updateDoc(loadDocRef, {
+                    status: "accepted",
+                    acceptedBy: currentUser.uid
+                });
+                showGeneralFeedback("🎉 Load Accepted! You can now view the phone number.", "success");
+            } catch (err) {
+                console.error("Error accepting load: ", err);
+                showGeneralFeedback("Failed to accept. It might have already been claimed.", "danger");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+    });
 
     // --- Listener ---
     const loadsQuery = query(loadRef, orderBy("createdAt", "desc"));
