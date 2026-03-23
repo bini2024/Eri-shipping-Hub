@@ -333,10 +333,10 @@
 
  <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    // NEW: Added updateDoc to the imports
-    import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, doc, query, where, getDocs, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    // FIXED: Removed duplicate getDocs and added getDoc
+    import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, doc, query, where, getDocs, orderBy, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
+   
     const firebaseConfig = {
       apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ", 
       authDomain: "erishipping-e4532.firebaseapp.com",
@@ -363,6 +363,7 @@
     let currentUser = null; // NEW: Track the logged-in user
     let currentSnapshot = null;
     let feedbackHideTimeout = null;
+   let currentUserProfile = null; // This will hold the driver's isApproved status
     let currentFilter = "all"; // Tracks the active filter
     // --- Helpers ---
     function showGeneralFeedback(message, type = 'info', duration = 7000) {
@@ -394,23 +395,29 @@
         $('.select2-selection').removeClass('is-invalid');
     }
 
-    // --- Auth Listener ---
-    onAuthStateChanged(auth, (user) => {
+   // --- Auth Listener ---
+    onAuthStateChanged(auth, async (user) => {
         currentUser = user; 
         isAdmin = !!user; 
         
-        // Make the navigation button smart!
         const authNavBtn = document.getElementById('authNavBtn');
-        if (authNavBtn) {
-            if (user) {
-                // If logged in, button goes to My Jobs
-                authNavBtn.innerHTML = '<i class="fas fa-id-badge text-success"></i><span class="text-success fw-bold">My Jobs</span>';
-                authNavBtn.href = "my-jobs.html"; 
-            } else {
-                // If logged out, button goes to Login
-                authNavBtn.innerHTML = '<i class="fas fa-user-circle"></i>Login';
-                authNavBtn.href = "loginmoving.html";
+        if (user) {
+            // Check if the user is an approved driver
+            try {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    currentUserProfile = userDoc.data();
+                }
+            } catch (err) {
+                console.error("Error fetching profile:", err);
             }
+
+            authNavBtn.innerHTML = '<i class="fas fa-id-badge text-success"></i><span class="text-success fw-bold">My Jobs</span>';
+            authNavBtn.href = "my-jobs.html"; 
+        } else {
+            currentUserProfile = null;
+            authNavBtn.innerHTML = '<i class="fas fa-user-circle"></i>Login';
+            authNavBtn.href = "loginmoving.html";
         }
 
         if (currentSnapshot) renderLoads(currentSnapshot);
@@ -554,17 +561,38 @@
             // NEW: Define the route text so the button knows what job it is
             const routeText = isLocalMove ? `${load.pickup} to ${load.dropoff}` : `${load.from} to ${load.to}`;
 
-            if (currentStatus === "open") {
+           if (currentStatus === "open") {
                 cardStyle = "border-left: 4px solid var(--app-secondary);";
+                
                 if (currentUser) {
-                    // NEW: Added data-route="${routeText}" to the button
-                    actionButton = `<button class="btn btn-sm btn-success mt-3 w-100 fw-bold accept-load-btn" data-id="${loadId}" data-route="${routeText}">🤝 Accept Load</button>`;
+                    // --- THE ADMIN LOCK ---
+                    // We check if the profile exists and if isApproved is explicitly true
+                    const isApproved = currentUserProfile && currentUserProfile.isApproved === true;
+
+                    if (!isApproved) {
+                        // If they are logged in but NOT approved yet
+                        actionButton = `
+                            <div class="alert alert-warning py-2 px-3 mt-3 mb-0 small border-0 text-center" style="border-radius: 8px;">
+                                <i class="fas fa-clock me-1"></i> <strong>Pending Approval</strong><br>
+                                Admin must verify your vehicle.
+                            </div>
+                            <button class="btn btn-sm btn-secondary mt-2 w-100 fw-bold" disabled style="opacity: 0.6;">
+                                🔒 Button Locked
+                            </button>
+                        `;
+                    } else {
+                        // If they are approved, they get the green light!
+                        actionButton = `<button class="btn btn-sm btn-success mt-3 w-100 fw-bold accept-load-btn" data-id="${loadId}" data-route="${routeText}">🤝 Accept Load</button>`;
+                    }
                 } else {
+                    // Not logged in at all
                     actionButton = `<button class="btn btn-sm btn-outline-secondary mt-3 w-100" disabled>Log in as Mover to Accept</button>`;
                 }
+
             } else if (currentStatus === "accepted") {
+                // Keep your existing 'accepted' logic here
                 if (currentUser && load.acceptedBy === currentUser.uid) {
-                    displayPhone = load.phone; // 🎉 Reveal Phone Number!
+                    displayPhone = load.phone; 
                     cardStyle = "border-left: 4px solid #28a745; background-color: #f8fff9;";
                     actionButton = `<button class="btn btn-sm btn-outline-success mt-3 w-100 fw-bold" disabled>✅ You Accepted This Job</button>`;
                 } else {
