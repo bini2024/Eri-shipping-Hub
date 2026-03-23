@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>My Jobs | Eri Shipping Hub</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+  <style>
+    :root {
+       --app-primary: #0a3d62; 
+       --app-secondary: #1e90ff; 
+    }
+
+    body {
+      background-color: #f4f7f6;
+      min-height: 100vh;
+      margin: 0;
+      padding-bottom: 90px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* --- Header --- */
+    .dashboard-header {
+      background: linear-gradient(135deg, var(--app-primary), #112233);
+      color: white;
+      padding: 30px 0 40px 0;
+      border-bottom: 5px solid #28a745;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    /* --- Job Cards --- */
+    .job-card {
+      background: white;
+      border-radius: 12px;
+      border-left: 5px solid #28a745;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+      margin-bottom: 20px;
+    }
+    
+    .contact-box {
+      background-color: #e8f5e9;
+      border: 1px dashed #28a745;
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    /* --- Bottom Nav --- */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; width: 100%;
+      background-color: var(--app-primary);
+      display: flex; justify-content: space-around; align-items: center;
+      padding: 10px 0; z-index: 2000; box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+    }
+    .bottom-nav a {
+      color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.8rem;
+      display: flex; flex-direction: column; align-items: center; transition: color 0.3s;
+    }
+    .bottom-nav a i { font-size: 1.2rem; margin-bottom: 4px; }
+    .bottom-nav a.active { color: white; }
+    .bottom-nav a.active i { color: #28a745; }
+  </style>
+</head>
+<body>
+
+  <header class="dashboard-header">
+    <div class="container position-relative">
+      <button id="logoutBtn" class="btn btn-sm btn-outline-light position-absolute top-0 end-0 mt-2 me-2">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
+      <h2 class="mb-1"><i class="fas fa-clipboard-check me-2 text-success"></i>My Accepted Jobs</h2>
+      <p class="mb-0 text-light" style="opacity: 0.9;">Manage your upcoming moves and shipments</p>
+    </div>
+  </header>
+
+  <main class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8" id="myJobsContainer">
+        <div class="text-center text-muted my-5">
+          <div class="spinner-border text-primary mb-3" role="status"></div>
+          <p>Loading your jobs...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <nav class="bottom-nav">
+      <a href="index.html"><i class="fas fa-home"></i> Home</a>
+      <a href="register.html"><i class="fas fa-plane-departure"></i> Post Trip</a>
+      <a href="load-board.html"><i class="fas fa-box-open"></i> Load Board</a>
+      <a href="https://t.me/Erishipping" target="_blank"><i class="fab fa-telegram-plane"></i> Support</a>
+      <a href="my-jobs.html" class="active"><i class="fas fa-id-badge"></i> My Jobs</a>
+  </nav>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ", 
+      authDomain: "erishipping-e4532.firebaseapp.com",
+      projectId: "erishipping-e4532",
+      storageBucket: "erishipping-e4532.appspot.com",
+      messagingSenderId: "388550131049",
+      appId: "1:388550131049:web:e9ac1784ab8e5fabc811f8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    
+    const myJobsContainer = document.getElementById('myJobsContainer');
+
+    // --- Security: Ensure they are logged in ---
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loadDriverJobs(user.uid);
+      } else {
+        // Kick them back to login if they aren't authenticated
+        window.location.href = "loginmover.html";
+      }
+    });
+
+    // --- Fetch and Display Jobs ---
+    async function loadDriverJobs(driverUid) {
+      try {
+        // Query the database: Find loads where status is "accepted" AND acceptedBy is this specific driver
+        const q = query(collection(db, "loads"), 
+                        where("status", "==", "accepted"), 
+                        where("acceptedBy", "==", driverUid));
+        
+        const querySnapshot = await getDocs(q);
+        myJobsContainer.innerHTML = ""; // Clear loader
+
+        if (querySnapshot.empty) {
+          myJobsContainer.innerHTML = `
+            <div class="text-center p-5 bg-white rounded shadow-sm border">
+              <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+              <h5 class="text-dark fw-bold">No jobs yet!</h5>
+              <p class="text-muted">Head over to the Load Board to claim your first job.</p>
+              <a href="load-board.html" class="btn btn-primary mt-2">Go to Load Board</a>
+            </div>`;
+          return;
+        }
+
+        // Loop through their jobs and build the cards
+        querySnapshot.forEach((docSnap) => {
+          const load = docSnap.data();
+          const isLocalMove = !!load.pickup;
+          
+          const routeHeader = isLocalMove ? `🇨🇦 ${load.pickup} ➡️ ${load.dropoff}` : `🌍 ${load.from} ➡️ ${load.to}`;
+          const details = isLocalMove 
+            ? `<strong>Service:</strong> ${load.service} <br> <strong>Date:</strong> ${load.date} @ ${load.time}`
+            : `<strong>Weight:</strong> ${load.weight} kg <br> <strong>Deadline:</strong> ${load.deadline}`;
+
+          // Format WhatsApp message to customer
+          const waMessage = `Hello! This is your driver from Eri Shipping Hub. I have accepted your request for the route: ${routeHeader}.`;
+          const waLink = `https://wa.me/${load.phone.replace(/[^0-9]/g, '')}?text=${waMessage}`;
+
+          const cardHtml = `
+            <div class="job-card p-4">
+              <div class="d-flex justify-content-between align-items-start mb-3 border-bottom pb-2">
+                <h5 class="fw-bold text-dark mb-0" style="font-size: 1.1rem;">${routeHeader}</h5>
+                <span class="badge bg-success"><i class="fas fa-check-circle"></i> Confirmed</span>
+              </div>
+              
+              <p class="mb-2 text-secondary" style="font-size: 0.95rem;">${details}</p>
+              <p class="mb-0 text-muted small"><i class="fas fa-sticky-note me-1"></i> ${load.comment || "No extra notes."}</p>
+
+              <div class="contact-box">
+                <p class="text-dark fw-bold mb-1 small">Customer Phone Number</p>
+                <h4 class="text-success fw-bold mb-3"><i class="fas fa-phone-alt me-2"></i>${load.phone}</h4>
+                
+                <div class="d-flex gap-2">
+                  <a href="tel:${load.phone}" class="btn btn-outline-success w-50 fw-bold">
+                    <i class="fas fa-phone me-1"></i> Call
+                  </a>
+                  <a href="${waLink}" target="_blank" class="btn btn-success w-50 fw-bold">
+                    <i class="fab fa-whatsapp me-1"></i> Message
+                  </a>
+                </div>
+              </div>
+            </div>
+          `;
+          myJobsContainer.innerHTML += cardHtml;
+        });
+
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+        myJobsContainer.innerHTML = `<div class="alert alert-danger">Error loading jobs. Please refresh the page.</div>`;
+      }
+    }
+
+    // --- Logout Logic ---
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      signOut(auth).then(() => {
+        window.location.href = "load-board.html";
+      });
+    });
+
+  </script>
+</body>
+</html>
