@@ -416,7 +416,7 @@
         if (currentSnapshot) renderLoads(currentSnapshot);
     });
 
-    // --- Submit Logic (International Loads) ---
+  // --- Submit Logic (International Loads) ---
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
         clearAllValidationFeedback();
@@ -449,9 +449,45 @@
                  throw new Error(`Please wait ${minutes} mins before posting again.`);
             }
 
-            const dupQuery = query(loadRef, where("from","==",from), where("to","==",to), where("deadline","==",deadline), where("phone","==",phone));
-            const existing = await getDocs(dupQuery);
-            if (!existing.empty) throw new Error("This load is already posted.");
+            // --- ANTI-SPAM FIX: Query only by phone to prevent Firebase Index errors ---
+            const phoneQuery = query(loadRef, where("phone", "==", phone));
+            const existingDocs = await getDocs(phoneQuery);
+            
+            let isDuplicate = false;
+            existingDocs.forEach(doc => {
+                const data = doc.data();
+                // Check in-browser if the route and deadline match exactly
+                if (data.from === from && data.to === to && data.deadline === deadline) {
+                    isDuplicate = true;
+                }
+            });
+            
+            if (isDuplicate) {
+                throw new Error("This load is already posted. Please wait before posting again.");
+            }
+            
+            // NEW: Added status and acceptedBy to the payload
+            await addDoc(loadRef, {
+                from, to, weight: parseFloat(weight), deadline, phone, comment,
+                status: "open", // Key for matchmaking
+                acceptedBy: null, // Key for matchmaking
+                createdAt: serverTimestamp()
+            });
+
+            if (!isAdmin) localStorage.setItem("lastLoadPostTime", currentTime);
+            
+            form.reset();
+            $('#from, #to').val(null).trigger('change');
+            agreeToTermsCheckbox.checked = false;
+            showGeneralFeedback("✅ Load posted successfully!", "success");
+
+        } catch (error) {
+            console.error(error);
+            showGeneralFeedback(error.message, "danger");
+        } finally {
+            setButtonLoadingState(submitLoadBtn, false);
+        }
+    });
 
             // NEW: Added status and acceptedBy to the payload
             await addDoc(loadRef, {
