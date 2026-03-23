@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Driver Login | Eri Shipping Hub</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+  <style>
+    :root {
+       --app-primary: #0a3d62; 
+       --app-secondary: #1e90ff; 
+    }
+
+    body {
+      background-image: url('https://raw.githubusercontent.com/bini2024/Eri-shipping-Hub/refs/heads/main/Erishipping.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .auth-card {
+      background-color: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      padding: 40px 30px;
+      width: 100%;
+      max-width: 400px;
+      border-top: 5px solid var(--app-primary);
+    }
+
+    .auth-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .auth-header h3 {
+      color: var(--app-primary);
+      font-weight: 700;
+    }
+
+    .form-control {
+      border-radius: 8px;
+      padding: 12px;
+      border: 1px solid #ced4da;
+    }
+    
+    .form-control:focus {
+      border-color: var(--app-primary);
+      box-shadow: 0 0 0 0.25rem rgba(10, 61, 98, 0.25);
+    }
+
+    .btn-primary {
+      background-color: var(--app-primary);
+      border-color: var(--app-primary);
+      padding: 12px;
+      font-weight: bold;
+      border-radius: 8px;
+    }
+
+    .btn-primary:hover {
+      background-color: #082d4a;
+    }
+
+    .toggle-link {
+      color: var(--app-secondary);
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    
+    .toggle-link:hover {
+      text-decoration: underline;
+    }
+
+    #errorMsg {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container d-flex justify-content-center">
+    <div class="auth-card">
+      <div class="auth-header">
+        <img src="1000072056-removebg-preview.png" alt="Logo" style="width: 60px; margin-bottom: 10px;">
+        <h3 id="formTitle">Driver Login</h3>
+        <p class="text-muted" id="formSubtitle">Welcome back to Eri Shipping Hub</p>
+      </div>
+
+      <div class="alert alert-danger text-center small" id="errorMsg"></div>
+
+      <form id="authForm">
+        
+        <div id="signupFields" style="display: none;">
+          <div class="mb-3">
+            <label class="form-label fw-bold text-dark small">Full Name</label>
+            <input type="text" id="fullName" class="form-control" placeholder="e.g., Elias M.">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-dark small">Phone Number</label>
+            <input type="tel" id="phoneNumber" class="form-control" placeholder="e.g., 416-555-0198">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold text-dark small">Email Address</label>
+          <input type="email" id="email" class="form-control" placeholder="driver@example.com" required>
+        </div>
+        <div class="mb-4">
+          <label class="form-label fw-bold text-dark small">Password</label>
+          <input type="password" id="password" class="form-control" placeholder="********" required minlength="6">
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100" id="submitBtn">
+          <i class="fas fa-sign-in-alt me-2"></i> Login
+        </button>
+
+      </form>
+
+      <div class="text-center mt-4">
+        <p class="small text-muted mb-0" id="toggleText">
+          Don't have a driver account? 
+          <span class="toggle-link" id="toggleModeBtn">Sign Up here</span>
+        </p>
+        <a href="load-board.html" class="small text-muted d-block mt-3"><i class="fas fa-arrow-left"></i> Back to Load Board</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // Your exact Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCapqLcvAVvBtSvUgtvLX4gx7nN5XSjAtQ", 
+      authDomain: "erishipping-e4532.firebaseapp.com",
+      projectId: "erishipping-e4532",
+      storageBucket: "erishipping-e4532.appspot.com",
+      messagingSenderId: "388550131049",
+      appId: "1:388550131049:web:e9ac1784ab8e5fabc811f8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // UI Elements
+    const authForm = document.getElementById('authForm');
+    const signupFields = document.getElementById('signupFields');
+    const formTitle = document.getElementById('formTitle');
+    const formSubtitle = document.getElementById('formSubtitle');
+    const submitBtn = document.getElementById('submitBtn');
+    const toggleModeBtn = document.getElementById('toggleModeBtn');
+    const toggleText = document.getElementById('toggleText');
+    const errorMsg = document.getElementById('errorMsg');
+
+    let isLoginMode = true;
+
+    // Toggle between Login and Sign Up
+    toggleModeBtn.addEventListener('click', () => {
+      isLoginMode = !isLoginMode;
+      errorMsg.style.display = 'none';
+      
+      if (isLoginMode) {
+        formTitle.textContent = "Driver Login";
+        formSubtitle.textContent = "Welcome back to Eri Shipping Hub";
+        submitBtn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i> Login';
+        signupFields.style.display = 'none';
+        toggleText.innerHTML = `Don't have a driver account? <span class="toggle-link" id="toggleModeBtn">Sign Up here</span>`;
+      } else {
+        formTitle.textContent = "Become a Driver";
+        formSubtitle.textContent = "Create your account to start accepting loads";
+        submitBtn.innerHTML = '<i class="fas fa-user-plus me-2"></i> Create Account';
+        signupFields.style.display = 'block';
+        toggleText.innerHTML = `Already have an account? <span class="toggle-link" id="toggleModeBtn">Login here</span>`;
+      }
+
+      // Re-attach listener to the newly generated toggle link
+      document.getElementById('toggleModeBtn').addEventListener('click', () => toggleModeBtn.click());
+    });
+
+    // Handle Form Submission
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const originalBtnText = submitBtn.innerHTML;
+      
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+      submitBtn.disabled = true;
+      errorMsg.style.display = 'none';
+
+      try {
+        if (isLoginMode) {
+          // --- LOGIN LOGIC ---
+          await signInWithEmailAndPassword(auth, email, password);
+          window.location.href = "load-board.html"; // Redirect to load board on success
+        } else {
+          // --- SIGN UP LOGIC ---
+          const fullName = document.getElementById('fullName').value.trim();
+          const phone = document.getElementById('phoneNumber').value.trim();
+
+          if (!fullName || !phone) {
+            throw new Error("Please fill in your Name and Phone Number.");
+          }
+
+          // 1. Create the user in Firebase Auth
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          const user = userCredential.user;
+
+          // 2. Save their extra profile data in Firestore 'users' collection
+          await setDoc(doc(db, "users", user.uid), {
+            fullName: fullName,
+            phone: phone,
+            email: email,
+            userType: "mover", // Automatically flag them as a mover
+            createdAt: new Date()
+          });
+
+          window.location.href = "load-board.html"; // Redirect to load board on success
+        }
+      } catch (error) {
+        console.error("Auth Error:", error);
+        errorMsg.textContent = error.message.replace("Firebase: ", "");
+        errorMsg.style.display = 'block';
+        submitBtn.innerHTML = originalBtnText;
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
