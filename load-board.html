@@ -485,10 +485,14 @@
             // Treat missing status as "open" for older loads
             const currentStatus = load.status || "open"; 
 
+            // NEW: Define the route text so the button knows what job it is
+            const routeText = isLocalMove ? `${load.pickup} to ${load.dropoff}` : `${load.from} to ${load.to}`;
+
             if (currentStatus === "open") {
                 cardStyle = "border-left: 4px solid var(--app-secondary);";
                 if (currentUser) {
-                    actionButton = `<button class="btn btn-sm btn-success mt-3 w-100 fw-bold accept-load-btn" data-id="${loadId}">🤝 Accept Load</button>`;
+                    // NEW: Added data-route="${routeText}" to the button
+                    actionButton = `<button class="btn btn-sm btn-success mt-3 w-100 fw-bold accept-load-btn" data-id="${loadId}" data-route="${routeText}">🤝 Accept Load</button>`;
                 } else {
                     actionButton = `<button class="btn btn-sm btn-outline-secondary mt-3 w-100" disabled>Log in as Mover to Accept</button>`;
                 }
@@ -541,7 +545,7 @@
         if (!hasLoads) loadList.innerHTML = `<div class="col-12 text-center text-muted"><p>📭 No active loads found.</p></div>`;
     }
 
-    // --- NEW: Accept Load Action ---
+   // --- NEW: Accept Load Action (With WhatsApp Admin Alert) ---
     loadList.addEventListener('click', async (e) => {
         if (e.target.classList.contains('accept-load-btn')) {
             if (!currentUser) {
@@ -553,18 +557,35 @@
 
             const btn = e.target;
             const loadId = btn.getAttribute('data-id');
+            const routeText = btn.getAttribute('data-route'); // Grab the route for the message
             const originalText = btn.innerHTML;
             
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
             btn.disabled = true;
 
             try {
+                // 1. Update the database
                 const loadDocRef = doc(db, "loads", loadId);
                 await updateDoc(loadDocRef, {
                     status: "accepted",
                     acceptedBy: currentUser.uid
                 });
+                
                 showGeneralFeedback("🎉 Load Accepted! You can now view the phone number.", "success");
+
+                // 2. Alert the Admin via WhatsApp
+                const adminWhatsAppNumber = "16474624710"; 
+                const message = `🚨 *NEW LOAD ACCEPTED* 🚨%0A%0A` +
+                                `Hello Eri Shipping Admin, I just accepted a job from the Load Board!%0A%0A` +
+                                `*Route:* ${routeText}%0A` +
+                                `*My Driver ID:* ${currentUser.uid}%0A%0A` +
+                                `Please check the Admin Panel for full details.`;
+
+                // Add a small delay so the user sees the success message before WhatsApp opens
+                setTimeout(() => {
+                    window.open(`https://wa.me/${adminWhatsAppNumber}?text=${message}`, '_blank');
+                }, 1500);
+
             } catch (err) {
                 console.error("Error accepting load: ", err);
                 showGeneralFeedback("Failed to accept. It might have already been claimed.", "danger");
