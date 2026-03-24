@@ -365,6 +365,9 @@
     let feedbackHideTimeout = null;
    let currentUserProfile = null; // This will hold the driver's isApproved status
     let currentFilter = "all"; // Tracks the active filter
+   // Lock the calendar to today's date
+    const todayStr = new Date().toISOString().split('T')[0];
+    document.getElementById('deadline').setAttribute('min', todayStr);
     // --- Helpers ---
     function showGeneralFeedback(message, type = 'info', duration = 7000) {
         if (feedbackHideTimeout) clearTimeout(feedbackHideTimeout);
@@ -436,11 +439,23 @@
         const comment = form.comment.value.trim();
 
         let isValid = true;
+        const today = new Date().toISOString().split('T')[0]; // Needed for past-date check
+
         if (!agreeToTermsCheckbox.checked) { showGeneralFeedback("Agree to terms required.", "warning"); isValid = false; }
         if (!from) { setValidationFeedback(form.from, "Req"); isValid = false; }
         if (!to) { setValidationFeedback(form.to, "Req"); isValid = false; }
         if (!weight || isNaN(parseFloat(weight))) { setValidationFeedback(form.weight, "Req"); isValid = false; }
-        if (!deadline) { setValidationFeedback(form.deadline, "Req"); isValid = false; }
+        
+        // FIXED: The strict past-date check is back!
+        if (!deadline) { 
+            setValidationFeedback(form.deadline, "Req"); 
+            isValid = false; 
+        } else if (deadline < today) {
+            showGeneralFeedback("The deadline cannot be in the past.", "warning");
+            setValidationFeedback(form.deadline, "Invalid Date");
+            isValid = false;
+        }
+
         if (!phone) { setValidationFeedback(form.phone, "Req"); isValid = false; }
 
         if (!isValid) return;
@@ -495,30 +510,6 @@
             setButtonLoadingState(submitLoadBtn, false);
         }
     });
-
-            // NEW: Added status and acceptedBy to the payload
-            await addDoc(loadRef, {
-                from, to, weight: parseFloat(weight), deadline, phone, comment,
-                status: "open", // Key for matchmaking
-                acceptedBy: null, // Key for matchmaking
-                createdAt: serverTimestamp()
-            });
-
-            if (!isAdmin) localStorage.setItem("lastLoadPostTime", currentTime);
-            
-            form.reset();
-            $('#from, #to').val(null).trigger('change');
-            agreeToTermsCheckbox.checked = false;
-            showGeneralFeedback("✅ Load posted successfully!", "success");
-
-        } catch (error) {
-            console.error(error);
-            showGeneralFeedback(error.message, "danger");
-        } finally {
-            setButtonLoadingState(submitLoadBtn, false);
-        }
-    });
-
     // --- Render Logic (Hybrid Board: Local & International) ---
     function renderLoads(snapshot) {
         currentSnapshot = snapshot;
