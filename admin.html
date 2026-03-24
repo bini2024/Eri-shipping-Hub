@@ -208,7 +208,7 @@
         if (adminUIDs.includes(user.uid)) {
           authMessage.style.display = 'none';
           adminContent.style.display = 'block';
-          loadAdminData(); // This now starts ALL listeners
+          loadAdminData(); // Starts all listeners
         } else {
           authMessage.style.display = 'block';
           adminContent.style.display = 'none';
@@ -259,7 +259,7 @@
             const status = data.status || "open";
             let statusBadge = status === "open" 
                 ? `<span class="badge bg-primary">Open</span>`
-                : `<span class="badge bg-success mb-1">Accepted</span><br><small class="text-muted" style="font-size: 0.7rem;">ID: ${data.acceptedBy?.substring(0,6)}...</small>`;
+                : `<span class="badge bg-success mb-1">Accepted</span><br><small class="text-muted" style="font-size: 0.7rem;">Driver ID: ${data.acceptedBy?.substring(0,6)}...</small>`;
 
             let actionButtons = `<button class="btn btn-sm btn-outline-danger delete-btn" data-id="${id}" data-col="loads"><i class="fas fa-trash"></i></button>`;
             if (status === "accepted") {
@@ -399,5 +399,5 @@
         setTimeout(() => generalFeedback.classList.add('d-none'), 3000);
     }
   </script>
-</body>
-</html>
+    </body>
+    </html>
