@@ -401,11 +401,13 @@
    // --- Auth Listener ---
     onAuthStateChanged(auth, async (user) => {
         currentUser = user; 
-        isAdmin = !!user; 
+        
+        // FIXED: Only YOUR specific account gets Admin powers to bypass rules
+        const adminUIDs = ['Yma9sAvJqObTmZ6BPFwhOsicasa2']; 
+        isAdmin = user && adminUIDs.includes(user.uid); 
         
         const authNavBtn = document.getElementById('authNavBtn');
         if (user) {
-            // Check if the user is an approved driver
             try {
                 const userDoc = await getDoc(doc(db, "users", user.uid));
                 if (userDoc.exists()) {
@@ -462,37 +464,42 @@
 
         setButtonLoadingState(submitLoadBtn, true);
 
-        try {
+       try {
+            // 1. Smarter Cooldown (1 Minute instead of 2 Hours)
             const lastPostTime = localStorage.getItem("lastLoadPostTime");
-            const cooldownDuration = 2 * 60 * 60 * 1000;
+            const cooldownDuration = 60 * 1000; // 60 seconds
             const currentTime = Date.now();
+            
             if (!isAdmin && lastPostTime && (currentTime - parseInt(lastPostTime) < cooldownDuration)) {
-                 const minutes = Math.ceil((cooldownDuration - (currentTime - parseInt(lastPostTime))) / 60000);
-                 throw new Error(`Please wait ${minutes} mins before posting again.`);
+                 const seconds = Math.ceil((cooldownDuration - (currentTime - parseInt(lastPostTime))) / 1000);
+                 throw new Error(`Please wait ${seconds} seconds before posting another load.`);
             }
 
-            // --- ANTI-SPAM FIX: Query only by phone to prevent Firebase Index errors ---
+            // 2. Smarter Duplicate Checker
             const phoneQuery = query(loadRef, where("phone", "==", phone));
             const existingDocs = await getDocs(phoneQuery);
             
             let isDuplicate = false;
             existingDocs.forEach(doc => {
                 const data = doc.data();
-                // Check in-browser if the route and deadline match exactly
-                if (data.from === from && data.to === to && data.deadline === deadline) {
+                const status = data.status || "open"; 
+                
+                // If they already have an OPEN load for this exact route, block it.
+                // If their old load is "accepted", let them post a new one!
+                if (status === "open" && data.from === from && data.to === to) {
                     isDuplicate = true;
                 }
             });
             
             if (isDuplicate) {
-                throw new Error("This load is already posted. Please wait before posting again.");
+                throw new Error("You already have an open request for this exact route. Please wait for a driver to accept it.");
             }
             
-            // NEW: Added status and acceptedBy to the payload
+            // 3. Save to Database
             await addDoc(loadRef, {
                 from, to, weight: parseFloat(weight), deadline, phone, comment,
-                status: "open", // Key for matchmaking
-                acceptedBy: null, // Key for matchmaking
+                status: "open", 
+                acceptedBy: null, 
                 createdAt: serverTimestamp()
             });
 
