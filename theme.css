@@ -1,0 +1,289 @@
+/* ==========================================================================
+   Eri Shipping Hub — Shared Design System
+   One file, linked from every page, so the whole site stays consistent.
+   ========================================================================== */
+
+:root {
+  /* Brand */
+  --brand-navy:      #0a3d62;
+  --brand-blue:      #1e90ff;
+  --brand-blue-dark: #125b96;
+
+  /* Service accent colors */
+  --c-p2p-send:   #0a3d62;
+  --c-p2p-carry:  #2c3e50;
+  --c-cargo:      #1565c0;
+  --c-moving:     #c0392b;
+
+  /* Neutrals */
+  --ink-900: #10202e;
+  --ink-700: #33475b;
+  --ink-500: #64748b;
+  --ink-200: #e2e8f0;
+  --ink-100: #f1f5f9;
+  --surface: #ffffff;
+  --bg-page: #f4f7fb;
+
+  /* Feedback */
+  --success: #1e8e5a;
+  --warning: #d97706;
+  --danger:  #c0392b;
+
+  /* Shape & motion */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --shadow-sm: 0 2px 8px rgba(16, 32, 46, 0.08);
+  --shadow-md: 0 8px 24px rgba(16, 32, 46, 0.12);
+  --shadow-lg: 0 16px 40px rgba(16, 32, 46, 0.18);
+  --ease: cubic-bezier(.4,0,.2,1);
+
+  /* Legacy aliases (older pages reference these names directly) */
+  --app-primary: var(--brand-navy);
+  --app-secondary: var(--brand-blue);
+  --cargo-color: var(--c-cargo);
+  --moving-color: var(--c-moving);
+  --app-gold: #e0a72e;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg-page);
+  color: var(--ink-900);
+  margin: 0;
+  padding-bottom: 84px; /* room for bottom nav */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Optional hero background — only used on pages that opt in via .hero-bg on <body> */
+body.hero-bg {
+  background-image:
+    linear-gradient(180deg, rgba(10,26,42,.72) 0%, rgba(10,26,42,.55) 45%, rgba(244,247,251,1) 100%),
+    url('https://raw.githubusercontent.com/bini2024/Eri-shipping-Hub/refs/heads/main/Erishipping.jpg');
+  background-size: cover;
+  background-position: center top;
+  background-attachment: fixed;
+}
+
+a { color: var(--brand-blue-dark); }
+
+/* ---------- Header / Brand ---------- */
+.site-header {
+  padding: 28px 16px 20px;
+  text-align: center;
+  position: relative;
+}
+.site-header .brand-logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.9);
+  padding: 4px;
+  box-shadow: var(--shadow-sm);
+}
+.site-header h1 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 4px;
+}
+body.hero-bg .site-header h1,
+body.hero-bg .site-header p { color: #fff; }
+body.hero-bg .site-header h1 .nav-brand { color: #fff; }
+.site-header .nav-brand-accent { color: var(--brand-blue); }
+.site-header p.tagline {
+  margin: 0;
+  font-size: .95rem;
+  color: var(--ink-500);
+  font-weight: 500;
+}
+body.hero-bg .site-header p.tagline { color: rgba(255,255,255,.85); }
+
+/* Simple top utility bar (Back / Login / Logout links across pages) */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 900px;
+  margin: 0 auto 8px;
+  padding: 10px 16px;
+}
+.topbar a {
+  text-decoration: none;
+  font-weight: 600;
+  font-size: .9rem;
+  color: var(--brand-navy);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+body.hero-bg .topbar a { color: #fff; }
+.topbar a:hover { opacity: .8; }
+
+/* ---------- Service hub grid (home page) ---------- */
+.hub-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+@media (min-width: 700px) {
+  .hub-grid { grid-template-columns: 1fr 1fr; }
+}
+.hub-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  padding: 22px 18px;
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  box-shadow: var(--shadow-md);
+  transition: transform .2s var(--ease), box-shadow .2s var(--ease);
+}
+.hub-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); color: #fff; }
+.hub-card:active { transform: translateY(-1px); }
+.hub-p2p-send  { background: linear-gradient(135deg, var(--brand-navy), var(--brand-blue-dark)); }
+.hub-p2p-carry { background: linear-gradient(135deg, #263544, #3a4f63); border: 2px solid var(--brand-blue); }
+.hub-cargo     { background: linear-gradient(135deg, #1e88e5, var(--c-cargo)); }
+.hub-moving    { background: linear-gradient(135deg, #e0574a, var(--c-moving)); }
+
+/* ---------- Cards ---------- */
+.card {
+  border: none;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+.card-header {
+  background: var(--brand-navy);
+  color: #fff;
+  border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
+  border: none;
+  font-weight: 700;
+}
+.courier-card {
+  border: 1px solid var(--ink-200);
+  border-left: 4px solid var(--brand-blue);
+  background: rgba(255,255,255,.97);
+  border-radius: var(--radius-md);
+  transition: transform .15s var(--ease), box-shadow .15s var(--ease);
+}
+.courier-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+/* ---------- Forms ---------- */
+.form-label { font-weight: 600; color: var(--ink-700); }
+.form-control, .form-select {
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--ink-200);
+  padding: .6rem .8rem;
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 .2rem rgba(30,144,255,.18);
+}
+
+/* ---------- Buttons ---------- */
+.btn { border-radius: var(--radius-sm); font-weight: 700; }
+.btn-primary {
+  background: var(--brand-navy);
+  border-color: var(--brand-navy);
+  padding: 11px 20px;
+}
+.btn-primary:hover, .btn-primary:focus {
+  background: var(--brand-blue-dark);
+  border-color: var(--brand-blue-dark);
+}
+.btn .spinner-border { display: none; margin-right: .5rem; }
+.btn.loading .spinner-border { display: inline-block; }
+.btn.loading .button-text { display: none; }
+
+.btn-share {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 999px; font-size: .82rem;
+  text-decoration: none; font-weight: 600; color: #fff;
+}
+.btn-whatsapp { background: #25d366; }
+.btn-telegram { background: #229ed9; }
+.share-btn-group { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.contact-area { margin-top: 10px; }
+
+/* ---------- Badges for service type ---------- */
+.badge-service {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  color: #fff;
+}
+.badge-cargo  { background: var(--c-cargo); }
+.badge-moving { background: var(--c-moving); }
+.badge-p2p    { background: var(--brand-navy); }
+
+/* ---------- Bottom nav ---------- */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; width: 100%;
+  background: var(--brand-navy);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+  z-index: 2000;
+  box-shadow: 0 -4px 16px rgba(0,0,0,.25);
+}
+.bottom-nav a {
+  color: rgba(255,255,255,.62);
+  text-decoration: none;
+  text-align: center;
+  font-size: .74rem;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  transition: color .2s;
+}
+.bottom-nav a i { font-size: 1.15rem; }
+.bottom-nav a:hover, .bottom-nav a.active { color: #fff; }
+.bottom-nav a.active i { color: var(--brand-blue); }
+
+/* ---------- Footer ---------- */
+.site-footer {
+  background: var(--brand-navy);
+  color: #fff;
+  padding: 32px 16px;
+  text-align: center;
+  margin-top: 48px;
+}
+.site-footer a { color: #fff; text-decoration: none; }
+.site-footer a:hover { color: var(--brand-blue); }
+.site-footer h5 { color: #cfe4ff; }
+
+/* ---------- Misc ---------- */
+.video-section { margin: 20px 0 3rem; }
+.section-title { font-weight: 800; letter-spacing: -.01em; }
+.empty-state {
+  background: rgba(255,255,255,.95);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 480px) {
+  .site-header .brand-logo { width: 36px; height: 36px; top: 12px; left: 12px; }
+  .site-header h1 { font-size: 1.25rem; }
+}
